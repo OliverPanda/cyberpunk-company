@@ -1,0 +1,891 @@
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Issue, IssueDocument } from "@paperclipai/shared";
+import { useLocation } from "@/lib/router";
+import { ApiError } from "../api/client";
+import { issuesApi } from "../api/issues";
+import { useAutosaveIndicator } from "../hooks/useAutosaveIndicator";
+import { queryKeys } from "../lib/queryKeys";
+import { cn, relativeTime } from "../lib/utils";
+import { MarkdownBody } from "./MarkdownBody";
+import { MarkdownEditor, type MentionOption } from "./MarkdownEditor";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Check, ChevronDown, ChevronRight, Copy, Download, FileText, MoreHorizontal, Plus, Trash2, X } from "lucide-react";
+
+type DraftState = {
+  key: string;
+  title: string;
+  body: string;
+  baseRevisionId: string | null;
+  isNew: boolean;
+};
+
+type DocumentConflictState = {
+  key: string;
+  serverDocument: IssueDocument;
+  localDraft: DraftState;
+  showRemote: boolean;
+};
+
+const DOCUMENT_AUTOSAVE_DEBOUNCE_MS = 900;
+const DOCUMENT_KEY_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
+const getFoldedDocumentsStorageKey = (issueId: string) => `paperclip:issue-document-folds:${issueId}`;
+
+function loadFoldedDocumentKeys(issueId: string) {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(getFoldedDocumentsStorageKey(issueId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFoldedDocumentKeys(issueId: string, keys: string[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(getFoldedDocumentsStorageKey(issueId), JSON.stringify(keys));
+}
+
+function renderBody(body: string, className?: string) {
+  return <MarkdownBody className={className}>{body}</MarkdownBody>;
+}
+
+function isPlanKey(key: string) {
+  return key.trim().toLowerCase() === "plan";
+}
+
+function titlesMatchKey(title: string | null | undefined, key: string) {
+  return (title ?? "").trim().toLowerCase() === key.trim().toLowerCase();
+}
+
+function isDocumentConflictError(error: unknown) {
+  return error instanceof ApiError && error.status === 409;
+}
+
+function downloadDocumentFile(key: string, body: string) {
+  const blob = new Blob([body], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${key}.md`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+export function IssueDocumentsSection({
+  issue,
+  canDeleteDocuments,
+  mentions,
+  imageUploadHandler,
+  extraActions,
+}: {
+  issue: Issue;
+  canDeleteDocuments: boolean;
+  mentions?: MentionOption[];
+  imageUploadHandler?: (file: File) => Promise<string>;
+  extraActions?: ReactNode;
+}) {
+  const queryClient = useQueryClient();
+  const location = useLocation();
+  const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState<DraftState | null>(null);
+  const [documentConflict, setDocumentConflict] = useState<DocumentConflictState | null>(null);
+  const [foldedDocumentKeys, setFoldedDocumentKeys] = useState<string[]>(() => loadFoldedDocumentKeys(issue.id));
+  const [autosaveDocumentKey, setAutosaveDocumentKey] = useState<string | null>(null);
+  const [copiedDocumentKey, setCopiedDocumentKey] = useState<string | null>(null);
+  const [highlightDocumentKey, setHighlightDocumentKey] = useState<string | null>(null);
+  const autosaveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copiedDocumentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasScrolledToHashRef = useRef(false);
+  const {
+    state: autosaveState,
+    markDirty,
+    reset,
+    runSave,
+  } = useAutosaveIndicator();
+
+  const { data: documents } = useQuery({
+    queryKey: queryKeys.issues.documents(issue.id),
+    queryFn: () => issuesApi.listDocuments(issue.id),
+  });
+
+  const invalidateIssueDocuments = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(issue.id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.issues.documents(issue.id) });
+  };
+
+  const upsertDocument = useMutation({
+    mutationFn: async (nextDraft: DraftState) =>
+      issuesApi.upsertDocument(issue.id, nextDraft.key, {
+        title: isPlanKey(nextDraft.key) ? null : nextDraft.title.trim() || null,
+        format: "markdown",
+        body: nextDraft.body,
+        baseRevisionId: nextDraft.baseRevisionId,
+      }),
+  });
+
+  const deleteDocument = useMutation({
+    mutationFn: (key: string) => issuesApi.deleteDocument(issue.id, key),
+    onSuccess: () => {
+      setError(null);
+      setConfirmDeleteKey(null);
+      invalidateIssueDocuments();
+    },
+    onError: (err) => {
+      setError(err instanceof Error ? err.message : "删除文档失败");
+    },
+  });
+
+  const sortedDocuments = useMemo(() => {
+    return [...(documents ?? [])].sort((a, b) => {
+      if (a.key === "plan" && b.key !== "plan") return -1;
+      if (a.key !== "plan" && b.key === "plan") return 1;
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+  }, [documents]);
+
+  const hasRealPlan = sortedDocuments.some((doc) => doc.key === "plan");
+  const isEmpty = sortedDocuments.length === 0 && !issue.legacyPlanDocument;
+  const newDocumentKeyError =
+    draft?.isNew && draft.key.trim().length > 0 && !DOCUMENT_KEY_PATTERN.test(draft.key.trim())
+      ? "请使用小写字母、数字、- 或 _，并以字母或数字开头。"
+      : null;
+
+  const resetAutosaveState = useCallback(() => {
+    setAutosaveDocumentKey(null);
+    reset();
+  }, [reset]);
+
+  const markDocumentDirty = useCallback((key: string) => {
+    setAutosaveDocumentKey(key);
+    markDirty();
+  }, [markDirty]);
+
+  const beginNewDocument = () => {
+    resetAutosaveState();
+    setDocumentConflict(null);
+    setDraft({
+      key: "",
+      title: "",
+      body: "",
+      baseRevisionId: null,
+      isNew: true,
+    });
+    setError(null);
+  };
+
+  const beginEdit = (key: string) => {
+    const doc = sortedDocuments.find((entry) => entry.key === key);
+    if (!doc) return;
+    const conflictedDraft = documentConflict?.key === key ? documentConflict.localDraft : null;
+    setFoldedDocumentKeys((current) => current.filter((entry) => entry !== key));
+    resetAutosaveState();
+    setDocumentConflict((current) => current?.key === key ? current : null);
+    setDraft({
+      key: conflictedDraft?.key ?? doc.key,
+      title: conflictedDraft?.title ?? doc.title ?? "",
+      body: conflictedDraft?.body ?? doc.body,
+      baseRevisionId: conflictedDraft?.baseRevisionId ?? doc.latestRevisionId,
+      isNew: false,
+    });
+    setError(null);
+  };
+
+  const cancelDraft = () => {
+    if (autosaveDebounceRef.current) {
+      clearTimeout(autosaveDebounceRef.current);
+    }
+    resetAutosaveState();
+    setDocumentConflict(null);
+    setDraft(null);
+    setError(null);
+  };
+
+  const commitDraft = useCallback(async (
+    currentDraft: DraftState | null,
+    options?: { clearAfterSave?: boolean; trackAutosave?: boolean; overrideConflict?: boolean },
+  ) => {
+    if (!currentDraft || upsertDocument.isPending) return false;
+    const normalizedKey = currentDraft.key.trim().toLowerCase();
+    const normalizedBody = currentDraft.body.trim();
+    const normalizedTitle = currentDraft.title.trim();
+    const activeConflict = documentConflict?.key === normalizedKey ? documentConflict : null;
+
+    if (activeConflict && !options?.overrideConflict) {
+      if (options?.trackAutosave) {
+        resetAutosaveState();
+      }
+      return false;
+    }
+
+    if (!normalizedKey || !normalizedBody) {
+      if (currentDraft.isNew) {
+        setError("文档键和正文不能为空");
+      } else if (!normalizedBody) {
+        setError("文档正文不能为空");
+      }
+      if (options?.trackAutosave) {
+        resetAutosaveState();
+      }
+      return false;
+    }
+
+    if (!DOCUMENT_KEY_PATTERN.test(normalizedKey)) {
+      setError("文档键必须以字母或数字开头，且只能包含小写字母、数字、- 或 _。");
+      if (options?.trackAutosave) {
+        resetAutosaveState();
+      }
+      return false;
+    }
+
+    const existing = sortedDocuments.find((doc) => doc.key === normalizedKey);
+    if (
+      !currentDraft.isNew &&
+      existing &&
+      existing.body === currentDraft.body &&
+      (existing.title ?? "") === currentDraft.title
+    ) {
+      if (options?.clearAfterSave) {
+        setDraft((value) => (value?.key === normalizedKey ? null : value));
+      }
+      if (options?.trackAutosave) {
+        resetAutosaveState();
+      }
+      return true;
+    }
+
+    const save = async () => {
+      const saved = await upsertDocument.mutateAsync({
+        ...currentDraft,
+        key: normalizedKey,
+        title: isPlanKey(normalizedKey) ? "" : normalizedTitle,
+        body: currentDraft.body,
+        baseRevisionId: options?.overrideConflict
+          ? activeConflict?.serverDocument.latestRevisionId ?? currentDraft.baseRevisionId
+          : currentDraft.baseRevisionId,
+      });
+      setError(null);
+      setDocumentConflict((current) => current?.key === normalizedKey ? null : current);
+      setDraft((value) => {
+        if (!value || value.key !== normalizedKey) return value;
+        if (options?.clearAfterSave) return null;
+        return {
+          key: saved.key,
+          title: saved.title ?? "",
+          body: saved.body,
+          baseRevisionId: saved.latestRevisionId,
+          isNew: false,
+        };
+      });
+      invalidateIssueDocuments();
+    };
+
+    try {
+      if (options?.trackAutosave) {
+        setAutosaveDocumentKey(normalizedKey);
+        await runSave(save);
+      } else {
+        await save();
+      }
+      return true;
+    } catch (err) {
+      if (isDocumentConflictError(err)) {
+        try {
+          const latestDocument = await issuesApi.getDocument(issue.id, normalizedKey);
+          setDocumentConflict({
+            key: normalizedKey,
+            serverDocument: latestDocument,
+            localDraft: {
+              key: normalizedKey,
+              title: isPlanKey(normalizedKey) ? "" : normalizedTitle,
+              body: currentDraft.body,
+              baseRevisionId: currentDraft.baseRevisionId,
+              isNew: false,
+            },
+            showRemote: true,
+          });
+          setFoldedDocumentKeys((current) => current.filter((key) => key !== normalizedKey));
+          setError(null);
+          resetAutosaveState();
+          return false;
+        } catch {
+          setError("文档已在远端变更，且无法加载最新版本");
+          return false;
+        }
+      }
+      setError(err instanceof Error ? err.message : "保存文档失败");
+      return false;
+    }
+  }, [documentConflict, invalidateIssueDocuments, issue.id, resetAutosaveState, runSave, sortedDocuments, upsertDocument]);
+
+  const reloadDocumentFromServer = useCallback((key: string) => {
+    if (documentConflict?.key !== key) return;
+    const serverDocument = documentConflict.serverDocument;
+    setDraft({
+      key: serverDocument.key,
+      title: serverDocument.title ?? "",
+      body: serverDocument.body,
+      baseRevisionId: serverDocument.latestRevisionId,
+      isNew: false,
+    });
+    setDocumentConflict(null);
+    resetAutosaveState();
+    setError(null);
+  }, [documentConflict, resetAutosaveState]);
+
+  const overwriteDocumentFromDraft = useCallback(async (key: string) => {
+    if (documentConflict?.key !== key) return;
+    const sourceDraft =
+      draft && draft.key === key && !draft.isNew
+        ? draft
+        : documentConflict.localDraft;
+    await commitDraft(
+      {
+        ...sourceDraft,
+        baseRevisionId: documentConflict.serverDocument.latestRevisionId,
+      },
+      {
+        clearAfterSave: false,
+        trackAutosave: true,
+        overrideConflict: true,
+      },
+    );
+  }, [commitDraft, documentConflict, draft]);
+
+  const keepConflictedDraft = useCallback((key: string) => {
+    if (documentConflict?.key !== key) return;
+    setDraft(documentConflict.localDraft);
+    setDocumentConflict((current) =>
+      current?.key === key
+        ? { ...current, showRemote: false }
+        : current,
+    );
+    setError(null);
+  }, [documentConflict]);
+
+  const copyDocumentBody = useCallback(async (key: string, body: string) => {
+    try {
+      await navigator.clipboard.writeText(body);
+      setCopiedDocumentKey(key);
+      if (copiedDocumentTimerRef.current) {
+        clearTimeout(copiedDocumentTimerRef.current);
+      }
+      copiedDocumentTimerRef.current = setTimeout(() => {
+        setCopiedDocumentKey((current) => current === key ? null : current);
+      }, 1400);
+    } catch {
+      setError("无法复制文档");
+    }
+  }, []);
+
+  const handleDraftBlur = async (event: React.FocusEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    if (autosaveDebounceRef.current) {
+      clearTimeout(autosaveDebounceRef.current);
+    }
+    await commitDraft(draft, { clearAfterSave: true, trackAutosave: true });
+  };
+
+  const handleDraftKeyDown = async (event: React.KeyboardEvent) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelDraft();
+      return;
+    }
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      event.preventDefault();
+      if (autosaveDebounceRef.current) {
+        clearTimeout(autosaveDebounceRef.current);
+      }
+      await commitDraft(draft, { clearAfterSave: false, trackAutosave: true });
+    }
+  };
+
+  useEffect(() => {
+    setFoldedDocumentKeys(loadFoldedDocumentKeys(issue.id));
+  }, [issue.id]);
+
+  useEffect(() => {
+    hasScrolledToHashRef.current = false;
+  }, [issue.id, location.hash]);
+
+  useEffect(() => {
+    const validKeys = new Set(sortedDocuments.map((doc) => doc.key));
+    setFoldedDocumentKeys((current) => {
+      const next = current.filter((key) => validKeys.has(key));
+      if (next.length !== current.length) {
+        saveFoldedDocumentKeys(issue.id, next);
+      }
+      return next;
+    });
+  }, [issue.id, sortedDocuments]);
+
+  useEffect(() => {
+    saveFoldedDocumentKeys(issue.id, foldedDocumentKeys);
+  }, [foldedDocumentKeys, issue.id]);
+
+  useEffect(() => {
+    if (!documentConflict) return;
+    const latest = sortedDocuments.find((doc) => doc.key === documentConflict.key);
+    if (!latest || latest.latestRevisionId === documentConflict.serverDocument.latestRevisionId) return;
+    setDocumentConflict((current) =>
+      current?.key === latest.key
+        ? { ...current, serverDocument: latest }
+        : current,
+    );
+  }, [documentConflict, sortedDocuments]);
+
+  useEffect(() => {
+    const hash = location.hash;
+    if (!hash.startsWith("#document-")) return;
+    const documentKey = decodeURIComponent(hash.slice("#document-".length));
+    const targetExists = sortedDocuments.some((doc) => doc.key === documentKey)
+      || (documentKey === "plan" && Boolean(issue.legacyPlanDocument));
+    if (!targetExists || hasScrolledToHashRef.current) return;
+    setFoldedDocumentKeys((current) => current.filter((key) => key !== documentKey));
+    const element = document.getElementById(`document-${documentKey}`);
+    if (!element) return;
+    hasScrolledToHashRef.current = true;
+    setHighlightDocumentKey(documentKey);
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+    const timer = setTimeout(() => setHighlightDocumentKey((current) => current === documentKey ? null : current), 3000);
+    return () => clearTimeout(timer);
+  }, [issue.legacyPlanDocument, location.hash, sortedDocuments]);
+
+  useEffect(() => {
+    return () => {
+      if (autosaveDebounceRef.current) {
+        clearTimeout(autosaveDebounceRef.current);
+      }
+      if (copiedDocumentTimerRef.current) {
+        clearTimeout(copiedDocumentTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!draft || draft.isNew) return;
+    if (documentConflict?.key === draft.key) return;
+    const existing = sortedDocuments.find((doc) => doc.key === draft.key);
+    if (!existing) return;
+    const hasChanges =
+      existing.body !== draft.body ||
+      (existing.title ?? "") !== draft.title;
+    if (!hasChanges) {
+      if (autosaveState !== "saved") {
+        resetAutosaveState();
+      }
+      return;
+    }
+    markDocumentDirty(draft.key);
+    if (autosaveDebounceRef.current) {
+      clearTimeout(autosaveDebounceRef.current);
+    }
+    autosaveDebounceRef.current = setTimeout(() => {
+      void commitDraft(draft, { clearAfterSave: false, trackAutosave: true });
+    }, DOCUMENT_AUTOSAVE_DEBOUNCE_MS);
+
+    return () => {
+      if (autosaveDebounceRef.current) {
+        clearTimeout(autosaveDebounceRef.current);
+      }
+    };
+  }, [autosaveState, commitDraft, documentConflict, draft, markDocumentDirty, resetAutosaveState, sortedDocuments]);
+
+  const documentBodyShellClassName = "mt-3 overflow-hidden rounded-md";
+  const documentBodyPaddingClassName = "";
+  const documentBodyContentClassName = "paperclip-edit-in-place-content min-h-[220px] text-[15px] leading-7";
+  const toggleFoldedDocument = (key: string) => {
+    setFoldedDocumentKeys((current) =>
+      current.includes(key)
+        ? current.filter((entry) => entry !== key)
+        : [...current, key],
+    );
+  };
+
+  return (
+    <div className="space-y-3">
+      {isEmpty && !draft?.isNew ? (
+        <div className="flex items-center justify-end gap-2 min-w-0">
+          {extraActions}
+          <Button variant="outline" size="sm" onClick={beginNewDocument} className="shrink-0">
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            <span className="hidden sm:inline">新建文档</span>
+            <span className="sm:hidden">新建</span>
+          </Button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <h3 className="text-sm font-medium text-muted-foreground shrink-0">文档</h3>
+          <div className="flex items-center gap-2 min-w-0">
+            {extraActions}
+            <Button variant="outline" size="sm" onClick={beginNewDocument} className="shrink-0">
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              <span className="hidden sm:inline">新建文档</span>
+              <span className="sm:hidden">新建</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
+
+      {draft?.isNew && (
+        <div
+          className="space-y-3 rounded-lg border border-border bg-accent/10 p-3"
+          onBlurCapture={handleDraftBlur}
+          onKeyDown={handleDraftKeyDown}
+        >
+          <Input
+            autoFocus
+            value={draft.key}
+            onChange={(event) =>
+              setDraft((current) => current ? { ...current, key: event.target.value.toLowerCase() } : current)
+            }
+            placeholder="文档键"
+          />
+          {newDocumentKeyError && (
+            <p className="text-xs text-destructive">{newDocumentKeyError}</p>
+          )}
+          {!isPlanKey(draft.key) && (
+            <Input
+              value={draft.title}
+              onChange={(event) =>
+                setDraft((current) => current ? { ...current, title: event.target.value } : current)
+              }
+              placeholder="可选标题"
+            />
+          )}
+          <MarkdownEditor
+            value={draft.body}
+            onChange={(body) =>
+              setDraft((current) => current ? { ...current, body } : current)
+            }
+            placeholder="Markdown 正文"
+            bordered={false}
+            className="bg-transparent"
+            contentClassName="min-h-[220px] text-[15px] leading-7"
+            mentions={mentions}
+            imageUploadHandler={imageUploadHandler}
+            onSubmit={() => void commitDraft(draft, { clearAfterSave: false, trackAutosave: false })}
+          />
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={cancelDraft}>
+              <X className="mr-1.5 h-3.5 w-3.5" />
+              取消
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => void commitDraft(draft, { clearAfterSave: false, trackAutosave: false })}
+              disabled={upsertDocument.isPending}
+            >
+              {upsertDocument.isPending ? "保存中..." : "创建文档"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!hasRealPlan && issue.legacyPlanDocument ? (
+        <div
+          id="document-plan"
+          className={cn(
+            "rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 transition-colors duration-1000",
+            highlightDocumentKey === "plan" && "border-primary/50 bg-primary/5",
+          )}
+        >
+          <div className="mb-2 flex items-center gap-2">
+            <FileText className="h-4 w-4 text-amber-600" />
+            <span className="rounded-full border border-amber-500/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">
+              PLAN
+            </span>
+          </div>
+          <div className={documentBodyPaddingClassName}>
+            {renderBody(issue.legacyPlanDocument.body, documentBodyContentClassName)}
+          </div>
+        </div>
+      ) : null}
+
+      <div className="space-y-3">
+        {sortedDocuments.map((doc) => {
+          const activeDraft = draft?.key === doc.key && !draft.isNew ? draft : null;
+          const activeConflict = documentConflict?.key === doc.key ? documentConflict : null;
+          const isFolded = foldedDocumentKeys.includes(doc.key);
+          const showTitle = !isPlanKey(doc.key) && !!doc.title?.trim() && !titlesMatchKey(doc.title, doc.key);
+
+          return (
+            <div
+              key={doc.id}
+              id={`document-${doc.key}`}
+              className={cn(
+                "rounded-lg border border-border p-3 transition-colors duration-1000",
+                highlightDocumentKey === doc.key && "border-primary/50 bg-primary/5",
+              )}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <button
+                      type="button"
+                      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+                      onClick={() => toggleFoldedDocument(doc.key)}
+                      aria-label={isFolded ? `展开 ${doc.key} 文档` : `折叠 ${doc.key} 文档`}
+                      aria-expanded={!isFolded}
+                    >
+                      {isFolded ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    </button>
+                    <span className="shrink-0 rounded-full border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                      {doc.key}
+                    </span>
+                    <a
+                      href={`#document-${encodeURIComponent(doc.key)}`}
+                      className="truncate text-[11px] text-muted-foreground transition-colors hover:text-foreground hover:underline"
+                    >
+                      版本 {doc.latestRevisionNumber} · 更新于 {relativeTime(doc.updatedAt)}
+                    </a>
+                  </div>
+                  {showTitle && <p className="mt-2 text-sm font-medium">{doc.title}</p>}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className={cn(
+                      "text-muted-foreground transition-colors",
+                      copiedDocumentKey === doc.key && "text-foreground",
+                    )}
+                    title={copiedDocumentKey === doc.key ? "已复制" : "复制文档"}
+                    onClick={() => void copyDocumentBody(doc.key, activeDraft?.body ?? doc.body)}
+                  >
+                    {copiedDocumentKey === doc.key ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        className="text-muted-foreground"
+                        title="文档操作"
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => downloadDocumentFile(doc.key, activeDraft?.body ?? doc.body)}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        下载文档
+                      </DropdownMenuItem>
+                      {canDeleteDocuments ? <DropdownMenuSeparator /> : null}
+                      {canDeleteDocuments ? (
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setConfirmDeleteKey(doc.key)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          删除文档
+                        </DropdownMenuItem>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              {!isFolded ? (
+                <div
+                  className="mt-3 space-y-3"
+                  onFocusCapture={() => {
+                    if (!activeDraft) {
+                      beginEdit(doc.key);
+                    }
+                  }}
+                  onBlurCapture={async (event) => {
+                    if (activeDraft) {
+                      await handleDraftBlur(event);
+                    }
+                  }}
+                  onKeyDown={async (event) => {
+                    if (activeDraft) {
+                      await handleDraftKeyDown(event);
+                    }
+                  }}
+                >
+                  {activeConflict && (
+                    <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-amber-200">内容已过期</p>
+                          <p className="text-xs text-muted-foreground">
+                            你编辑期间此文档已被远端修改。你的本地草稿已保留，自动保存已暂停。
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setDocumentConflict((current) =>
+                                current?.key === doc.key
+                                  ? { ...current, showRemote: !current.showRemote }
+                                  : current,
+                              )
+                            }
+                          >
+                            {activeConflict.showRemote ? "隐藏远端版本" : "查看远端版本"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => keepConflictedDraft(doc.key)}
+                          >
+                            保留我的草稿
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => reloadDocumentFromServer(doc.key)}
+                          >
+                            重新加载远端版本
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => void overwriteDocumentFromDraft(doc.key)}
+                            disabled={upsertDocument.isPending}
+                          >
+                            {upsertDocument.isPending ? "保存中..." : "覆盖远端版本"}
+                          </Button>
+                        </div>
+                      </div>
+                      {activeConflict.showRemote && (
+                        <div className="mt-3 rounded-md border border-border/70 bg-background/60 p-3">
+                          <div className="mb-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+                            <span>远端版本 {activeConflict.serverDocument.latestRevisionNumber}</span>
+                            <span>•</span>
+                            <span>更新于 {relativeTime(activeConflict.serverDocument.updatedAt)}</span>
+                          </div>
+                          {!isPlanKey(doc.key) && activeConflict.serverDocument.title ? (
+                            <p className="mb-2 text-sm font-medium">{activeConflict.serverDocument.title}</p>
+                          ) : null}
+                          {renderBody(activeConflict.serverDocument.body, "text-[14px] leading-7")}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {activeDraft && !isPlanKey(doc.key) && (
+                    <Input
+                      value={activeDraft.title}
+                      onChange={(event) => {
+                        markDocumentDirty(doc.key);
+                        setDraft((current) => current ? { ...current, title: event.target.value } : current);
+                      }}
+                      placeholder="可选标题"
+                    />
+                  )}
+                  <div
+                    className={`${documentBodyShellClassName} ${documentBodyPaddingClassName} ${
+                      activeDraft ? "" : "hover:bg-accent/10"
+                    }`}
+                  >
+                    <MarkdownEditor
+                      value={activeDraft?.body ?? doc.body}
+                      onChange={(body) => {
+                        markDocumentDirty(doc.key);
+                        setDraft((current) => {
+                          if (current && current.key === doc.key && !current.isNew) {
+                            return { ...current, body };
+                          }
+                          return {
+                            key: doc.key,
+                            title: doc.title ?? "",
+                            body,
+                            baseRevisionId: doc.latestRevisionId,
+                            isNew: false,
+                          };
+                        });
+                      }}
+                      placeholder="Markdown 正文"
+                      bordered={false}
+                      className="bg-transparent"
+                      contentClassName={documentBodyContentClassName}
+                      mentions={mentions}
+                      imageUploadHandler={imageUploadHandler}
+                      onSubmit={() => void commitDraft(activeDraft ?? draft, { clearAfterSave: false, trackAutosave: true })}
+                    />
+                  </div>
+                  <div className="flex min-h-4 items-center justify-end px-1">
+                    <span
+                      className={`text-[11px] transition-opacity duration-150 ${
+                        activeConflict
+                          ? "text-amber-300"
+                          : autosaveState === "error"
+                            ? "text-destructive"
+                            : "text-muted-foreground"
+                      } ${activeDraft ? "opacity-100" : "opacity-0"}`}
+                    >
+                      {activeDraft
+                        ? activeConflict
+                          ? "内容已过期"
+                          : autosaveDocumentKey === doc.key
+                            ? autosaveState === "saving"
+                              ? "自动保存中..."
+                              : autosaveState === "saved"
+                                ? "已保存"
+                                : autosaveState === "error"
+                                  ? "保存失败"
+                                  : ""
+                            : ""
+                        : ""}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
+
+              {confirmDeleteKey === doc.key && (
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3">
+                  <p className="text-sm text-destructive font-medium">
+                    确定删除这份文档吗？此操作无法撤销。
+                  </p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmDeleteKey(null)}
+                      disabled={deleteDocument.isPending}
+                    >
+                      取消
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => deleteDocument.mutate(doc.key)}
+                      disabled={deleteDocument.isPending}
+                    >
+                      {deleteDocument.isPending ? "删除中..." : "删除"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

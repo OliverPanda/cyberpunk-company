@@ -1,0 +1,1632 @@
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AGENT_ADAPTER_TYPES } from "@paperclipai/shared";
+import type {
+  Agent,
+  AdapterEnvironmentTestResult,
+  CompanySecret,
+  EnvBinding,
+} from "@paperclipai/shared";
+import type { AdapterModel } from "../api/agents";
+import { agentsApi } from "../api/agents";
+import { secretsApi } from "../api/secrets";
+import { assetsApi } from "../api/assets";
+import {
+  DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+  DEFAULT_CODEX_LOCAL_MODEL,
+} from "@paperclipai/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { FolderOpen, Heart, ChevronDown, X } from "lucide-react";
+import { cn } from "../lib/utils";
+import { extractModelName, extractProviderId } from "../lib/model-utils";
+import { queryKeys } from "../lib/queryKeys";
+import { useCompany } from "../context/CompanyContext";
+import {
+  Field,
+  ToggleField,
+  ToggleWithNumber,
+  CollapsibleSection,
+  DraftInput,
+  DraftNumberInput,
+  help,
+  adapterLabels,
+} from "./agent-config-primitives";
+import { defaultCreateValues } from "./agent-config-defaults";
+import { getUIAdapter } from "../adapters";
+import { ClaudeLocalAdvancedFields } from "../adapters/claude-local/config-fields";
+import { MarkdownEditor } from "./MarkdownEditor";
+import { ChoosePathButton } from "./PathInstructionsModal";
+import { OpenCodeLogoIcon } from "./OpenCodeLogoIcon";
+import { ReportsToPicker } from "./ReportsToPicker";
+import { shouldShowLegacyWorkingDirectoryField } from "../lib/legacy-agent-config";
+
+/* ---- Create mode values ---- */
+
+// Canonical type lives in @paperclipai/adapter-utils; re-exported here
+// so existing imports from this file keep working.
+export type { CreateConfigValues } from "@paperclipai/adapter-utils";
+import type { CreateConfigValues } from "@paperclipai/adapter-utils";
+
+/* ---- Props ---- */
+
+type AgentConfigFormProps = {
+  adapterModels?: AdapterModel[];
+  onDirtyChange?: (dirty: boolean) => void;
+  onSaveActionChange?: (save: (() => void) | null) => void;
+  onCancelActionChange?: (cancel: (() => void) | null) => void;
+  hideInlineSave?: boolean;
+  showAdapterTypeField?: boolean;
+  showAdapterTestEnvironmentButton?: boolean;
+  showCreateRunPolicySection?: boolean;
+  hideInstructionsFile?: boolean;
+  /** Hide the prompt template field from the Identity section (used when it's shown in a separate Prompts tab). */
+  hidePromptTemplate?: boolean;
+  /** "cards" renders each section as heading + bordered card (for settings pages). Default: "inline" (border-b dividers). */
+  sectionLayout?: "inline" | "cards";
+} & (
+  | {
+      mode: "create";
+      values: CreateConfigValues;
+      onChange: (patch: Partial<CreateConfigValues>) => void;
+    }
+  | {
+      mode: "edit";
+      agent: Agent;
+      onSave: (patch: Record<string, unknown>) => void;
+      isSaving?: boolean;
+    }
+);
+
+/* ---- Edit mode overlay (dirty tracking) ---- */
+
+interface Overlay {
+  identity: Record<string, unknown>;
+  adapterType?: string;
+  adapterConfig: Record<string, unknown>;
+  heartbeat: Record<string, unknown>;
+  runtime: Record<string, unknown>;
+}
+
+const emptyOverlay: Overlay = {
+  identity: {},
+  adapterConfig: {},
+  heartbeat: {},
+  runtime: {},
+};
+
+/** Stable empty object used as fallback for missing env config to avoid new-object-per-render. */
+const EMPTY_ENV: Record<string, EnvBinding> = {};
+
+function isOverlayDirty(o: Overlay): boolean {
+  return (
+    Object.keys(o.identity).length > 0 ||
+    o.adapterType !== undefined ||
+    Object.keys(o.adapterConfig).length > 0 ||
+    Object.keys(o.heartbeat).length > 0 ||
+    Object.keys(o.runtime).length > 0
+  );
+}
+
+/* ---- Shared input class ---- */
+const inputClass =
+  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
+
+function parseCommaArgs(value: string): string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function formatArgList(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string")
+      .join(", ");
+  }
+  return typeof value === "string" ? value : "";
+}
+
+const codexThinkingEffortOptions = [
+  { id: "", label: "自动" },
+  { id: "minimal", label: "极低" },
+  { id: "low", label: "低" },
+  { id: "medium", label: "中" },
+  { id: "high", label: "高" },
+] as const;
+
+const openCodeThinkingEffortOptions = [
+  { id: "", label: "自动" },
+  { id: "minimal", label: "极低" },
+  { id: "low", label: "低" },
+  { id: "medium", label: "中" },
+  { id: "high", label: "高" },
+  { id: "max", label: "最高" },
+] as const;
+
+const cursorModeOptions = [
+  { id: "", label: "自动" },
+  { id: "plan", label: "规划" },
+  { id: "ask", label: "询问" },
+] as const;
+
+const claudeThinkingEffortOptions = [
+  { id: "", label: "自动" },
+  { id: "low", label: "低" },
+  { id: "medium", label: "中" },
+  { id: "high", label: "高" },
+] as const;
+
+
+/* ---- Form ---- */
+
+export function AgentConfigForm(props: AgentConfigFormProps) {
+  const { mode, adapterModels: externalModels } = props;
+  const isCreate = mode === "create";
+  const cards = props.sectionLayout === "cards";
+  const showAdapterTypeField = props.showAdapterTypeField ?? true;
+  const showAdapterTestEnvironmentButton = props.showAdapterTestEnvironmentButton ?? true;
+  const showCreateRunPolicySection = props.showCreateRunPolicySection ?? true;
+  const hideInstructionsFile = props.hideInstructionsFile ?? false;
+  const { selectedCompanyId } = useCompany();
+  const queryClient = useQueryClient();
+
+  const { data: availableSecrets = [] } = useQuery({
+    queryKey: selectedCompanyId ? queryKeys.secrets.list(selectedCompanyId) : ["secrets", "none"],
+    queryFn: () => secretsApi.list(selectedCompanyId!),
+    enabled: Boolean(selectedCompanyId),
+  });
+
+  const createSecret = useMutation({
+    mutationFn: (input: { name: string; value: string }) => {
+      if (!selectedCompanyId) throw new Error("请先选择公司，再创建密钥");
+      return secretsApi.create(selectedCompanyId, input);
+    },
+    onSuccess: () => {
+      if (!selectedCompanyId) return;
+      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
+    },
+  });
+
+  const uploadMarkdownImage = useMutation({
+    mutationFn: async ({ file, namespace }: { file: File; namespace: string }) => {
+      if (!selectedCompanyId) throw new Error("请先选择公司，再上传图片");
+      return assetsApi.uploadImage(selectedCompanyId, file, namespace);
+    },
+  });
+
+  // ---- Edit mode: overlay for dirty tracking ----
+  const [overlay, setOverlay] = useState<Overlay>(emptyOverlay);
+  const agentRef = useRef<Agent | null>(null);
+
+  // Clear overlay when agent data refreshes (after save)
+  useEffect(() => {
+    if (!isCreate) {
+      if (agentRef.current !== null && props.agent !== agentRef.current) {
+        setOverlay({ ...emptyOverlay });
+      }
+      agentRef.current = props.agent;
+    }
+  }, [isCreate, !isCreate ? props.agent : undefined]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isDirty = !isCreate && isOverlayDirty(overlay);
+
+  /** Read effective value: overlay if dirty, else original */
+  function eff<T>(group: keyof Omit<Overlay, "adapterType">, field: string, original: T): T {
+    const o = overlay[group];
+    if (field in o) return o[field] as T;
+    return original;
+  }
+
+  /** Mark field dirty in overlay */
+  function mark(group: keyof Omit<Overlay, "adapterType">, field: string, value: unknown) {
+    setOverlay((prev) => ({
+      ...prev,
+      [group]: { ...prev[group], [field]: value },
+    }));
+  }
+
+  /** Build accumulated patch and send to parent */
+  const handleCancel = useCallback(() => {
+    setOverlay({ ...emptyOverlay });
+  }, []);
+
+  const handleSave = useCallback(() => {
+    if (isCreate || !isDirty) return;
+    const agent = props.agent;
+    const patch: Record<string, unknown> = {};
+
+    if (Object.keys(overlay.identity).length > 0) {
+      Object.assign(patch, overlay.identity);
+    }
+    if (overlay.adapterType !== undefined) {
+      patch.adapterType = overlay.adapterType;
+      // When adapter type changes, replace adapter-specific fields but preserve
+      // adapter-agnostic fields (env, promptTemplate, etc.) that are shared
+      // across all adapter types.
+      const existing = (agent.adapterConfig ?? {}) as Record<string, unknown>;
+      const adapterAgnosticKeys = [
+        "env",
+        "promptTemplate",
+        "instructionsFilePath",
+        "cwd",
+        "timeoutSec",
+        "graceSec",
+        "bootstrapPromptTemplate",
+      ];
+      const preserved: Record<string, unknown> = {};
+      for (const key of adapterAgnosticKeys) {
+        if (key in existing) {
+          preserved[key] = existing[key];
+        }
+      }
+      patch.adapterConfig = { ...preserved, ...overlay.adapterConfig };
+    } else if (Object.keys(overlay.adapterConfig).length > 0) {
+      const existing = (agent.adapterConfig ?? {}) as Record<string, unknown>;
+      patch.adapterConfig = { ...existing, ...overlay.adapterConfig };
+    }
+    if (Object.keys(overlay.heartbeat).length > 0) {
+      const existingRc = (agent.runtimeConfig ?? {}) as Record<string, unknown>;
+      const existingHb = (existingRc.heartbeat ?? {}) as Record<string, unknown>;
+      patch.runtimeConfig = { ...existingRc, heartbeat: { ...existingHb, ...overlay.heartbeat } };
+    }
+    if (Object.keys(overlay.runtime).length > 0) {
+      Object.assign(patch, overlay.runtime);
+    }
+
+    props.onSave(patch);
+  }, [isCreate, isDirty, overlay, props]);
+
+  useEffect(() => {
+    if (!isCreate) {
+      props.onDirtyChange?.(isDirty);
+      props.onSaveActionChange?.(handleSave);
+      props.onCancelActionChange?.(handleCancel);
+    }
+  }, [isCreate, isDirty, props.onDirtyChange, props.onSaveActionChange, props.onCancelActionChange, handleSave, handleCancel]);
+
+  useEffect(() => {
+    if (isCreate) return;
+    return () => {
+      props.onSaveActionChange?.(null);
+      props.onCancelActionChange?.(null);
+      props.onDirtyChange?.(false);
+    };
+  }, [isCreate, props.onDirtyChange, props.onSaveActionChange, props.onCancelActionChange]);
+
+  // ---- Resolve values ----
+  const config = !isCreate ? ((props.agent.adapterConfig ?? {}) as Record<string, unknown>) : {};
+  const runtimeConfig = !isCreate ? ((props.agent.runtimeConfig ?? {}) as Record<string, unknown>) : {};
+  const heartbeat = !isCreate ? ((runtimeConfig.heartbeat ?? {}) as Record<string, unknown>) : {};
+
+  const adapterType = isCreate
+    ? props.values.adapterType
+    : overlay.adapterType ?? props.agent.adapterType;
+  const isLocal =
+    adapterType === "claude_local" ||
+    adapterType === "codex_local" ||
+    adapterType === "gemini_local" ||
+    adapterType === "hermes_local" ||
+    adapterType === "opencode_local" ||
+    adapterType === "pi_local" ||
+    adapterType === "cursor";
+  const isHermesLocal = adapterType === "hermes_local";
+  const showLegacyWorkingDirectoryField =
+    isLocal && shouldShowLegacyWorkingDirectoryField({ isCreate, adapterConfig: config });
+  const uiAdapter = useMemo(() => getUIAdapter(adapterType), [adapterType]);
+
+  // Fetch adapter models for the effective adapter type
+  const {
+    data: fetchedModels,
+    error: fetchedModelsError,
+  } = useQuery({
+    queryKey: selectedCompanyId
+      ? queryKeys.agents.adapterModels(selectedCompanyId, adapterType)
+      : ["agents", "none", "adapter-models", adapterType],
+    queryFn: () => agentsApi.adapterModels(selectedCompanyId!, adapterType),
+    enabled: Boolean(selectedCompanyId),
+  });
+  const models = fetchedModels ?? externalModels ?? [];
+  const {
+    data: detectedModelData,
+    refetch: refetchDetectedModel,
+  } = useQuery({
+    queryKey: selectedCompanyId
+      ? queryKeys.agents.detectModel(selectedCompanyId, adapterType)
+      : ["agents", "none", "detect-model", adapterType],
+    queryFn: () => {
+      if (!selectedCompanyId) {
+        throw new Error("请先选择公司，再检测 Hermes 模型");
+      }
+      return agentsApi.detectModel(selectedCompanyId, adapterType);
+    },
+    enabled: Boolean(selectedCompanyId && isHermesLocal),
+  });
+  const detectedModel = detectedModelData?.model ?? null;
+
+  const { data: companyAgents = [] } = useQuery({
+    queryKey: selectedCompanyId ? queryKeys.agents.list(selectedCompanyId) : ["agents", "none", "list"],
+    queryFn: () => agentsApi.list(selectedCompanyId!),
+    enabled: Boolean(!isCreate && selectedCompanyId),
+  });
+
+  /** Props passed to adapter-specific config field components */
+  const adapterFieldProps = {
+    mode,
+    isCreate,
+    adapterType,
+    values: isCreate ? props.values : null,
+    set: isCreate ? (patch: Partial<CreateConfigValues>) => props.onChange(patch) : null,
+    config,
+    eff: eff as <T>(group: "adapterConfig", field: string, original: T) => T,
+    mark: mark as (group: "adapterConfig", field: string, value: unknown) => void,
+    models,
+    hideInstructionsFile,
+  };
+
+  // Section toggle state — advanced always starts collapsed
+  const [runPolicyAdvancedOpen, setRunPolicyAdvancedOpen] = useState(false);
+  // Popover states
+  const [modelOpen, setModelOpen] = useState(false);
+  const [thinkingEffortOpen, setThinkingEffortOpen] = useState(false);
+
+  // Create mode helpers
+  const val = isCreate ? props.values : null;
+  const set = isCreate
+    ? (patch: Partial<CreateConfigValues>) => props.onChange(patch)
+    : null;
+
+  function buildAdapterConfigForTest(): Record<string, unknown> {
+    if (isCreate) {
+      return uiAdapter.buildAdapterConfig(val!);
+    }
+    const base = config as Record<string, unknown>;
+    return { ...base, ...overlay.adapterConfig };
+  }
+
+  const testEnvironment = useMutation({
+    mutationFn: async () => {
+      if (!selectedCompanyId) {
+        throw new Error("请先选择公司，再测试适配器环境");
+      }
+      return agentsApi.testEnvironment(selectedCompanyId, adapterType, {
+        adapterConfig: buildAdapterConfigForTest(),
+      });
+    },
+  });
+
+  // Current model for display
+  const currentModelId = isCreate
+    ? val!.model
+    : eff("adapterConfig", "model", String(config.model ?? ""));
+
+  const thinkingEffortKey =
+    adapterType === "codex_local"
+      ? "modelReasoningEffort"
+      : adapterType === "cursor"
+        ? "mode"
+        : adapterType === "opencode_local"
+          ? "variant"
+          : "effort";
+  const thinkingEffortOptions =
+    adapterType === "codex_local"
+      ? codexThinkingEffortOptions
+      : adapterType === "cursor"
+        ? cursorModeOptions
+        : adapterType === "opencode_local"
+          ? openCodeThinkingEffortOptions
+          : claudeThinkingEffortOptions;
+  const currentThinkingEffort = isCreate
+    ? val!.thinkingEffort
+    : adapterType === "codex_local"
+      ? eff(
+          "adapterConfig",
+          "modelReasoningEffort",
+          String(config.modelReasoningEffort ?? config.reasoningEffort ?? ""),
+        )
+      : adapterType === "cursor"
+        ? eff("adapterConfig", "mode", String(config.mode ?? ""))
+      : adapterType === "opencode_local"
+        ? eff("adapterConfig", "variant", String(config.variant ?? ""))
+      : eff("adapterConfig", "effort", String(config.effort ?? ""));
+  const showThinkingEffort = adapterType !== "gemini_local";
+  const codexSearchEnabled = adapterType === "codex_local"
+    ? (isCreate ? Boolean(val!.search) : eff("adapterConfig", "search", Boolean(config.search)))
+    : false;
+  const effectiveRuntimeConfig = useMemo(() => {
+    if (isCreate) {
+      return {
+        heartbeat: {
+          enabled: val!.heartbeatEnabled,
+          intervalSec: val!.intervalSec,
+        },
+      };
+    }
+    const mergedHeartbeat = {
+      ...(runtimeConfig.heartbeat && typeof runtimeConfig.heartbeat === "object"
+        ? runtimeConfig.heartbeat as Record<string, unknown>
+        : {}),
+      ...overlay.heartbeat,
+    };
+    return {
+      ...runtimeConfig,
+      heartbeat: mergedHeartbeat,
+    };
+  }, [isCreate, overlay.heartbeat, runtimeConfig, val]);
+  return (
+    <div className={cn("relative", cards && "space-y-6")}>
+      {/* ---- Floating Save button (edit mode, when dirty) ---- */}
+      {isDirty && !props.hideInlineSave && (
+        <div className="sticky top-0 z-10 flex items-center justify-end px-4 py-2 bg-background/90 backdrop-blur-sm border-b border-primary/20">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">有未保存的更改</span>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={!isCreate && props.isSaving}
+            >
+              {!isCreate && props.isSaving ? "保存中..." : "保存"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* ---- Identity (edit only) ---- */}
+      {!isCreate && (
+        <div className={cn(!cards && "border-b border-border")}>
+          {cards
+            ? <h3 className="text-sm font-medium mb-3">身份信息</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">身份信息</div>
+          }
+          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+            <Field label="名称" hint={help.name}>
+              <DraftInput
+                value={eff("identity", "name", props.agent.name)}
+                onCommit={(v) => mark("identity", "name", v)}
+                immediate
+                className={inputClass}
+                placeholder="智能体名称"
+              />
+            </Field>
+            <Field label="职位" hint={help.title}>
+              <DraftInput
+                value={eff("identity", "title", props.agent.title ?? "")}
+                onCommit={(v) => mark("identity", "title", v || null)}
+                immediate
+                className={inputClass}
+                placeholder="例如：工程副总裁"
+              />
+            </Field>
+            <Field label="汇报对象" hint={help.reportsTo}>
+              <ReportsToPicker
+                agents={companyAgents}
+                value={eff("identity", "reportsTo", props.agent.reportsTo ?? null)}
+                onChange={(id) => mark("identity", "reportsTo", id)}
+                excludeAgentIds={[props.agent.id]}
+                chooseLabel="选择上级…"
+              />
+            </Field>
+            <Field label="能力说明" hint={help.capabilities}>
+              <MarkdownEditor
+                value={eff("identity", "capabilities", props.agent.capabilities ?? "")}
+                onChange={(v) => mark("identity", "capabilities", v || null)}
+                placeholder="描述这个智能体能做什么..."
+                contentClassName="min-h-[44px] text-sm font-mono"
+                imageUploadHandler={async (file) => {
+                  const asset = await uploadMarkdownImage.mutateAsync({
+                    file,
+                    namespace: `agents/${props.agent.id}/capabilities`,
+                  });
+                  return asset.contentPath;
+                }}
+              />
+            </Field>
+            {isLocal && !props.hidePromptTemplate && (
+              <>
+                <Field label="提示模板" hint={help.promptTemplate}>
+                  <MarkdownEditor
+                    value={eff(
+                      "adapterConfig",
+                      "promptTemplate",
+                      String(config.promptTemplate ?? ""),
+                    )}
+                    onChange={(v) => mark("adapterConfig", "promptTemplate", v ?? "")}
+                    placeholder="你是智能体 {{ agent.name }}。你的角色是 {{ agent.role }}..."
+                    contentClassName="min-h-[88px] text-sm font-mono"
+                    imageUploadHandler={async (file) => {
+                      const namespace = `agents/${props.agent.id}/prompt-template`;
+                      const asset = await uploadMarkdownImage.mutateAsync({ file, namespace });
+                      return asset.contentPath;
+                    }}
+                  />
+                </Field>
+                <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                  提示模板会在每次心跳时重复发送。请尽量保持简短、动态，避免重复消耗 token 和打乱缓存。
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ---- Adapter ---- */}
+      <div className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
+        <div className={cn(cards ? "flex items-center justify-between mb-3" : "px-4 py-2 flex items-center justify-between gap-2")}>
+          {cards
+            ? <h3 className="text-sm font-medium">适配器</h3>
+            : <span className="text-xs font-medium text-muted-foreground">适配器</span>
+          }
+          {showAdapterTestEnvironmentButton && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 px-2.5 text-xs"
+              onClick={() => testEnvironment.mutate()}
+              disabled={testEnvironment.isPending || !selectedCompanyId}
+            >
+              {testEnvironment.isPending ? "测试中..." : "测试环境"}
+            </Button>
+          )}
+        </div>
+        <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+          {showAdapterTypeField && (
+            <Field label="适配器类型" hint={help.adapterType}>
+              <AdapterTypeDropdown
+                value={adapterType}
+                onChange={(t) => {
+                  if (isCreate) {
+                    // Reset all adapter-specific fields to defaults when switching adapter type
+                    const { adapterType: _at, ...defaults } = defaultCreateValues;
+                    const nextValues: CreateConfigValues = { ...defaults, adapterType: t };
+                    if (t === "codex_local") {
+                      nextValues.model = DEFAULT_CODEX_LOCAL_MODEL;
+                      nextValues.dangerouslyBypassSandbox =
+                        DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
+                    } else if (t === "gemini_local") {
+                      nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
+                    } else if (t === "cursor") {
+                      nextValues.model = DEFAULT_CURSOR_LOCAL_MODEL;
+                    } else if (t === "opencode_local") {
+                      nextValues.model = "";
+                    }
+                    set!(nextValues);
+                  } else {
+                    // Clear all adapter config and explicitly blank out model + effort/mode keys
+                    // so the old adapter's values don't bleed through via eff()
+                    setOverlay((prev) => ({
+                      ...prev,
+                      adapterType: t,
+                      adapterConfig: {
+                        model:
+                          t === "codex_local"
+                            ? DEFAULT_CODEX_LOCAL_MODEL
+                            : t === "gemini_local"
+                              ? DEFAULT_GEMINI_LOCAL_MODEL
+                            : t === "cursor"
+                              ? DEFAULT_CURSOR_LOCAL_MODEL
+                            : "",
+                        effort: "",
+                        modelReasoningEffort: "",
+                        variant: "",
+                        mode: "",
+                        ...(t === "codex_local"
+                          ? {
+                              dangerouslyBypassApprovalsAndSandbox:
+                                DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
+                            }
+                          : {}),
+                      },
+                    }));
+                  }
+                }}
+              />
+            </Field>
+          )}
+
+          {testEnvironment.error && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {testEnvironment.error instanceof Error
+                ? testEnvironment.error.message
+                : "环境测试失败"}
+            </div>
+          )}
+
+          {testEnvironment.data && (
+            <AdapterEnvironmentResult result={testEnvironment.data} />
+          )}
+
+          {/* Working directory */}
+          {showLegacyWorkingDirectoryField && (
+            <Field label="工作目录（已弃用）" hint={help.cwd}>
+              <div className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5">
+                <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <DraftInput
+                  value={
+                    isCreate
+                      ? val!.cwd
+                      : eff("adapterConfig", "cwd", String(config.cwd ?? ""))
+                  }
+                  onCommit={(v) =>
+                    isCreate
+                      ? set!({ cwd: v })
+                      : mark("adapterConfig", "cwd", v || undefined)
+                  }
+                  immediate
+                  className="w-full bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40"
+                  placeholder="/项目/路径"
+                />
+                <ChoosePathButton />
+              </div>
+            </Field>
+          )}
+
+          {/* Prompt template (create mode only — edit mode shows this in Identity) */}
+          {isLocal && isCreate && (
+            <>
+              <Field label="提示模板" hint={help.promptTemplate}>
+                <MarkdownEditor
+                  value={val!.promptTemplate}
+                  onChange={(v) => set!({ promptTemplate: v })}
+                  placeholder="你是智能体 {{ agent.name }}。你的角色是 {{ agent.role }}..."
+                  contentClassName="min-h-[88px] text-sm font-mono"
+                  imageUploadHandler={async (file) => {
+                    const namespace = "agents/drafts/prompt-template";
+                    const asset = await uploadMarkdownImage.mutateAsync({ file, namespace });
+                    return asset.contentPath;
+                  }}
+                />
+              </Field>
+              <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                提示模板会在每次心跳时重复发送。优先使用小而明确的任务描述，以及 <code>{"{{ context.* }}"}</code>、<code>{"{{ run.* }}"}</code> 这类变量；稳定不变的长期指令不要反复写在这里。留空时，系统会自动注入默认的中文智能体指令。
+              </div>
+            </>
+          )}
+
+          {/* Adapter-specific fields */}
+          <uiAdapter.ConfigFields {...adapterFieldProps} />
+        </div>
+
+      </div>
+
+      {/* ---- Permissions & Configuration ---- */}
+      {isLocal && (
+        <div className={cn(!cards && "border-b border-border")}>
+          {cards
+            ? <h3 className="text-sm font-medium mb-3">权限与配置</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">权限与配置</div>
+          }
+          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+              <Field label="命令" hint={help.localCommand}>
+                <DraftInput
+                  value={
+                    isCreate
+                      ? val!.command
+                      : eff("adapterConfig", "command", String(config.command ?? ""))
+                  }
+                  onCommit={(v) =>
+                    isCreate
+                      ? set!({ command: v })
+                      : mark("adapterConfig", "command", v || undefined)
+                  }
+                  immediate
+                  className={inputClass}
+                  placeholder={
+                    adapterType === "codex_local"
+                      ? "codex"
+                      : adapterType === "gemini_local"
+                        ? "gemini"
+                        : adapterType === "hermes_local"
+                          ? "hermes"
+                        : adapterType === "pi_local"
+                          ? "pi"
+                        : adapterType === "cursor"
+                          ? "agent"
+                        : adapterType === "opencode_local"
+                          ? "opencode"
+                          : "claude"
+                  }
+                />
+              </Field>
+
+              <ModelDropdown
+                models={models}
+                value={currentModelId}
+                onChange={(v) =>
+                  isCreate
+                    ? set!({ model: v })
+                    : mark("adapterConfig", "model", v || undefined)
+                }
+                open={modelOpen}
+                onOpenChange={setModelOpen}
+                allowDefault={adapterType !== "opencode_local" && adapterType !== "hermes_local"}
+                required={adapterType === "opencode_local" || adapterType === "hermes_local"}
+                groupByProvider={adapterType === "opencode_local"}
+                creatable={adapterType === "hermes_local"}
+                detectedModel={adapterType === "hermes_local" ? detectedModel : null}
+                onDetectModel={adapterType === "hermes_local"
+                  ? async () => {
+                      const result = await refetchDetectedModel();
+                      return result.data?.model ?? null;
+                    }
+                  : undefined}
+                detectModelLabel={adapterType === "hermes_local" ? "从 Hermes 配置检测" : undefined}
+              />
+              {fetchedModelsError && (
+                <p className="text-xs text-destructive">
+                  {fetchedModelsError instanceof Error
+                    ? fetchedModelsError.message
+                    : "加载适配器模型失败。"}
+                </p>
+              )}
+
+              {showThinkingEffort && (
+                <>
+                  <ThinkingEffortDropdown
+                    value={currentThinkingEffort}
+                    options={thinkingEffortOptions}
+                    onChange={(v) =>
+                      isCreate
+                        ? set!({ thinkingEffort: v })
+                        : mark("adapterConfig", thinkingEffortKey, v || undefined)
+                    }
+                    open={thinkingEffortOpen}
+                    onOpenChange={setThinkingEffortOpen}
+                  />
+                  {adapterType === "codex_local" &&
+                    codexSearchEnabled &&
+                    currentThinkingEffort === "minimal" && (
+                      <p className="text-xs text-amber-400">
+                        启用搜索时，Codex 可能拒绝使用 `minimal` 推理强度。
+                      </p>
+                    )}
+                </>
+              )}
+              {!isCreate && typeof config.bootstrapPromptTemplate === "string" && config.bootstrapPromptTemplate && (
+                <>
+                  <Field label="启动提示词（旧版）" hint={help.bootstrapPrompt}>
+                    <MarkdownEditor
+                      value={eff(
+                        "adapterConfig",
+                        "bootstrapPromptTemplate",
+                        String(config.bootstrapPromptTemplate ?? ""),
+                      )}
+                      onChange={(v) =>
+                        mark("adapterConfig", "bootstrapPromptTemplate", v || undefined)
+                      }
+                      placeholder="用于首次运行的可选初始化提示词"
+                      contentClassName="min-h-[44px] text-sm font-mono"
+                      imageUploadHandler={async (file) => {
+                        const namespace = `agents/${props.agent.id}/bootstrap-prompt`;
+                        const asset = await uploadMarkdownImage.mutateAsync({ file, namespace });
+                        return asset.contentPath;
+                      }}
+                    />
+                  </Field>
+                  <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                    启动提示词属于旧版能力，后续版本会移除。建议把这部分内容迁移到智能体的提示模板或指令文件中。
+                  </div>
+                </>
+              )}
+              {adapterType === "claude_local" && (
+                <ClaudeLocalAdvancedFields {...adapterFieldProps} />
+              )}
+
+              <Field label="额外参数（逗号分隔）" hint={help.extraArgs}>
+                <DraftInput
+                  value={
+                    isCreate
+                      ? val!.extraArgs
+                      : eff("adapterConfig", "extraArgs", formatArgList(config.extraArgs))
+                  }
+                  onCommit={(v) =>
+                    isCreate
+                      ? set!({ extraArgs: v })
+                      : mark("adapterConfig", "extraArgs", v ? parseCommaArgs(v) : undefined)
+                  }
+                  immediate
+                  className={inputClass}
+                  placeholder="例如：--verbose, --foo=bar"
+                />
+              </Field>
+
+              <Field label="环境变量" hint={help.envVars}>
+                <EnvVarEditor
+                  value={
+                    isCreate
+                      ? ((val!.envBindings ?? EMPTY_ENV) as Record<string, EnvBinding>)
+                      : ((eff("adapterConfig", "env", (config.env ?? EMPTY_ENV) as Record<string, EnvBinding>))
+                      )
+                  }
+                  secrets={availableSecrets}
+                  onCreateSecret={async (name, value) => {
+                    const created = await createSecret.mutateAsync({ name, value });
+                    return created;
+                  }}
+                  onChange={(env) =>
+                    isCreate
+                      ? set!({ envBindings: env ?? {}, envVars: "" })
+                      : mark("adapterConfig", "env", env)
+                  }
+                />
+              </Field>
+
+              {/* Edit-only: timeout + grace period */}
+              {!isCreate && (
+                <>
+                  <Field label="超时时间（秒）" hint={help.timeoutSec}>
+                    <DraftNumberInput
+                      value={eff(
+                        "adapterConfig",
+                        "timeoutSec",
+                        Number(config.timeoutSec ?? 0),
+                      )}
+                      onCommit={(v) => mark("adapterConfig", "timeoutSec", v)}
+                      immediate
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="中断宽限期（秒）" hint={help.graceSec}>
+                    <DraftNumberInput
+                      value={eff(
+                        "adapterConfig",
+                        "graceSec",
+                        Number(config.graceSec ?? 15),
+                      )}
+                      onCommit={(v) => mark("adapterConfig", "graceSec", v)}
+                      immediate
+                      className={inputClass}
+                    />
+                  </Field>
+                </>
+              )}
+          </div>
+        </div>
+      )}
+
+      {/* ---- Run Policy ---- */}
+      {isCreate && showCreateRunPolicySection ? (
+        <div className={cn(!cards && "border-b border-border")}>
+          {cards
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> 运行策略</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> 运行策略</div>
+          }
+          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+            <ToggleWithNumber
+              label="按间隔自动心跳"
+              hint={help.heartbeatInterval}
+              checked={val!.heartbeatEnabled}
+              onCheckedChange={(v) => set!({ heartbeatEnabled: v })}
+              number={val!.intervalSec}
+              onNumberChange={(v) => set!({ intervalSec: v })}
+              numberLabel="秒"
+              numberPrefix="每隔"
+              numberHint={help.intervalSec}
+              showNumber={val!.heartbeatEnabled}
+            />
+          </div>
+        </div>
+      ) : !isCreate ? (
+        <div className={cn(!cards && "border-b border-border")}>
+          {cards
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> 运行策略</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> 运行策略</div>
+          }
+          <div className={cn(cards ? "border border-border rounded-lg overflow-hidden" : "")}>
+            <div className={cn(cards ? "p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+              <ToggleWithNumber
+                label="按间隔自动心跳"
+                hint={help.heartbeatInterval}
+                checked={eff("heartbeat", "enabled", heartbeat.enabled !== false)}
+                onCheckedChange={(v) => mark("heartbeat", "enabled", v)}
+                number={eff("heartbeat", "intervalSec", Number(heartbeat.intervalSec ?? 300))}
+                onNumberChange={(v) => mark("heartbeat", "intervalSec", v)}
+                numberLabel="秒"
+                numberPrefix="每隔"
+                numberHint={help.intervalSec}
+                showNumber={eff("heartbeat", "enabled", heartbeat.enabled !== false)}
+              />
+            </div>
+            <CollapsibleSection
+              title="高级运行策略"
+              bordered={cards}
+              open={runPolicyAdvancedOpen}
+              onToggle={() => setRunPolicyAdvancedOpen(!runPolicyAdvancedOpen)}
+            >
+            <div className="space-y-3">
+              <ToggleField
+                label="按需唤醒"
+                hint={help.wakeOnDemand}
+                checked={eff(
+                  "heartbeat",
+                  "wakeOnDemand",
+                  heartbeat.wakeOnDemand !== false,
+                )}
+                onChange={(v) => mark("heartbeat", "wakeOnDemand", v)}
+              />
+              <Field label="冷却时间（秒）" hint={help.cooldownSec}>
+                <DraftNumberInput
+                  value={eff(
+                    "heartbeat",
+                    "cooldownSec",
+                    Number(heartbeat.cooldownSec ?? 10),
+                  )}
+                  onCommit={(v) => mark("heartbeat", "cooldownSec", v)}
+                  immediate
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="最大并发运行数" hint={help.maxConcurrentRuns}>
+                <DraftNumberInput
+                  value={eff(
+                    "heartbeat",
+                    "maxConcurrentRuns",
+                    Number(heartbeat.maxConcurrentRuns ?? 1),
+                  )}
+                  onCommit={(v) => mark("heartbeat", "maxConcurrentRuns", v)}
+                  immediate
+                  className={inputClass}
+                />
+              </Field>
+            </div>
+          </CollapsibleSection>
+          </div>
+        </div>
+      ) : null}
+
+    </div>
+  );
+}
+
+function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestResult }) {
+  const statusLabel =
+    result.status === "pass" ? "通过" : result.status === "warn" ? "警告" : "失败";
+  const statusClass =
+    result.status === "pass"
+      ? "text-green-700 dark:text-green-300 border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10"
+      : result.status === "warn"
+        ? "text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10"
+        : "text-red-700 dark:text-red-300 border-red-300 dark:border-red-500/40 bg-red-50 dark:bg-red-500/10";
+
+  return (
+    <div className={`rounded-md border px-3 py-2 text-xs ${statusClass}`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-medium">{statusLabel}</span>
+        <span className="text-[11px] opacity-80">
+          {new Date(result.testedAt).toLocaleTimeString()}
+        </span>
+      </div>
+      <div className="mt-2 space-y-1.5">
+        {result.checks.map((check, idx) => (
+          <div key={`${check.code}-${idx}`} className="text-[11px] leading-relaxed break-words">
+            <span className="font-medium uppercase tracking-wide opacity-80">
+              {check.level}
+            </span>
+            <span className="mx-1 opacity-60">·</span>
+            <span>{check.message}</span>
+            {check.detail && <span className="block opacity-75 break-all">({check.detail})</span>}
+            {check.hint && <span className="block opacity-90 break-words">提示：{check.hint}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---- Internal sub-components ---- */
+
+const ENABLED_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "gemini_local", "opencode_local", "pi_local", "cursor", "hermes_local"]);
+
+/** Display list includes all real adapter types plus UI-only coming-soon entries. */
+const ADAPTER_DISPLAY_LIST: { value: string; label: string; comingSoon: boolean }[] = [
+  ...AGENT_ADAPTER_TYPES.map((t) => ({
+    value: t,
+    label: adapterLabels[t] ?? t,
+    comingSoon: !ENABLED_ADAPTER_TYPES.has(t),
+  })),
+];
+
+function AdapterTypeDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (type: string) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
+          <span className="inline-flex items-center gap-1.5">
+            {value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+            <span>{adapterLabels[value] ?? value}</span>
+          </span>
+          <ChevronDown className="h-3 w-3 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-1" align="start">
+        {ADAPTER_DISPLAY_LIST.map((item) => (
+          <button
+            key={item.value}
+            disabled={item.comingSoon}
+            className={cn(
+              "flex items-center justify-between w-full px-2 py-1.5 text-sm rounded",
+              item.comingSoon
+                ? "opacity-40 cursor-not-allowed"
+                : "hover:bg-accent/50",
+              item.value === value && !item.comingSoon && "bg-accent",
+            )}
+            onClick={() => {
+              if (!item.comingSoon) onChange(item.value);
+            }}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              {item.value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+              <span>{item.label}</span>
+            </span>
+            {item.comingSoon && (
+              <span className="text-[10px] text-muted-foreground">即将支持</span>
+            )}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function EnvVarEditor({
+  value,
+  secrets,
+  onCreateSecret,
+  onChange,
+}: {
+  value: Record<string, EnvBinding>;
+  secrets: CompanySecret[];
+  onCreateSecret: (name: string, value: string) => Promise<CompanySecret>;
+  onChange: (env: Record<string, EnvBinding> | undefined) => void;
+}) {
+  type Row = {
+    key: string;
+    source: "plain" | "secret";
+    plainValue: string;
+    secretId: string;
+  };
+
+  function toRows(rec: Record<string, EnvBinding> | null | undefined): Row[] {
+    if (!rec || typeof rec !== "object") {
+      return [{ key: "", source: "plain", plainValue: "", secretId: "" }];
+    }
+    const entries = Object.entries(rec).map(([k, binding]) => {
+      if (typeof binding === "string") {
+        return {
+          key: k,
+          source: "plain" as const,
+          plainValue: binding,
+          secretId: "",
+        };
+      }
+      if (
+        typeof binding === "object" &&
+        binding !== null &&
+        "type" in binding &&
+        (binding as { type?: unknown }).type === "secret_ref"
+      ) {
+        const recBinding = binding as { secretId?: unknown };
+        return {
+          key: k,
+          source: "secret" as const,
+          plainValue: "",
+          secretId: typeof recBinding.secretId === "string" ? recBinding.secretId : "",
+        };
+      }
+      if (
+        typeof binding === "object" &&
+        binding !== null &&
+        "type" in binding &&
+        (binding as { type?: unknown }).type === "plain"
+      ) {
+        const recBinding = binding as { value?: unknown };
+        return {
+          key: k,
+          source: "plain" as const,
+          plainValue: typeof recBinding.value === "string" ? recBinding.value : "",
+          secretId: "",
+        };
+      }
+      return {
+        key: k,
+        source: "plain" as const,
+        plainValue: "",
+        secretId: "",
+      };
+    });
+    return [...entries, { key: "", source: "plain", plainValue: "", secretId: "" }];
+  }
+
+  const [rows, setRows] = useState<Row[]>(() => toRows(value));
+  const [sealError, setSealError] = useState<string | null>(null);
+  const valueRef = useRef(value);
+
+  // Sync when value identity changes (overlay reset after save)
+  useEffect(() => {
+    if (value !== valueRef.current) {
+      valueRef.current = value;
+      setRows(toRows(value));
+    }
+  }, [value]);
+
+  function emit(nextRows: Row[]) {
+    const rec: Record<string, EnvBinding> = {};
+    for (const row of nextRows) {
+      const k = row.key.trim();
+      if (!k) continue;
+      if (row.source === "secret") {
+        if (!row.secretId) continue;
+        rec[k] = { type: "secret_ref", secretId: row.secretId, version: "latest" };
+      } else {
+        rec[k] = { type: "plain", value: row.plainValue };
+      }
+    }
+    onChange(Object.keys(rec).length > 0 ? rec : undefined);
+  }
+
+  function updateRow(i: number, patch: Partial<Row>) {
+    const withPatch = rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r));
+    if (
+      withPatch[withPatch.length - 1].key ||
+      withPatch[withPatch.length - 1].plainValue ||
+      withPatch[withPatch.length - 1].secretId
+    ) {
+      withPatch.push({ key: "", source: "plain", plainValue: "", secretId: "" });
+    }
+    setRows(withPatch);
+    emit(withPatch);
+  }
+
+  function removeRow(i: number) {
+    const next = rows.filter((_, idx) => idx !== i);
+    if (
+      next.length === 0 ||
+      next[next.length - 1].key ||
+      next[next.length - 1].plainValue ||
+      next[next.length - 1].secretId
+    ) {
+      next.push({ key: "", source: "plain", plainValue: "", secretId: "" });
+    }
+    setRows(next);
+    emit(next);
+  }
+
+  function defaultSecretName(key: string): string {
+    return key
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 64);
+  }
+
+  async function sealRow(i: number) {
+    const row = rows[i];
+    if (!row) return;
+    const key = row.key.trim();
+    const plain = row.plainValue;
+    if (!key || plain.length === 0) return;
+
+    const suggested = defaultSecretName(key) || "secret";
+    const name = window.prompt("密钥名称", suggested)?.trim();
+    if (!name) return;
+
+    try {
+      setSealError(null);
+      const created = await onCreateSecret(name, plain);
+      updateRow(i, {
+        source: "secret",
+        secretId: created.id,
+      });
+    } catch (err) {
+      setSealError(err instanceof Error ? err.message : "创建密钥失败");
+    }
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {rows.map((row, i) => {
+        const isTrailing =
+          i === rows.length - 1 &&
+          !row.key &&
+          !row.plainValue &&
+          !row.secretId;
+        return (
+          <div key={i} className="flex items-center gap-1.5">
+            <input
+              className={cn(inputClass, "flex-[2]")}
+              placeholder="KEY"
+              value={row.key}
+              onChange={(e) => updateRow(i, { key: e.target.value })}
+            />
+            <select
+              className={cn(inputClass, "flex-[1] bg-background")}
+              value={row.source}
+              onChange={(e) =>
+                updateRow(i, {
+                  source: e.target.value === "secret" ? "secret" : "plain",
+                  ...(e.target.value === "plain" ? { secretId: "" } : {}),
+                })
+              }
+            >
+              <option value="plain">明文</option>
+              <option value="secret">密钥</option>
+            </select>
+            {row.source === "secret" ? (
+              <>
+                <select
+                  className={cn(inputClass, "flex-[3] bg-background")}
+                  value={row.secretId}
+                  onChange={(e) => updateRow(i, { secretId: e.target.value })}
+                >
+                  <option value="">选择密钥...</option>
+                  {secrets.map((secret) => (
+                    <option key={secret.id} value={secret.id}>
+                      {secret.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors shrink-0"
+                  onClick={() => sealRow(i)}
+                  disabled={!row.key.trim() || !row.plainValue}
+                  title="根据当前明文值创建密钥"
+                >
+                  新建
+                </button>
+              </>
+            ) : (
+              <>
+                <input
+                  className={cn(inputClass, "flex-[3]")}
+                  placeholder="值"
+                  value={row.plainValue}
+                  onChange={(e) => updateRow(i, { plainValue: e.target.value })}
+                />
+                <button
+                  type="button"
+                  className="inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors shrink-0"
+                  onClick={() => sealRow(i)}
+                  disabled={!row.key.trim() || !row.plainValue}
+                  title="将该值存为密钥并替换为引用"
+                >
+                  密封
+                </button>
+              </>
+            )}
+            {!isTrailing ? (
+              <button
+                type="button"
+                className="shrink-0 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                onClick={() => removeRow(i)}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <div className="w-[26px] shrink-0" />
+            )}
+          </div>
+        );
+      })}
+      {sealError && <p className="text-[11px] text-destructive">{sealError}</p>}
+      <p className="text-[11px] text-muted-foreground/60">
+        `PAPERCLIP_*` 变量会在运行时自动注入。
+      </p>
+    </div>
+  );
+}
+
+function ModelDropdown({
+  models,
+  value,
+  onChange,
+  open,
+  onOpenChange,
+  allowDefault,
+  required,
+  groupByProvider,
+  creatable,
+  detectedModel,
+  onDetectModel,
+  detectModelLabel,
+}: {
+  models: AdapterModel[];
+  value: string;
+  onChange: (id: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  allowDefault: boolean;
+  required: boolean;
+  groupByProvider: boolean;
+  creatable?: boolean;
+  detectedModel?: string | null;
+  onDetectModel?: () => Promise<string | null>;
+  detectModelLabel?: string;
+}) {
+  const [modelSearch, setModelSearch] = useState("");
+  const [detectingModel, setDetectingModel] = useState(false);
+  const selected = models.find((m) => m.id === value);
+  const manualModel = modelSearch.trim();
+  const canCreateManualModel = Boolean(
+    creatable &&
+      manualModel &&
+      !models.some((m) => m.id.toLowerCase() === manualModel.toLowerCase()),
+  );
+  const filteredModels = useMemo(() => {
+    return models.filter((m) => {
+      if (!modelSearch.trim()) return true;
+      const q = modelSearch.toLowerCase();
+      const provider = extractProviderId(m.id) ?? "";
+      return (
+        m.id.toLowerCase().includes(q) ||
+        m.label.toLowerCase().includes(q) ||
+        provider.toLowerCase().includes(q)
+      );
+    });
+  }, [models, modelSearch]);
+  const groupedModels = useMemo(() => {
+    if (!groupByProvider) {
+      return [
+        {
+          provider: "models",
+          entries: [...filteredModels].sort((a, b) => a.id.localeCompare(b.id)),
+        },
+      ];
+    }
+    const map = new Map<string, AdapterModel[]>();
+    for (const model of filteredModels) {
+      const provider = extractProviderId(model.id) ?? "other";
+      const group = map.get(provider) ?? [];
+      group.push(model);
+      map.set(provider, group);
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([provider, entries]) => ({
+        provider,
+        entries: [...entries].sort((a, b) => a.id.localeCompare(b.id)),
+      }));
+  }, [filteredModels, groupByProvider]);
+
+  async function handleDetectModel() {
+    if (!onDetectModel) return;
+    setDetectingModel(true);
+    try {
+      const nextModel = await onDetectModel();
+      if (nextModel) {
+        onChange(nextModel);
+        onOpenChange(false);
+        setModelSearch("");
+      }
+    } finally {
+      setDetectingModel(false);
+    }
+  }
+
+  return (
+    <Field label="模型" hint={help.model}>
+      <Popover
+        open={open}
+        onOpenChange={(nextOpen) => {
+          onOpenChange(nextOpen);
+          if (!nextOpen) setModelSearch("");
+        }}
+      >
+        <PopoverTrigger asChild>
+          <button type="button" className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
+            <span className={cn(!value && "text-muted-foreground")}>
+              {selected
+                ? selected.label
+                : value || (allowDefault ? "默认" : required ? "请选择模型（必填）" : "选择模型")}
+            </span>
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-1" align="start">
+          <div className="relative mb-1">
+            <input
+              className="w-full px-2 py-1.5 pr-6 text-xs bg-transparent outline-none border-b border-border placeholder:text-muted-foreground/50"
+              placeholder={creatable ? "搜索模型...（输入后可直接创建）" : "搜索模型..."}
+              value={modelSearch}
+              onChange={(e) => setModelSearch(e.target.value)}
+              autoFocus
+            />
+            {modelSearch && (
+              <button
+                type="button"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={() => setModelSearch("")}
+              >
+                <svg aria-hidden="true" focusable="false" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {onDetectModel && !detectedModel && !modelSearch.trim() && (
+            <button
+              type="button"
+              className="flex items-center gap-1.5 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-muted-foreground"
+              onClick={() => {
+                void handleDetectModel();
+              }}
+              disabled={detectingModel}
+            >
+              <svg aria-hidden="true" focusable="false" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              {detectingModel ? "检测中..." : (detectModelLabel ?? "从配置检测")}
+            </button>
+          )}
+          {value && !models.some((m) => m.id === value) && (
+            <button
+              type="button"
+              className={cn(
+                "flex items-center w-full px-2 py-1.5 text-sm rounded bg-accent/50",
+              )}
+              onClick={() => {
+                onOpenChange(false);
+              }}
+            >
+              <span className="block w-full text-left truncate font-mono text-xs" title={value}>
+                {value}
+              </span>
+              <span className="shrink-0 ml-auto text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/20">
+                当前
+              </span>
+            </button>
+          )}
+          {detectedModel && detectedModel !== value && (
+            <button
+              type="button"
+              className={cn(
+                "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
+              )}
+              onClick={() => {
+                onChange(detectedModel);
+                onOpenChange(false);
+              }}
+            >
+              <span className="block w-full text-left truncate font-mono text-xs" title={detectedModel}>
+                {detectedModel}
+              </span>
+              <span className="shrink-0 ml-auto text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">
+                已检测
+              </span>
+            </button>
+          )}
+          <div className="max-h-[240px] overflow-y-auto">
+            {allowDefault && (
+              <button
+                type="button"
+                className={cn(
+                  "flex items-center gap-2 w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
+                  !value && "bg-accent",
+                )}
+                onClick={() => {
+                  onChange("");
+                  onOpenChange(false);
+                }}
+              >
+                默认
+              </button>
+            )}
+            {canCreateManualModel && (
+              <button
+                type="button"
+                className="flex items-center justify-between gap-2 w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50"
+                onClick={() => {
+                  onChange(manualModel);
+                  onOpenChange(false);
+                  setModelSearch("");
+                }}
+              >
+                <span>使用手动输入的模型</span>
+                <span className="text-xs font-mono text-muted-foreground">{manualModel}</span>
+              </button>
+            )}
+            {groupedModels.map((group) => (
+              <div key={group.provider} className="mb-1 last:mb-0">
+                {groupByProvider && (
+                  <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {group.provider} ({group.entries.length})
+                  </div>
+                )}
+                {group.entries.map((m) => (
+                  <button
+                    type="button"
+                    key={m.id}
+                    className={cn(
+                      "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
+                      m.id === value && "bg-accent",
+                    )}
+                    onClick={() => {
+                      onChange(m.id);
+                      onOpenChange(false);
+                    }}
+                  >
+                    <span className="block w-full text-left truncate" title={m.id}>
+                      {groupByProvider ? extractModelName(m.id) : m.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {filteredModels.length === 0 && !canCreateManualModel && (
+              <div className="px-2 py-2 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  {onDetectModel
+                    ? "尚未检测到 Hermes 模型。请先配置 Hermes，或手动输入 provider/model。"
+                    : "未找到模型。"}
+                </p>
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </Field>
+  );
+}
+
+function ThinkingEffortDropdown({
+  value,
+  options,
+  onChange,
+  open,
+  onOpenChange,
+}: {
+  value: string;
+  options: ReadonlyArray<{ id: string; label: string }>;
+  onChange: (id: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const selected = options.find((option) => option.id === value) ?? options[0];
+
+  return (
+    <Field label="推理强度" hint={help.thinkingEffort}>
+      <Popover open={open} onOpenChange={onOpenChange}>
+        <PopoverTrigger asChild>
+          <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
+            <span className={cn(!value && "text-muted-foreground")}>{selected?.label ?? "自动"}</span>
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-1" align="start">
+          {options.map((option) => (
+            <button
+              key={option.id || "auto"}
+              className={cn(
+                "flex items-center justify-between w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
+                option.id === value && "bg-accent",
+              )}
+              onClick={() => {
+                onChange(option.id);
+                onOpenChange(false);
+              }}
+            >
+              <span>{option.label}</span>
+              {option.id ? <span className="text-xs text-muted-foreground font-mono">{option.id}</span> : null}
+            </button>
+          ))}
+        </PopoverContent>
+      </Popover>
+    </Field>
+  );
+}
