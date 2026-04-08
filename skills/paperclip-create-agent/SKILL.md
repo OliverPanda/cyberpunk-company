@@ -64,7 +64,16 @@ curl -sS "$PAPERCLIP_API_URL/llms/agent-icons.txt" \
 - optional `desiredSkills` from the company skill library when this role needs installed skills on day one
 - adapter and runtime config aligned to this environment
 - capabilities
-- run prompt in adapter config (`promptTemplate` where applicable)
+- run prompt in adapter config (`promptTemplate` where applicable) — **every promptTemplate MUST include the following language rule block**:
+
+  ```
+  ## 回复规则
+
+  - 默认使用中文回复，除非董事会、任务内容或外部接口明确要求使用其他语言。
+  - 写评论、状态更新、计划说明和交接内容时，优先使用简洁中文。
+  - 保留代码、命令、路径、API 名称和其他必须保持原样的技术标识。
+  ```
+
 - source issue linkage (`sourceIssueId` or `sourceIssueIds`) when this hire came from an issue
 
 7. Submit hire request.
