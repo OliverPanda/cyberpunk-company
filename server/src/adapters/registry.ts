@@ -73,11 +73,11 @@ import {
   listSkills as hermesListSkills,
   syncSkills as hermesSyncSkills,
   detectModel as detectModelFromHermes,
-} from "hermes-cyberpunk-company-adapter/server";
+} from "hermes-paperclip-adapter/server";
 import {
   agentConfigurationDoc as hermesAgentConfigurationDoc,
   models as hermesModels,
-} from "hermes-cyberpunk-company-adapter";
+} from "hermes-paperclip-adapter";
 import { processAdapter } from "./process/index.js";
 import { httpAdapter } from "./http/index.js";
 
@@ -174,16 +174,17 @@ const piLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: piAgentConfigurationDoc,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const hermesLocalAdapter: ServerAdapterModule = {
   type: "hermes_local",
-  execute: hermesExecute,
-  testEnvironment: hermesTestEnvironment,
-  sessionCodec: hermesSessionCodec,
-  listSkills: hermesListSkills,
-  syncSkills: hermesSyncSkills,
-  models: hermesModels,
+  execute: hermesExecute as any,
+  testEnvironment: hermesTestEnvironment as any,
+  sessionCodec: hermesSessionCodec as any,
+  listSkills: hermesListSkills as any,
+  syncSkills: hermesSyncSkills as any,
+  models: hermesModels as any,
   supportsLocalAgentJwt: true,
-  agentConfigurationDoc: hermesAgentConfigurationDoc,
+  agentConfigurationDoc: hermesAgentConfigurationDoc as any,
   detectModel: () => detectModelFromHermes(),
 };
 

@@ -553,7 +553,7 @@ export {
 } from "./project-mentions.js";
 
 export {
-  paperclipConfigSchema,
+  cyberpunkCompanyConfigSchema,
   configMetaSchema,
   llmConfigSchema,
   databaseBackupConfigSchema,
@@ -566,7 +566,7 @@ export {
   storageLocalDiskConfigSchema,
   storageS3ConfigSchema,
   secretsLocalEncryptedConfigSchema,
-  type PaperclipConfig,
+  type CyberpunkCompanyConfig,
   type LlmConfig,
   type DatabaseBackupConfig,
   type DatabaseConfig,

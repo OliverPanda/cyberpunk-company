@@ -112,7 +112,7 @@ function asTextFile(entry: CompanyPortabilityFileEntry | undefined) {
 }
 
 describe("company portability", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const companyPlaybookKey = "company/company-1/company-playbook";
 
   beforeEach(() => {
@@ -141,7 +141,7 @@ describe("company portability", () => {
         adapterConfig: {
           promptTemplate: "You are ClaudeCoder.",
           cyberpunkSkillSync: {
-            desiredSkills: [paperclipKey],
+            desiredSkills: [cyberpunkCompanyKey],
           },
           instructionsFilePath: "/tmp/ignored.md",
           cwd: "/tmp/ignored",
@@ -261,7 +261,7 @@ describe("company portability", () => {
       {
         id: "skill-1",
         companyId: "company-1",
-        key: paperclipKey,
+        key: cyberpunkCompanyKey,
         slug: "cyberpunk-company",
         name: "cyberpunk-company",
         description: "Cyberpunk Company coordination skill",
@@ -413,7 +413,7 @@ describe("company portability", () => {
     expect(asTextFile(exported.files["COMPANY.md"])).toContain('schema: "agentcompanies/v1"');
     expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain("You are ClaudeCoder.");
     expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain("skills:");
-    expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain(`- "${paperclipKey}"`);
+    expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain(`- "${cyberpunkCompanyKey}"`);
     expect(asTextFile(exported.files["agents/cmo/AGENTS.md"])).not.toContain("skills:");
     expect(asTextFile(exported.files["skills/cyberpunk-company/cyberpunk-company/cyberpunk-company/SKILL.md"])).toContain("metadata:");
     expect(asTextFile(exported.files["skills/cyberpunk-company/cyberpunk-company/cyberpunk-company/SKILL.md"])).toContain('kind: "github-dir"');
@@ -1744,7 +1744,7 @@ describe("company portability", () => {
     expect(agentSvc.create).toHaveBeenCalledWith("company-imported", expect.objectContaining({
       adapterConfig: expect.objectContaining({
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       }),
     }));

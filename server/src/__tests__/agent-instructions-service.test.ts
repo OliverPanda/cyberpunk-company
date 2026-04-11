@@ -25,15 +25,15 @@ function makeAgent(adapterConfig: Record<string, unknown>): TestAgent {
 }
 
 describe("agent instructions service", () => {
-  const originalPaperclipHome = process.env.CYBERPUNK_HOME;
-  const originalPaperclipInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
+  const originalCyberpunkCompanyHome = process.env.CYBERPUNK_HOME;
+  const originalCyberpunkCompanyInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
-    if (originalPaperclipHome === undefined) delete process.env.CYBERPUNK_HOME;
-    else process.env.CYBERPUNK_HOME = originalPaperclipHome;
-    if (originalPaperclipInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
-    else process.env.CYBERPUNK_INSTANCE_ID = originalPaperclipInstanceId;
+    if (originalCyberpunkCompanyHome === undefined) delete process.env.CYBERPUNK_HOME;
+    else process.env.CYBERPUNK_HOME = originalCyberpunkCompanyHome;
+    if (originalCyberpunkCompanyInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
+    else process.env.CYBERPUNK_INSTANCE_ID = originalCyberpunkCompanyInstanceId;
 
     await Promise.all([...cleanupDirs].map(async (dir) => {
       await fs.rm(dir, { recursive: true, force: true });
@@ -42,11 +42,11 @@ describe("agent instructions service", () => {
   });
 
   it("copies the existing bundle into the managed root when switching to managed mode", async () => {
-    const paperclipHome = await makeTempDir("cyberpunk-company-agent-instructions-home-");
+    const cyberpunkCompanyHome = await makeTempDir("cyberpunk-company-agent-instructions-home-");
     const externalRoot = await makeTempDir("cyberpunk-company-agent-instructions-external-");
-    cleanupDirs.add(paperclipHome);
+    cleanupDirs.add(cyberpunkCompanyHome);
     cleanupDirs.add(externalRoot);
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "test-instance";
 
     await fs.writeFile(path.join(externalRoot, "AGENTS.md"), "# External Agent\n", "utf8");
@@ -66,7 +66,7 @@ describe("agent instructions service", () => {
     expect(result.bundle.mode).toBe("managed");
     expect(result.bundle.managedRootPath).toBe(
       path.join(
-        paperclipHome,
+        cyberpunkCompanyHome,
         "instances",
         "test-instance",
         "companies",
@@ -82,9 +82,9 @@ describe("agent instructions service", () => {
   });
 
   it("creates the target entry file when switching to a new external root", async () => {
-    const paperclipHome = await makeTempDir("cyberpunk-company-agent-instructions-home-");
+    const cyberpunkCompanyHome = await makeTempDir("cyberpunk-company-agent-instructions-home-");
     const managedRoot = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "test-instance",
       "companies",
@@ -94,9 +94,9 @@ describe("agent instructions service", () => {
       "instructions",
     );
     const externalRoot = await makeTempDir("cyberpunk-company-agent-instructions-new-external-");
-    cleanupDirs.add(paperclipHome);
+    cleanupDirs.add(cyberpunkCompanyHome);
     cleanupDirs.add(externalRoot);
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "test-instance";
 
     await fs.mkdir(managedRoot, { recursive: true });
@@ -163,13 +163,13 @@ describe("agent instructions service", () => {
   });
 
   it("recovers a managed bundle from disk when bundle config metadata is missing", async () => {
-    const paperclipHome = await makeTempDir("cyberpunk-company-agent-instructions-recover-");
-    cleanupDirs.add(paperclipHome);
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    const cyberpunkCompanyHome = await makeTempDir("cyberpunk-company-agent-instructions-recover-");
+    cleanupDirs.add(cyberpunkCompanyHome);
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "test-instance";
 
     const managedRoot = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "test-instance",
       "companies",
@@ -194,15 +194,15 @@ describe("agent instructions service", () => {
   });
 
   it("prefers the managed bundle on disk when managed metadata points at a stale root", async () => {
-    const paperclipHome = await makeTempDir("cyberpunk-company-agent-instructions-stale-managed-");
+    const cyberpunkCompanyHome = await makeTempDir("cyberpunk-company-agent-instructions-stale-managed-");
     const staleRoot = await makeTempDir("cyberpunk-company-agent-instructions-stale-root-");
-    cleanupDirs.add(paperclipHome);
+    cleanupDirs.add(cyberpunkCompanyHome);
     cleanupDirs.add(staleRoot);
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "test-instance";
 
     const managedRoot = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "test-instance",
       "companies",
@@ -237,15 +237,15 @@ describe("agent instructions service", () => {
   });
 
   it("heals stale managed metadata when writing bundle files", async () => {
-    const paperclipHome = await makeTempDir("cyberpunk-company-agent-instructions-heal-write-");
+    const cyberpunkCompanyHome = await makeTempDir("cyberpunk-company-agent-instructions-heal-write-");
     const staleRoot = await makeTempDir("cyberpunk-company-agent-instructions-heal-write-stale-");
-    cleanupDirs.add(paperclipHome);
+    cleanupDirs.add(cyberpunkCompanyHome);
     cleanupDirs.add(staleRoot);
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "test-instance";
 
     const managedRoot = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "test-instance",
       "companies",
@@ -277,15 +277,15 @@ describe("agent instructions service", () => {
   });
 
   it("heals stale managed metadata when deleting bundle files", async () => {
-    const paperclipHome = await makeTempDir("cyberpunk-company-agent-instructions-heal-delete-");
+    const cyberpunkCompanyHome = await makeTempDir("cyberpunk-company-agent-instructions-heal-delete-");
     const staleRoot = await makeTempDir("cyberpunk-company-agent-instructions-heal-delete-stale-");
-    cleanupDirs.add(paperclipHome);
+    cleanupDirs.add(cyberpunkCompanyHome);
     cleanupDirs.add(staleRoot);
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "test-instance";
 
     const managedRoot = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "test-instance",
       "companies",
@@ -319,15 +319,15 @@ describe("agent instructions service", () => {
   });
 
   it("recovers the managed bundle when stale root metadata is present but mode is missing", async () => {
-    const paperclipHome = await makeTempDir("cyberpunk-company-agent-instructions-partial-managed-");
+    const cyberpunkCompanyHome = await makeTempDir("cyberpunk-company-agent-instructions-partial-managed-");
     const staleRoot = await makeTempDir("cyberpunk-company-agent-instructions-partial-root-");
-    cleanupDirs.add(paperclipHome);
+    cleanupDirs.add(cyberpunkCompanyHome);
     cleanupDirs.add(staleRoot);
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "test-instance";
 
     const managedRoot = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "test-instance",
       "companies",

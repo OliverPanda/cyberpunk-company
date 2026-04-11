@@ -167,21 +167,21 @@ function parseSkillFrontmatter(markdown: string): { description: string } {
 interface AvailableSkill {
   name: string;
   description: string;
-  isPaperclipManaged: boolean;
+  isCyberpunkCompanyManaged: boolean;
 }
 
 /** Discover all available Claude Code skills from ~/.claude/skills/. */
 function listAvailableSkills(): AvailableSkill[] {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "";
   const claudeSkillsDir = path.join(homeDir, ".claude", "skills");
-  const paperclipSkillsDir = resolveCyberpunkSkillsDir();
+  const cyberpunkCompanySkillsDir = resolveCyberpunkSkillsDir();
 
   // Build set of Cyberpunk Company-managed skill names
-  const paperclipSkillNames = new Set<string>();
-  if (paperclipSkillsDir) {
+  const cyberpunkCompanySkillNames = new Set<string>();
+  if (cyberpunkCompanySkillsDir) {
     try {
-      for (const entry of fs.readdirSync(paperclipSkillsDir, { withFileTypes: true })) {
-        if (entry.isDirectory()) paperclipSkillNames.add(entry.name);
+      for (const entry of fs.readdirSync(cyberpunkCompanySkillsDir, { withFileTypes: true })) {
+        if (entry.isDirectory()) cyberpunkCompanySkillNames.add(entry.name);
       }
     } catch { /* skip */ }
   }
@@ -202,7 +202,7 @@ function listAvailableSkills(): AvailableSkill[] {
       skills.push({
         name: entry.name,
         description,
-        isPaperclipManaged: paperclipSkillNames.has(entry.name),
+        isCyberpunkCompanyManaged: cyberpunkCompanySkillNames.has(entry.name),
       });
     }
   } catch { /* ~/.claude/skills/ doesn't exist */ }
@@ -423,7 +423,7 @@ function generateEd25519PrivateKeyPem(): string {
 export function buildJoinDefaultsPayloadForAccept(input: {
   adapterType: string | null;
   defaultsPayload: unknown;
-  paperclipApiUrl?: unknown;
+  cyberpunkCompanyApiUrl?: unknown;
   inboundOpenClawAuthHeader?: string | null;
   inboundOpenClawTokenHeader?: string | null;
 }): unknown {
@@ -435,9 +435,9 @@ export function buildJoinDefaultsPayloadForAccept(input: {
     ? { ...(input.defaultsPayload as Record<string, unknown>) }
     : ({} as Record<string, unknown>);
 
-  if (!nonEmptyTrimmedString(merged.paperclipApiUrl)) {
-    const legacyPaperclipApiUrl = nonEmptyTrimmedString(input.paperclipApiUrl);
-    if (legacyPaperclipApiUrl) merged.paperclipApiUrl = legacyPaperclipApiUrl;
+  if (!nonEmptyTrimmedString(merged.cyberpunkCompanyApiUrl)) {
+    const legacyCyberpunkCompanyApiUrl = nonEmptyTrimmedString(input.cyberpunkCompanyApiUrl);
+    if (legacyCyberpunkCompanyApiUrl) merged.cyberpunkCompanyApiUrl = legacyCyberpunkCompanyApiUrl;
   }
   const mergedHeaders = normalizeHeaderMap(merged.headers) ?? {};
 
@@ -579,8 +579,8 @@ function summarizeOpenClawGatewayDefaultsForLog(defaultsPayload: unknown) {
     present: Boolean(defaults),
     keys: defaults ? Object.keys(defaults).sort() : [],
     url: defaults ? nonEmptyTrimmedString(defaults.url) : null,
-    paperclipApiUrl: defaults
-      ? nonEmptyTrimmedString(defaults.paperclipApiUrl)
+    cyberpunkCompanyApiUrl: defaults
+      ? nonEmptyTrimmedString(defaults.cyberpunkCompanyApiUrl)
       : null,
     headerKeys: headers ? Object.keys(headers).sort() : [],
     sessionKeyStrategy: defaults
@@ -817,35 +817,35 @@ export function normalizeAgentDefaultsForJoin(input: {
     }
   }
 
-  const rawPaperclipApiUrl =
-    typeof defaults.paperclipApiUrl === "string"
-      ? defaults.paperclipApiUrl.trim()
+  const rawCyberpunkCompanyApiUrl =
+    typeof defaults.cyberpunkCompanyApiUrl === "string"
+      ? defaults.cyberpunkCompanyApiUrl.trim()
       : "";
-  if (rawPaperclipApiUrl) {
+  if (rawCyberpunkCompanyApiUrl) {
     try {
-      const parsedPaperclipApiUrl = new URL(rawPaperclipApiUrl);
+      const parsedCyberpunkCompanyApiUrl = new URL(rawCyberpunkCompanyApiUrl);
       if (
-        parsedPaperclipApiUrl.protocol !== "http:" &&
-        parsedPaperclipApiUrl.protocol !== "https:"
+        parsedCyberpunkCompanyApiUrl.protocol !== "http:" &&
+        parsedCyberpunkCompanyApiUrl.protocol !== "https:"
       ) {
         diagnostics.push({
-          code: "openclaw_gateway_paperclip_api_url_protocol",
+          code: "openclaw_gateway_cyberpunk-company_api_url_protocol",
           level: "warn",
-          message: `paperclipApiUrl must use http:// or https:// (got ${parsedPaperclipApiUrl.protocol}).`
+          message: `cyberpunkCompanyApiUrl must use http:// or https:// (got ${parsedCyberpunkCompanyApiUrl.protocol}).`
         });
       } else {
-        normalized.paperclipApiUrl = parsedPaperclipApiUrl.toString();
+        normalized.cyberpunkCompanyApiUrl = parsedCyberpunkCompanyApiUrl.toString();
         diagnostics.push({
-          code: "openclaw_gateway_paperclip_api_url_configured",
+          code: "openclaw_gateway_cyberpunk-company_api_url_configured",
           level: "info",
-          message: `paperclipApiUrl set to ${parsedPaperclipApiUrl.toString()}`
+          message: `cyberpunkCompanyApiUrl set to ${parsedCyberpunkCompanyApiUrl.toString()}`
         });
       }
     } catch {
       diagnostics.push({
-        code: "openclaw_gateway_paperclip_api_url_invalid",
+        code: "openclaw_gateway_cyberpunk-company_api_url_invalid",
         level: "warn",
-        message: `Invalid paperclipApiUrl: ${rawPaperclipApiUrl}`
+        message: `Invalid cyberpunkCompanyApiUrl: ${rawCyberpunkCompanyApiUrl}`
       });
     }
   }
@@ -1036,7 +1036,7 @@ function buildInviteOnboardingManifest(
         adapterType: "Use 'openclaw_gateway' for OpenClaw Gateway agents",
         capabilities: "Optional capability summary",
         agentDefaultsPayload:
-          "Adapter config for OpenClaw gateway. MUST include url (ws:// or wss://) and headers.x-openclaw-token (or legacy x-openclaw-auth). Optional fields: paperclipApiUrl, waitTimeoutMs, sessionKeyStrategy, sessionKey, role, scopes, disableDeviceAuth, devicePrivateKeyPem."
+          "Adapter config for OpenClaw gateway. MUST include url (ws:// or wss://) and headers.x-openclaw-token (or legacy x-openclaw-auth). Optional fields: cyberpunkCompanyApiUrl, waitTimeoutMs, sessionKeyStrategy, sessionKey, role, scopes, disableDeviceAuth, devicePrivateKeyPem."
       },
       registrationEndpoint: {
         method: "POST",
@@ -1168,7 +1168,7 @@ export function buildInviteOnboardingTextDocument(
         capabilities: "OpenClaw agent adapter",
         agentDefaultsPayload: {
           url: "ws://127.0.0.1:18789",
-          paperclipApiUrl: "http://host.docker.internal:3100",
+          cyberpunkCompanyApiUrl: "http://host.docker.internal:3100",
           headers: { "x-openclaw-token": token },
           waitTimeoutMs: 120000,
           sessionKeyStrategy: "issue",
@@ -1201,7 +1201,7 @@ export function buildInviteOnboardingTextDocument(
       "capabilities": "Optional summary",
       "agentDefaultsPayload": {
         "url": "wss://your-openclaw-gateway.example",
-        "paperclipApiUrl": "https://cyberpunk-company-hostname-your-agent-can-reach:3100",
+        "cyberpunkCompanyApiUrl": "https://cyberpunk-company-hostname-your-agent-can-reach:3100",
         "headers": { "x-openclaw-token": "replace-me" },
         "waitTimeoutMs": 120000,
         "sessionKeyStrategy": "issue",
@@ -1285,7 +1285,7 @@ export function buildInviteOnboardingTextDocument(
 
       Test each candidate with:
       - GET <candidate>/api/health
-      - set the first reachable candidate as agentDefaultsPayload.paperclipApiUrl when submitting your join request
+      - set the first reachable candidate as agentDefaultsPayload.cyberpunkCompanyApiUrl when submitting your join request
 
       If none are reachable: ask your human operator for a reachable hostname/address and help them update network configuration.
       For authenticated/private mode, they may need:
@@ -2211,7 +2211,7 @@ export function accessRoutes(
           ? buildJoinDefaultsPayloadForAccept({
               adapterType,
               defaultsPayload: replayMergedDefaults,
-              paperclipApiUrl: req.body.paperclipApiUrl ?? null,
+              cyberpunkCompanyApiUrl: req.body.cyberpunkCompanyApiUrl ?? null,
               inboundOpenClawAuthHeader: req.header("x-openclaw-auth") ?? null,
               inboundOpenClawTokenHeader: req.header("x-openclaw-token") ?? null
             })
@@ -2386,10 +2386,10 @@ export function accessRoutes(
         if (expectedDefaults.url && !persistedDefaults.url)
           missingPersistedFields.push("url");
         if (
-          expectedDefaults.paperclipApiUrl &&
-          !persistedDefaults.paperclipApiUrl
+          expectedDefaults.cyberpunkCompanyApiUrl &&
+          !persistedDefaults.cyberpunkCompanyApiUrl
         ) {
-          missingPersistedFields.push("paperclipApiUrl");
+          missingPersistedFields.push("cyberpunkCompanyApiUrl");
         }
         if (expectedDefaults.gatewayToken && !persistedDefaults.gatewayToken) {
           missingPersistedFields.push("headers.x-openclaw-token");

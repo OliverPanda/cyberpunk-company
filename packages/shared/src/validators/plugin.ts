@@ -356,7 +356,7 @@ export type PluginLauncherDeclarationInput = z.infer<typeof pluginLauncherDeclar
  * | `author`                 | string     | 1–200 chars                                  |
  * | `categories`             | enum[]     | at least one; values from PLUGIN_CATEGORIES  |
  * | `minimumHostVersion`     | string?    | semver lower bound if present, no leading `v`|
- * | `minimumPaperclipVersion`| string?    | legacy alias of `minimumHostVersion`         |
+ * | `minimumCyberpunkCompanyVersion`| string?    | legacy alias of `minimumHostVersion`         |
  * | `capabilities`           | enum[]     | at least one; values from PLUGIN_CAPABILITIES|
  * | `entrypoints.worker`     | string     | min 1 char                                   |
  * | `entrypoints.ui`         | string?    | required when `ui.slots` is declared         |
@@ -392,9 +392,9 @@ export const pluginManifestV1Schema = z.object({
     /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/,
     "minimumHostVersion must follow semver (e.g. 1.0.0)",
   ).optional(),
-  minimumPaperclipVersion: z.string().regex(
+  minimumCyberpunkCompanyVersion: z.string().regex(
     /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/,
-    "minimumPaperclipVersion must follow semver (e.g. 1.0.0)",
+    "minimumCyberpunkCompanyVersion must follow semver (e.g. 1.0.0)",
   ).optional(),
   capabilities: z.array(z.enum(PLUGIN_CAPABILITIES)).min(1),
   entrypoints: z.object({
@@ -426,12 +426,12 @@ export const pluginManifestV1Schema = z.object({
 
   if (
     manifest.minimumHostVersion
-    && manifest.minimumPaperclipVersion
-    && manifest.minimumHostVersion !== manifest.minimumPaperclipVersion
+    && manifest.minimumCyberpunkCompanyVersion
+    && manifest.minimumHostVersion !== manifest.minimumCyberpunkCompanyVersion
   ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "minimumHostVersion and minimumPaperclipVersion must match when both are declared",
+      message: "minimumHostVersion and minimumCyberpunkCompanyVersion must match when both are declared",
       path: ["minimumHostVersion"],
     });
   }

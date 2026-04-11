@@ -8,7 +8,7 @@ import {
   resolveCyberpunkInstanceId,
 } from "../config/home.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
-import { printPaperclipCliBanner } from "../utils/banner.js";
+import { printCyberpunkCompanyCliBanner } from "../utils/banner.js";
 
 type DbBackupOptions = {
   config?: string;
@@ -47,7 +47,7 @@ function resolveBackupDir(raw: string): string {
 }
 
 export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printCyberpunkCompanyCliBanner();
   p.intro(pc.bgCyan(pc.black(" cyberpunk-company db:backup ")));
 
   const configPath = resolveConfigPath(opts.config);

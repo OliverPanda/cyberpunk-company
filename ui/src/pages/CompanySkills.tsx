@@ -46,7 +46,7 @@ import {
   Github,
   Link2,
   ExternalLink,
-  Cyberpunk Company,
+  Paperclip,
   Pencil,
   Plus,
   RefreshCw,
@@ -159,7 +159,7 @@ function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | 
     case "local":
       return { icon: Folder, label: sourceLabel ?? "文件夹", managedLabel: "由文件夹管理" };
     case "cyberpunk-company":
-      return { icon: Cyberpunk Company, label: sourceLabel ?? "Cyberpunk Company", managedLabel: "由 Cyberpunk Company 管理" };
+      return { icon: Paperclip, label: sourceLabel ?? "Cyberpunk Company", managedLabel: "由 Cyberpunk Company 管理" };
     default:
       return { icon: Boxes, label: sourceLabel ?? "目录", managedLabel: "由目录管理" };
   }

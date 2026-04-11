@@ -31,7 +31,7 @@ async function createCustomSkill(root: string, skillName: string) {
 }
 
 describe("codex local adapter skill injection", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -59,7 +59,7 @@ describe("codex local adapter skill injection", () => {
       {
         skillsHome,
         skillsEntries: [{
-          key: paperclipKey,
+          key: cyberpunkCompanyKey,
           runtimeName: "cyberpunk-company",
           source: path.join(currentRepo, "skills", "cyberpunk-company"),
         }],
@@ -92,7 +92,7 @@ describe("codex local adapter skill injection", () => {
     await ensureCodexSkillsInjected(async () => {}, {
       skillsHome,
       skillsEntries: [{
-        key: paperclipKey,
+        key: cyberpunkCompanyKey,
         runtimeName: "cyberpunk-company",
         source: path.join(currentRepo, "skills", "cyberpunk-company"),
       }],
@@ -125,7 +125,7 @@ describe("codex local adapter skill injection", () => {
       {
         skillsHome,
         skillsEntries: [{
-          key: paperclipKey,
+          key: cyberpunkCompanyKey,
           runtimeName: "cyberpunk-company",
           source: path.join(currentRepo, "skills", "cyberpunk-company"),
         }],
@@ -159,7 +159,7 @@ describe("codex local adapter skill injection", () => {
     await ensureCodexSkillsInjected(async () => {}, {
       skillsHome,
       skillsEntries: [{
-        key: paperclipKey,
+        key: cyberpunkCompanyKey,
         runtimeName: "cyberpunk-company",
         source: path.join(currentRepo, "skills", "cyberpunk-company"),
       }],

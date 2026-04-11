@@ -49,7 +49,7 @@ import {
   ListTree,
   MessageSquare,
   MoreHorizontal,
-  Cyberpunk Company,
+  Paperclip,
   Repeat,
   SlidersHorizontal,
   Trash2,
@@ -698,7 +698,7 @@ export function IssueDetail() {
           attachmentDragActive && "border-primary bg-primary/5",
         )}
       >
-        <Cyberpunk Company className="h-3.5 w-3.5 mr-1.5" />
+        <Paperclip className="h-3.5 w-3.5 mr-1.5" />
         {uploadAttachment.isPending || importMarkdownDocument.isPending ? "上传中..." : (
           <>
             <span className="hidden sm:inline">上传附件</span>

@@ -1580,7 +1580,7 @@ export function companySkillService(db: Db) {
               adapterType: agent.adapterType,
               config: {
                 ...runtimeConfig,
-                paperclipRuntimeSkills: runtimeSkillEntries,
+                cyberpunkCompanyRuntimeSkills: runtimeSkillEntries,
               },
             });
             actualState = snapshot.entries.find((entry) => entry.key === key)?.state

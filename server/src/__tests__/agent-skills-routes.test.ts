@@ -225,7 +225,7 @@ describe("agent skill routes", () => {
       expect.objectContaining({
         adapterType: "claude_local",
         config: expect.objectContaining({
-          paperclipRuntimeSkills: expect.any(Array),
+          cyberpunkCompanyRuntimeSkills: expect.any(Array),
         }),
       }),
     );

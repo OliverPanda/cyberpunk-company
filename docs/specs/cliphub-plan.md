@@ -113,7 +113,7 @@ interface Listing {
   // Compatibility
   compatibleAdapters: string[];    // ['claude_local', 'codex_local', ...]
   requiredModels: string[];        // ['claude-opus-4-6', 'claude-sonnet-4-6']
-  paperclipVersionMin: string;     // Minimum Cyberpunk Company version
+  cyberpunkCompanyVersionMin: string;     // Minimum Cyberpunk Company version
 
   // Social proof
   installCount: number;

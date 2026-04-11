@@ -3,7 +3,7 @@ import type {
   AdapterExecutionResult,
   AdapterRuntimeServiceReport,
 } from "@cyberpunk-company/adapter-utils";
-import { asNumber, asString, buildPaperclipEnv, parseObject } from "@cyberpunk-company/adapter-utils/server-utils";
+import { asNumber, asString, buildCyberpunkCompanyEnv, parseObject } from "@cyberpunk-company/adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 
@@ -313,29 +313,29 @@ function resolveCyberpunkApiUrlOverride(value: unknown): string | null {
   }
 }
 
-function buildPaperclipEnvForWake(ctx: AdapterExecutionContext, wakePayload: WakePayload): Record<string, string> {
-  const paperclipApiUrlOverride = resolveCyberpunkApiUrlOverride(ctx.config.paperclipApiUrl);
-  const paperclipEnv: Record<string, string> = {
-    ...buildPaperclipEnv(ctx.agent),
+function buildCyberpunkCompanyEnvForWake(ctx: AdapterExecutionContext, wakePayload: WakePayload): Record<string, string> {
+  const cyberpunkCompanyApiUrlOverride = resolveCyberpunkApiUrlOverride(ctx.config.cyberpunkCompanyApiUrl);
+  const cyberpunkCompanyEnv: Record<string, string> = {
+    ...buildCyberpunkCompanyEnv(ctx.agent),
     CYBERPUNK_RUN_ID: ctx.runId,
   };
 
-  if (paperclipApiUrlOverride) {
-    paperclipEnv.CYBERPUNK_API_URL = paperclipApiUrlOverride;
+  if (cyberpunkCompanyApiUrlOverride) {
+    cyberpunkCompanyEnv.CYBERPUNK_API_URL = cyberpunkCompanyApiUrlOverride;
   }
-  if (wakePayload.taskId) paperclipEnv.CYBERPUNK_TASK_ID = wakePayload.taskId;
-  if (wakePayload.wakeReason) paperclipEnv.CYBERPUNK_WAKE_REASON = wakePayload.wakeReason;
-  if (wakePayload.wakeCommentId) paperclipEnv.CYBERPUNK_WAKE_COMMENT_ID = wakePayload.wakeCommentId;
-  if (wakePayload.approvalId) paperclipEnv.CYBERPUNK_APPROVAL_ID = wakePayload.approvalId;
-  if (wakePayload.approvalStatus) paperclipEnv.CYBERPUNK_APPROVAL_STATUS = wakePayload.approvalStatus;
+  if (wakePayload.taskId) cyberpunkCompanyEnv.CYBERPUNK_TASK_ID = wakePayload.taskId;
+  if (wakePayload.wakeReason) cyberpunkCompanyEnv.CYBERPUNK_WAKE_REASON = wakePayload.wakeReason;
+  if (wakePayload.wakeCommentId) cyberpunkCompanyEnv.CYBERPUNK_WAKE_COMMENT_ID = wakePayload.wakeCommentId;
+  if (wakePayload.approvalId) cyberpunkCompanyEnv.CYBERPUNK_APPROVAL_ID = wakePayload.approvalId;
+  if (wakePayload.approvalStatus) cyberpunkCompanyEnv.CYBERPUNK_APPROVAL_STATUS = wakePayload.approvalStatus;
   if (wakePayload.issueIds.length > 0) {
-    paperclipEnv.CYBERPUNK_LINKED_ISSUE_IDS = wakePayload.issueIds.join(",");
+    cyberpunkCompanyEnv.CYBERPUNK_LINKED_ISSUE_IDS = wakePayload.issueIds.join(",");
   }
 
-  return paperclipEnv;
+  return cyberpunkCompanyEnv;
 }
 
-function buildWakeText(payload: WakePayload, paperclipEnv: Record<string, string>): string {
+function buildWakeText(payload: WakePayload, cyberpunkCompanyEnv: Record<string, string>): string {
   const claimedApiKeyPath = "~/.openclaw/workspace/cyberpunk-company-claimed-api-key.json";
   const orderedKeys = [
     "CYBERPUNK_RUN_ID",
@@ -352,13 +352,13 @@ function buildWakeText(payload: WakePayload, paperclipEnv: Record<string, string
 
   const envLines: string[] = [];
   for (const key of orderedKeys) {
-    const value = paperclipEnv[key];
+    const value = cyberpunkCompanyEnv[key];
     if (!value) continue;
     envLines.push(`${key}=${value}`);
   }
 
   const issueIdHint = payload.taskId ?? payload.issueId ?? "";
-  const apiBaseHint = paperclipEnv.CYBERPUNK_API_URL ?? "<set CYBERPUNK_API_URL>";
+  const apiBaseHint = cyberpunkCompanyEnv.CYBERPUNK_API_URL ?? "<set CYBERPUNK_API_URL>";
 
   const lines = [
     "Cyberpunk Company wake event for a cloud adapter.",
@@ -415,13 +415,13 @@ function appendWakeText(baseText: string, wakeText: string): string {
   return trimmedBase.length > 0 ? `${trimmedBase}\n\n${wakeText}` : wakeText;
 }
 
-function buildStandardPaperclipPayload(
+function buildStandardCyberpunkCompanyPayload(
   ctx: AdapterExecutionContext,
   wakePayload: WakePayload,
-  paperclipEnv: Record<string, string>,
+  cyberpunkCompanyEnv: Record<string, string>,
   payloadTemplate: Record<string, unknown>,
 ): Record<string, unknown> {
-  const templatePaperclip = parseObject(payloadTemplate.cyberpunk-company);
+  const templateCyberpunkCompany = parseObject(payloadTemplate["cyberpunk-company"]);
   const workspace = asRecord(ctx.context.cyberpunkWorkspace);
   const workspaces = Array.isArray(ctx.context.cyberpunkWorkspaces)
     ? ctx.context.cyberpunkWorkspaces.filter((entry): entry is Record<string, unknown> => Boolean(asRecord(entry)))
@@ -433,7 +433,7 @@ function buildStandardPaperclipPayload(
       )
     : [];
 
-  const standardPaperclip: Record<string, unknown> = {
+  const standardCyberpunkCompany: Record<string, unknown> = {
     runId: ctx.runId,
     companyId: ctx.agent.companyId,
     agentId: ctx.agent.id,
@@ -445,25 +445,25 @@ function buildStandardPaperclipPayload(
     wakeCommentId: wakePayload.wakeCommentId,
     approvalId: wakePayload.approvalId,
     approvalStatus: wakePayload.approvalStatus,
-    apiUrl: paperclipEnv.CYBERPUNK_API_URL ?? null,
+    apiUrl: cyberpunkCompanyEnv.CYBERPUNK_API_URL ?? null,
   };
 
   if (workspace) {
-    standardPaperclip.workspace = workspace;
+    standardCyberpunkCompany.workspace = workspace;
   }
   if (workspaces.length > 0) {
-    standardPaperclip.workspaces = workspaces;
+    standardCyberpunkCompany.workspaces = workspaces;
   }
   if (runtimeServiceIntents.length > 0 || Object.keys(configuredWorkspaceRuntime).length > 0) {
-    standardPaperclip.workspaceRuntime = {
+    standardCyberpunkCompany.workspaceRuntime = {
       ...configuredWorkspaceRuntime,
       ...(runtimeServiceIntents.length > 0 ? { services: runtimeServiceIntents } : {}),
     };
   }
 
   return {
-    ...templatePaperclip,
-    ...standardPaperclip,
+    ...templateCyberpunkCompany,
+    ...standardCyberpunkCompany,
   };
 }
 
@@ -1052,8 +1052,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const disableDeviceAuth = parseBoolean(ctx.config.disableDeviceAuth, false);
 
   const wakePayload = buildWakePayload(ctx);
-  const paperclipEnv = buildPaperclipEnvForWake(ctx, wakePayload);
-  const wakeText = buildWakeText(wakePayload, paperclipEnv);
+  const cyberpunkCompanyEnv = buildCyberpunkCompanyEnvForWake(ctx, wakePayload);
+  const wakeText = buildWakeText(wakePayload, cyberpunkCompanyEnv);
 
   const sessionKeyStrategy = normalizeSessionKeyStrategy(ctx.config.sessionKeyStrategy);
   const configuredSessionKey = nonEmpty(ctx.config.sessionKey);
@@ -1066,7 +1066,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const templateMessage = nonEmpty(payloadTemplate.message) ?? nonEmpty(payloadTemplate.text);
   const message = templateMessage ? appendWakeText(templateMessage, wakeText) : wakeText;
-  const paperclipPayload = buildStandardPaperclipPayload(ctx, wakePayload, paperclipEnv, payloadTemplate);
+  const cyberpunkCompanyPayload = buildStandardCyberpunkCompanyPayload(ctx, wakePayload, cyberpunkCompanyEnv, payloadTemplate);
 
   const agentParams: Record<string, unknown> = {
     ...payloadTemplate,

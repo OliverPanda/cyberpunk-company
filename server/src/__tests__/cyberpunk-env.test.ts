@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { buildPaperclipEnv } from "../adapters/utils.js";
+import { buildCyberpunkCompanyEnv } from "../adapters/utils.js";
 
 const ORIGINAL_CYBERPUNK_API_URL = process.env.CYBERPUNK_API_URL;
 const ORIGINAL_CYBERPUNK_LISTEN_HOST = process.env.CYBERPUNK_LISTEN_HOST;
@@ -24,13 +24,13 @@ afterEach(() => {
   else process.env.PORT = ORIGINAL_PORT;
 });
 
-describe("buildPaperclipEnv", () => {
+describe("buildCyberpunkCompanyEnv", () => {
   it("prefers an explicit CYBERPUNK_API_URL", () => {
     process.env.CYBERPUNK_API_URL = "http://localhost:4100";
     process.env.CYBERPUNK_LISTEN_HOST = "127.0.0.1";
     process.env.CYBERPUNK_LISTEN_PORT = "3101";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildCyberpunkCompanyEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.CYBERPUNK_API_URL).toBe("http://localhost:4100");
   });
@@ -41,7 +41,7 @@ describe("buildPaperclipEnv", () => {
     process.env.CYBERPUNK_LISTEN_PORT = "3101";
     process.env.PORT = "3100";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildCyberpunkCompanyEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.CYBERPUNK_API_URL).toBe("http://localhost:3101");
   });
@@ -51,7 +51,7 @@ describe("buildPaperclipEnv", () => {
     process.env.CYBERPUNK_LISTEN_HOST = "::1";
     process.env.CYBERPUNK_LISTEN_PORT = "3101";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildCyberpunkCompanyEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.CYBERPUNK_API_URL).toBe("http://[::1]:3101");
   });

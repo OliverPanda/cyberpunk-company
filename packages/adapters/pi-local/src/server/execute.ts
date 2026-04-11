@@ -8,14 +8,14 @@ import {
   asNumber,
   asStringArray,
   parseObject,
-  buildPaperclipEnv,
+  buildCyberpunkCompanyEnv,
   joinPromptSections,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
   ensureCyberpunkSkillSymlink,
   ensurePathInEnv,
-  readPaperclipRuntimeSkillEntries,
+  readCyberpunkCompanyRuntimeSkillEntries,
   resolveCyberpunkDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
   renderTemplate,
@@ -26,7 +26,7 @@ import { ensurePiModelConfiguredAndAvailable } from "./models.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
-const CYBERPUNK_SESSIONS_DIR = path.join(os.homedir(), ".pi", "paperclips");
+const CYBERPUNK_SESSIONS_DIR = path.join(os.homedir(), ".pi", "cyberpunk-company");
 const PI_AGENT_SKILLS_DIR = path.join(os.homedir(), ".pi", "agent", "skills");
 
 function firstNonEmptyLine(text: string): string {
@@ -142,7 +142,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   await ensureSessionsDir();
   
   // Inject skills
-  const piSkillEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const piSkillEntries = await readCyberpunkCompanyRuntimeSkillEntries(config, __moduleDir);
   const desiredPiSkillNames = resolveCyberpunkDesiredSkillNames(config, piSkillEntries);
   await ensurePiSkillsInjected(onLog, piSkillEntries, desiredPiSkillNames);
 
@@ -150,7 +150,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
     typeof envConfig.CYBERPUNK_API_KEY === "string" && envConfig.CYBERPUNK_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildPaperclipEnv(agent) };
+  const env: Record<string, string> = { ...buildCyberpunkCompanyEnv(agent) };
   env.CYBERPUNK_RUN_ID = runId;
   
   const wakeTaskId =

@@ -8,7 +8,7 @@ import {
   asNumber,
   asStringArray,
   parseObject,
-  buildPaperclipEnv,
+  buildCyberpunkCompanyEnv,
   joinPromptSections,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
@@ -17,7 +17,7 @@ import {
   ensurePathInEnv,
   renderTemplate,
   runChildProcess,
-  readPaperclipRuntimeSkillEntries,
+  readCyberpunkCompanyRuntimeSkillEntries,
   resolveCyberpunkDesiredSkillNames,
 } from "@cyberpunk-company/adapter-utils/server-utils";
 import { isOpenCodeUnknownSessionError, parseOpenCodeJsonl } from "./parse.js";
@@ -117,7 +117,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const effectiveWorkspaceCwd = useConfiguredInsteadOfAgentHome ? "" : workspaceCwd;
   const cwd = effectiveWorkspaceCwd || configuredCwd || process.cwd();
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
-  const openCodeSkillEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const openCodeSkillEntries = await readCyberpunkCompanyRuntimeSkillEntries(config, __moduleDir);
   const desiredOpenCodeSkillNames = resolveCyberpunkDesiredSkillNames(config, openCodeSkillEntries);
   await ensureOpenCodeSkillsInjected(
     onLog,
@@ -128,7 +128,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
     typeof envConfig.CYBERPUNK_API_KEY === "string" && envConfig.CYBERPUNK_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildPaperclipEnv(agent) };
+  const env: Record<string, string> = { ...buildCyberpunkCompanyEnv(agent) };
   env.CYBERPUNK_RUN_ID = runId;
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||

@@ -9,13 +9,13 @@ import {
   asNumber,
   asString,
   asStringArray,
-  buildPaperclipEnv,
+  buildCyberpunkCompanyEnv,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
   ensureCyberpunkSkillSymlink,
   joinPromptSections,
   ensurePathInEnv,
-  readPaperclipRuntimeSkillEntries,
+  readCyberpunkCompanyRuntimeSkillEntries,
   resolveCyberpunkDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
   parseObject,
@@ -46,14 +46,14 @@ function resolveGeminiBillingType(env: Record<string, string>): "api" | "subscri
     : "subscription";
 }
 
-function renderPaperclipEnvNote(env: Record<string, string>): string {
-  const paperclipKeys = Object.keys(env)
+function renderCyberpunkCompanyEnvNote(env: Record<string, string>): string {
+  const cyberpunkCompanyKeys = Object.keys(env)
     .filter((key) => key.startsWith("CYBERPUNK_"))
     .sort();
-  if (paperclipKeys.length === 0) return "";
+  if (cyberpunkCompanyKeys.length === 0) return "";
   return [
     "Cyberpunk Company runtime note:",
-    `The following CYBERPUNK_* environment variables are available in this run: ${paperclipKeys.join(", ")}`,
+    `The following CYBERPUNK_* environment variables are available in this run: ${cyberpunkCompanyKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
     "",
     "",
@@ -160,14 +160,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const effectiveWorkspaceCwd = useConfiguredInsteadOfAgentHome ? "" : workspaceCwd;
   const cwd = effectiveWorkspaceCwd || configuredCwd || process.cwd();
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
-  const geminiSkillEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const geminiSkillEntries = await readCyberpunkCompanyRuntimeSkillEntries(config, __moduleDir);
   const desiredGeminiSkillNames = resolveCyberpunkDesiredSkillNames(config, geminiSkillEntries);
   await ensureGeminiSkillsInjected(onLog, geminiSkillEntries, desiredGeminiSkillNames);
 
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
     typeof envConfig.CYBERPUNK_API_KEY === "string" && envConfig.CYBERPUNK_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildPaperclipEnv(agent) };
+  const env: Record<string, string> = { ...buildCyberpunkCompanyEnv(agent) };
   env.CYBERPUNK_RUN_ID = runId;
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||
@@ -294,13 +294,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   const sessionHandoffNote = asString(context.cyberpunkSessionHandoffMarkdown, "").trim();
-  const paperclipEnvNote = renderPaperclipEnvNote(env);
+  const cyberpunkCompanyEnvNote = renderCyberpunkCompanyEnvNote(env);
   const apiAccessNote = renderApiAccessNote(env);
   const prompt = joinPromptSections([
     instructionsPrefix,
     renderedBootstrapPrompt,
     sessionHandoffNote,
-    paperclipEnvNote,
+    cyberpunkCompanyEnvNote,
     apiAccessNote,
     renderedPrompt,
   ]);
@@ -309,7 +309,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     instructionsChars: instructionsPrefix.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
     sessionHandoffChars: sessionHandoffNote.length,
-    runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length,
+    runtimeNoteChars: cyberpunkCompanyEnvNote.length + apiAccessNote.length,
     heartbeatPromptChars: renderedPrompt.length,
   };
 

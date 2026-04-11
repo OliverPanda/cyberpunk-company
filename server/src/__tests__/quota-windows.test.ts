@@ -216,7 +216,7 @@ describe("readClaudeToken", () => {
 
   it("returns null when credentials.json does not exist", async () => {
     // Point to a directory that does not have credentials.json
-    process.env.CLAUDE_CONFIG_DIR = "/tmp/__no_such_paperclip_dir__";
+    process.env.CLAUDE_CONFIG_DIR = "/tmp/__no_such_cyberpunk-company_dir__";
     const token = await readClaudeToken();
     expect(token).toBe(null);
   });
@@ -365,7 +365,7 @@ describe("readCodexAuthInfo", () => {
   });
 
   it("returns null when auth.json does not exist", async () => {
-    process.env.CODEX_HOME = "/tmp/__no_such_paperclip_codex_dir__";
+    process.env.CODEX_HOME = "/tmp/__no_such_cyberpunk-company_codex_dir__";
     const result = await readCodexAuthInfo();
     expect(result).toBe(null);
   });

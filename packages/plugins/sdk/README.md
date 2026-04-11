@@ -884,5 +884,5 @@ const server = await startPluginDevServer({ rootDir: process.cwd() });
 ```
 
 Dev server endpoints:
-- `GET /__paperclip__/health` returns `{ ok, rootDir, uiDir }`
-- `GET /__paperclip__/events` streams `reload` SSE events on UI build changes
+- `GET /__cyberpunk-company__/health` returns `{ ok, rootDir, uiDir }`
+- `GET /__cyberpunk-company__/events` streams `reload` SSE events on UI build changes

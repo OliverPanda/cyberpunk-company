@@ -98,7 +98,7 @@ function formatSqlLiteral(value: string): string {
   const sanitized = value.replace(/\u0000/g, "");
   let tag = "$cyberpunk-company$";
   while (sanitized.includes(tag)) {
-    tag = `$paperclip_${Math.random().toString(36).slice(2, 8)}$`;
+    tag = `$cyberpunk-company_${Math.random().toString(36).slice(2, 8)}$`;
   }
   return `${tag}${sanitized}${tag}`;
 }

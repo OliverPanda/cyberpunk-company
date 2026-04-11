@@ -87,7 +87,7 @@ PAYLOAD="$(jq -nc \
       CYBERPUNK_APPROVAL_ID: $approvalId,
       CYBERPUNK_APPROVAL_STATUS: $approvalStatus,
       CYBERPUNK_LINKED_ISSUE_IDS: $linkedIssueIds,
-      paperclip_session_key: ("cyberpunk-company:run:" + $runId)
+      cyberpunk-company_session_key: ("cyberpunk-company:run:" + $runId)
     }
   }')"
 

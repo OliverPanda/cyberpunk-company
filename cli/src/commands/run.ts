@@ -6,9 +6,9 @@ import pc from "picocolors";
 import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
 import { onboard } from "./onboard.js";
 import { doctor } from "./doctor.js";
-import { loadPaperclipEnvFile } from "../config/env.js";
+import { loadCyberpunkCompanyEnvFile } from "../config/env.js";
 import { configExists, resolveConfigPath } from "../config/store.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { CyberpunkCompanyConfig } from "../config/schema.js";
 import { readConfig } from "../config/store.js";
 import {
   describeLocalInstancePaths,
@@ -42,7 +42,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
 
   const configPath = resolveConfigPath(opts.config);
   process.env.CYBERPUNK_CONFIG = configPath;
-  loadPaperclipEnvFile(configPath);
+  loadCyberpunkCompanyEnvFile(configPath);
 
   p.intro(pc.bgCyan(pc.black(" cyberpunk-company run ")));
   p.log.message(pc.dim(`Home: ${paths.homeDir}`));
@@ -92,7 +92,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
 }
 
 function resolveBootstrapInviteBaseUrl(
-  config: PaperclipConfig,
+  config: CyberpunkCompanyConfig,
   startedServer: StartedServer,
 ): string {
   const explicitBaseUrl =
@@ -177,7 +177,7 @@ async function importServerEntry(): Promise<StartedServer> {
   }
 }
 
-function shouldGenerateBootstrapInviteAfterStart(config: PaperclipConfig): boolean {
+function shouldGenerateBootstrapInviteAfterStart(config: CyberpunkCompanyConfig): boolean {
   return config.server.deploymentMode === "authenticated" && config.database.mode === "embedded-postgres";
 }
 

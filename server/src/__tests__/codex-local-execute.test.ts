@@ -13,7 +13,7 @@ const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
   codexHome: process.env.CODEX_HOME || null,
-  paperclipEnvKeys: Object.keys(process.env)
+  cyberpunkCompanyEnvKeys: Object.keys(process.env)
     .filter((key) => key.startsWith("CYBERPUNK_"))
     .sort(),
 };
@@ -32,7 +32,7 @@ type CapturePayload = {
   argv: string[];
   prompt: string;
   codexHome: string | null;
-  paperclipEnvKeys: string[];
+  cyberpunkCompanyEnvKeys: string[];
 };
 
 type LogEntry = {
@@ -47,9 +47,9 @@ describe("codex execute", () => {
     const commandPath = path.join(root, "codex");
     const capturePath = path.join(root, "capture.json");
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const paperclipHome = path.join(root, "cyberpunk-company-home");
+    const cyberpunkCompanyHome = path.join(root, "cyberpunk-company-home");
     const managedCodexHome = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "default",
       "companies",
@@ -63,12 +63,12 @@ describe("codex execute", () => {
     await writeFakeCodexCommand(commandPath);
 
     const previousHome = process.env.HOME;
-    const previousPaperclipHome = process.env.CYBERPUNK_HOME;
-    const previousPaperclipInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
-    const previousPaperclipInWorktree = process.env.CYBERPUNK_IN_WORKTREE;
+    const previousCyberpunkCompanyHome = process.env.CYBERPUNK_HOME;
+    const previousCyberpunkCompanyInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
+    const previousCyberpunkCompanyInWorktree = process.env.CYBERPUNK_IN_WORKTREE;
     const previousCodexHome = process.env.CODEX_HOME;
     process.env.HOME = root;
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     delete process.env.CYBERPUNK_INSTANCE_ID;
     delete process.env.CYBERPUNK_IN_WORKTREE;
     process.env.CODEX_HOME = sharedCodexHome;
@@ -127,12 +127,12 @@ describe("codex execute", () => {
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
-      if (previousPaperclipHome === undefined) delete process.env.CYBERPUNK_HOME;
-      else process.env.CYBERPUNK_HOME = previousPaperclipHome;
-      if (previousPaperclipInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
-      else process.env.CYBERPUNK_INSTANCE_ID = previousPaperclipInstanceId;
-      if (previousPaperclipInWorktree === undefined) delete process.env.CYBERPUNK_IN_WORKTREE;
-      else process.env.CYBERPUNK_IN_WORKTREE = previousPaperclipInWorktree;
+      if (previousCyberpunkCompanyHome === undefined) delete process.env.CYBERPUNK_HOME;
+      else process.env.CYBERPUNK_HOME = previousCyberpunkCompanyHome;
+      if (previousCyberpunkCompanyInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
+      else process.env.CYBERPUNK_INSTANCE_ID = previousCyberpunkCompanyInstanceId;
+      if (previousCyberpunkCompanyInWorktree === undefined) delete process.env.CYBERPUNK_IN_WORKTREE;
+      else process.env.CYBERPUNK_IN_WORKTREE = previousCyberpunkCompanyInWorktree;
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
       else process.env.CODEX_HOME = previousCodexHome;
       await fs.rm(root, { recursive: true, force: true });
@@ -201,9 +201,9 @@ describe("codex execute", () => {
     const commandPath = path.join(root, "codex");
     const capturePath = path.join(root, "capture.json");
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const paperclipHome = path.join(root, "cyberpunk-company-home");
+    const cyberpunkCompanyHome = path.join(root, "cyberpunk-company-home");
     const isolatedCodexHome = path.join(
-      paperclipHome,
+      cyberpunkCompanyHome,
       "instances",
       "worktree-1",
       "companies",
@@ -218,12 +218,12 @@ describe("codex execute", () => {
     await writeFakeCodexCommand(commandPath);
 
     const previousHome = process.env.HOME;
-    const previousPaperclipHome = process.env.CYBERPUNK_HOME;
-    const previousPaperclipInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
-    const previousPaperclipInWorktree = process.env.CYBERPUNK_IN_WORKTREE;
+    const previousCyberpunkCompanyHome = process.env.CYBERPUNK_HOME;
+    const previousCyberpunkCompanyInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
+    const previousCyberpunkCompanyInWorktree = process.env.CYBERPUNK_IN_WORKTREE;
     const previousCodexHome = process.env.CODEX_HOME;
     process.env.HOME = root;
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "worktree-1";
     process.env.CYBERPUNK_IN_WORKTREE = "true";
     process.env.CODEX_HOME = sharedCodexHome;
@@ -267,7 +267,7 @@ describe("codex execute", () => {
       expect(capture.codexHome).toBe(isolatedCodexHome);
       expect(capture.argv).toEqual(expect.arrayContaining(["exec", "--json", "-"]));
       expect(capture.prompt).toContain("Follow the cyberpunk-company heartbeat.");
-      expect(capture.paperclipEnvKeys).toEqual(
+      expect(capture.cyberpunkCompanyEnvKeys).toEqual(
         expect.arrayContaining([
           "CYBERPUNK_AGENT_ID",
           "CYBERPUNK_API_KEY",
@@ -300,12 +300,12 @@ describe("codex execute", () => {
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
-      if (previousPaperclipHome === undefined) delete process.env.CYBERPUNK_HOME;
-      else process.env.CYBERPUNK_HOME = previousPaperclipHome;
-      if (previousPaperclipInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
-      else process.env.CYBERPUNK_INSTANCE_ID = previousPaperclipInstanceId;
-      if (previousPaperclipInWorktree === undefined) delete process.env.CYBERPUNK_IN_WORKTREE;
-      else process.env.CYBERPUNK_IN_WORKTREE = previousPaperclipInWorktree;
+      if (previousCyberpunkCompanyHome === undefined) delete process.env.CYBERPUNK_HOME;
+      else process.env.CYBERPUNK_HOME = previousCyberpunkCompanyHome;
+      if (previousCyberpunkCompanyInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
+      else process.env.CYBERPUNK_INSTANCE_ID = previousCyberpunkCompanyInstanceId;
+      if (previousCyberpunkCompanyInWorktree === undefined) delete process.env.CYBERPUNK_IN_WORKTREE;
+      else process.env.CYBERPUNK_IN_WORKTREE = previousCyberpunkCompanyInWorktree;
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
       else process.env.CODEX_HOME = previousCodexHome;
       await fs.rm(root, { recursive: true, force: true });
@@ -319,19 +319,19 @@ describe("codex execute", () => {
     const capturePath = path.join(root, "capture.json");
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const explicitCodexHome = path.join(root, "explicit-codex-home");
-    const paperclipHome = path.join(root, "cyberpunk-company-home");
+    const cyberpunkCompanyHome = path.join(root, "cyberpunk-company-home");
     await fs.mkdir(workspace, { recursive: true });
     await fs.mkdir(sharedCodexHome, { recursive: true });
     await fs.writeFile(path.join(sharedCodexHome, "auth.json"), '{"token":"shared"}\n', "utf8");
     await writeFakeCodexCommand(commandPath);
 
     const previousHome = process.env.HOME;
-    const previousPaperclipHome = process.env.CYBERPUNK_HOME;
-    const previousPaperclipInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
-    const previousPaperclipInWorktree = process.env.CYBERPUNK_IN_WORKTREE;
+    const previousCyberpunkCompanyHome = process.env.CYBERPUNK_HOME;
+    const previousCyberpunkCompanyInstanceId = process.env.CYBERPUNK_INSTANCE_ID;
+    const previousCyberpunkCompanyInWorktree = process.env.CYBERPUNK_IN_WORKTREE;
     const previousCodexHome = process.env.CODEX_HOME;
     process.env.HOME = root;
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = "worktree-1";
     process.env.CYBERPUNK_IN_WORKTREE = "true";
     process.env.CODEX_HOME = sharedCodexHome;
@@ -372,16 +372,16 @@ describe("codex execute", () => {
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
       expect(capture.codexHome).toBe(explicitCodexHome);
       expect((await fs.lstat(path.join(explicitCodexHome, "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
-      await expect(fs.lstat(path.join(paperclipHome, "instances", "worktree-1", "codex-home"))).rejects.toThrow();
+      await expect(fs.lstat(path.join(cyberpunkCompanyHome, "instances", "worktree-1", "codex-home"))).rejects.toThrow();
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
-      if (previousPaperclipHome === undefined) delete process.env.CYBERPUNK_HOME;
-      else process.env.CYBERPUNK_HOME = previousPaperclipHome;
-      if (previousPaperclipInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
-      else process.env.CYBERPUNK_INSTANCE_ID = previousPaperclipInstanceId;
-      if (previousPaperclipInWorktree === undefined) delete process.env.CYBERPUNK_IN_WORKTREE;
-      else process.env.CYBERPUNK_IN_WORKTREE = previousPaperclipInWorktree;
+      if (previousCyberpunkCompanyHome === undefined) delete process.env.CYBERPUNK_HOME;
+      else process.env.CYBERPUNK_HOME = previousCyberpunkCompanyHome;
+      if (previousCyberpunkCompanyInstanceId === undefined) delete process.env.CYBERPUNK_INSTANCE_ID;
+      else process.env.CYBERPUNK_INSTANCE_ID = previousCyberpunkCompanyInstanceId;
+      if (previousCyberpunkCompanyInWorktree === undefined) delete process.env.CYBERPUNK_IN_WORKTREE;
+      else process.env.CYBERPUNK_IN_WORKTREE = previousCyberpunkCompanyInWorktree;
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
       else process.env.CODEX_HOME = previousCodexHome;
       await fs.rm(root, { recursive: true, force: true });

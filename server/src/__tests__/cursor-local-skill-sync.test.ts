@@ -19,7 +19,7 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("cursor local skill sync", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -40,19 +40,19 @@ describe("cursor local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
     const before = await listCursorSkills(ctx);
     expect(before.mode).toBe("persistent");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.required).toBe(true);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("missing");
 
-    const after = await syncCursorSkills(ctx, [paperclipKey]);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    const after = await syncCursorSkills(ctx, [cyberpunkCompanyKey]);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".cursor", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 
@@ -62,7 +62,7 @@ describe("cursor local skill sync", () => {
     cleanupDirs.add(home);
     cleanupDirs.add(runtimeSkills);
 
-    const paperclipDir = await createSkillDir(runtimeSkills, "cyberpunk-company");
+    const cyberpunkCompanyDir = await createSkillDir(runtimeSkills, "cyberpunk-company");
     const asciiHeartDir = await createSkillDir(runtimeSkills, "ascii-heart");
 
     const ctx = {
@@ -73,11 +73,11 @@ describe("cursor local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipRuntimeSkills: [
+        cyberpunkCompanyRuntimeSkills: [
           {
             key: "cyberpunk-company",
             runtimeName: "cyberpunk-company",
-            source: paperclipDir,
+            source: cyberpunkCompanyDir,
             required: true,
             requiredReason: "Bundled Cyberpunk Company skills are always available for local adapters.",
           },
@@ -117,12 +117,12 @@ describe("cursor local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
-    await syncCursorSkills(configuredCtx, [paperclipKey]);
+    await syncCursorSkills(configuredCtx, [cyberpunkCompanyKey]);
 
     const clearedCtx = {
       ...configuredCtx,
@@ -137,8 +137,8 @@ describe("cursor local skill sync", () => {
     } as const;
 
     const after = await syncCursorSkills(clearedCtx, []);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    expect(after.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".cursor", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 });

@@ -95,7 +95,7 @@ export const secretsConfigSchema = z.object({
   }),
 });
 
-export const paperclipConfigSchema = z
+export const cyberpunkCompanyConfigSchema = z
   .object({
     $meta: configMetaSchema,
     llm: llmConfigSchema.optional(),
@@ -163,7 +163,7 @@ export const paperclipConfigSchema = z
     }
   });
 
-export type PaperclipConfig = z.infer<typeof paperclipConfigSchema>;
+export type CyberpunkCompanyConfig = z.infer<typeof cyberpunkCompanyConfigSchema>;
 export type LlmConfig = z.infer<typeof llmConfigSchema>;
 export type DatabaseConfig = z.infer<typeof databaseConfigSchema>;
 export type LoggingConfig = z.infer<typeof loggingConfigSchema>;

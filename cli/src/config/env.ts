@@ -47,7 +47,7 @@ export function resolveAgentJwtEnvFile(configPath?: string): string {
   return resolveEnvFilePath(configPath);
 }
 
-export function loadPaperclipEnvFile(configPath?: string): void {
+export function loadCyberpunkCompanyEnvFile(configPath?: string): void {
   loadAgentJwtEnvFile(resolveEnvFilePath(configPath));
 }
 
@@ -93,15 +93,15 @@ export function ensureAgentJwtSecret(configPath?: string): { secret: string; cre
 }
 
 export function writeAgentJwtEnv(secret: string, filePath = resolveEnvFilePath()): void {
-  mergePaperclipEnvEntries({ [JWT_SECRET_ENV_KEY]: secret }, filePath);
+  mergeCyberpunkCompanyEnvEntries({ [JWT_SECRET_ENV_KEY]: secret }, filePath);
 }
 
-export function readPaperclipEnvEntries(filePath = resolveEnvFilePath()): Record<string, string> {
+export function readCyberpunkCompanyEnvEntries(filePath = resolveEnvFilePath()): Record<string, string> {
   if (!fs.existsSync(filePath)) return {};
   return parseEnvFile(fs.readFileSync(filePath, "utf-8"));
 }
 
-export function writePaperclipEnvEntries(entries: Record<string, string>, filePath = resolveEnvFilePath()): void {
+export function writeCyberpunkCompanyEnvEntries(entries: Record<string, string>, filePath = resolveEnvFilePath()): void {
   const dir = path.dirname(filePath);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(filePath, renderEnvFile(entries), {
@@ -109,17 +109,17 @@ export function writePaperclipEnvEntries(entries: Record<string, string>, filePa
   });
 }
 
-export function mergePaperclipEnvEntries(
+export function mergeCyberpunkCompanyEnvEntries(
   entries: Record<string, string>,
   filePath = resolveEnvFilePath(),
 ): Record<string, string> {
-  const current = readPaperclipEnvEntries(filePath);
+  const current = readCyberpunkCompanyEnvEntries(filePath);
   const next = {
     ...current,
     ...Object.fromEntries(
       Object.entries(entries).filter(([, value]) => typeof value === "string" && value.trim().length > 0),
     ),
   };
-  writePaperclipEnvEntries(next, filePath);
+  writeCyberpunkCompanyEnvEntries(next, filePath);
   return next;
 }

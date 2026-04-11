@@ -11,7 +11,7 @@ const CYBERPUNK_ART = [
 
 const TAGLINE = "Open-source orchestration for zero-human companies";
 
-export function printPaperclipCliBanner(): void {
+export function printCyberpunkCompanyCliBanner(): void {
   const lines = [
     "",
     ...CYBERPUNK_ART.map((line) => pc.cyan(line)),

@@ -77,7 +77,7 @@ function checkedSlugs(checkedFiles: Set<string>): {
  * since the file has a known, simple structure produced by our own
  * renderYamlBlock.
  */
-function filterPaperclipYaml(yaml: string, checkedFiles: Set<string>): string {
+function filterCyberpunkCompanyYaml(yaml: string, checkedFiles: Set<string>): string {
   const slugs = checkedSlugs(checkedFiles);
   const lines = yaml.split("\n");
   const out: string[] = [];
@@ -782,9 +782,9 @@ export function CompanyExport() {
     const filtered = { ...exportData.files };
 
     // Filter .cyberpunk-company.yaml
-    const yamlPath = exportData.paperclipExtensionPath;
+    const yamlPath = exportData.cyberpunkCompanyExtensionPath;
     if (yamlPath && typeof exportData.files[yamlPath] === "string") {
-      filtered[yamlPath] = filterPaperclipYaml(exportData.files[yamlPath], checkedFiles);
+      filtered[yamlPath] = filterCyberpunkCompanyYaml(exportData.files[yamlPath], checkedFiles);
     }
 
     // Regenerate README.md based on checked selection

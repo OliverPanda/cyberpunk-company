@@ -545,7 +545,7 @@ export function agentRoutes(db: Db) {
     });
     return {
       ...config,
-      paperclipRuntimeSkills: runtimeSkillEntries,
+      cyberpunkCompanyRuntimeSkills: runtimeSkillEntries,
     };
   }
 
@@ -810,7 +810,7 @@ export function agentRoutes(db: Db) {
       );
       const runtimeSkillConfig = {
         ...runtimeConfig,
-        paperclipRuntimeSkills: runtimeSkillEntries,
+        cyberpunkCompanyRuntimeSkills: runtimeSkillEntries,
       };
       const snapshot = adapter?.syncSkills
         ? await adapter.syncSkills({

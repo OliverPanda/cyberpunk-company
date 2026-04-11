@@ -8,13 +8,13 @@ import {
   asNumber,
   asStringArray,
   parseObject,
-  buildPaperclipEnv,
+  buildCyberpunkCompanyEnv,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
   ensureCyberpunkSkillSymlink,
   ensurePathInEnv,
-  readPaperclipRuntimeSkillEntries,
+  readCyberpunkCompanyRuntimeSkillEntries,
   resolveCyberpunkDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
   renderTemplate,
@@ -75,14 +75,14 @@ function normalizeMode(rawMode: string): "plan" | "ask" | null {
   return null;
 }
 
-function renderPaperclipEnvNote(env: Record<string, string>): string {
-  const paperclipKeys = Object.keys(env)
+function renderCyberpunkCompanyEnvNote(env: Record<string, string>): string {
+  const cyberpunkCompanyKeys = Object.keys(env)
     .filter((key) => key.startsWith("CYBERPUNK_"))
     .sort();
-  if (paperclipKeys.length === 0) return "";
+  if (cyberpunkCompanyKeys.length === 0) return "";
   return [
     "Cyberpunk Company runtime note:",
-    `The following CYBERPUNK_* environment variables are available in this run: ${paperclipKeys.join(", ")}`,
+    `The following CYBERPUNK_* environment variables are available in this run: ${cyberpunkCompanyKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
     "",
     "",
@@ -113,7 +113,7 @@ export async function ensureCursorSkillsInjected(
             runtimeName: entry.name,
             source: path.join(options.skillsDir!, entry.name),
           }))
-      : await readPaperclipRuntimeSkillEntries({}, __moduleDir));
+      : await readCyberpunkCompanyRuntimeSkillEntries({}, __moduleDir));
   if (skillsEntries.length === 0) return;
 
   const skillsHome = options.skillsHome ?? cursorSkillsHome();
@@ -184,7 +184,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const effectiveWorkspaceCwd = useConfiguredInsteadOfAgentHome ? "" : workspaceCwd;
   const cwd = effectiveWorkspaceCwd || configuredCwd || process.cwd();
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
-  const cursorSkillEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const cursorSkillEntries = await readCyberpunkCompanyRuntimeSkillEntries(config, __moduleDir);
   const desiredCursorSkillNames = resolveCyberpunkDesiredSkillNames(config, cursorSkillEntries);
   await ensureCursorSkillsInjected(onLog, {
     skillsEntries: cursorSkillEntries.filter((entry) => desiredCursorSkillNames.includes(entry.key)),
@@ -193,7 +193,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
     typeof envConfig.CYBERPUNK_API_KEY === "string" && envConfig.CYBERPUNK_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildPaperclipEnv(agent) };
+  const env: Record<string, string> = { ...buildCyberpunkCompanyEnv(agent) };
   env.CYBERPUNK_RUN_ID = runId;
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||
@@ -351,12 +351,12 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   const sessionHandoffNote = asString(context.cyberpunkSessionHandoffMarkdown, "").trim();
-  const paperclipEnvNote = renderPaperclipEnvNote(env);
+  const cyberpunkCompanyEnvNote = renderCyberpunkCompanyEnvNote(env);
   const prompt = joinPromptSections([
     instructionsPrefix,
     renderedBootstrapPrompt,
     sessionHandoffNote,
-    paperclipEnvNote,
+    cyberpunkCompanyEnvNote,
     renderedPrompt,
   ]);
   const promptMetrics = {
@@ -364,7 +364,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     instructionsChars,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
     sessionHandoffChars: sessionHandoffNote.length,
-    runtimeNoteChars: paperclipEnvNote.length,
+    runtimeNoteChars: cyberpunkCompanyEnvNote.length,
     heartbeatPromptChars: renderedPrompt.length,
   };
 

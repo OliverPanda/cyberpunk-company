@@ -19,7 +19,7 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("claude local skill sync", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const createAgentKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company-create-agent";
   const cleanupDirs = new Set<string>();
 
@@ -38,9 +38,9 @@ describe("claude local skill sync", () => {
 
     expect(snapshot.mode).toBe("ephemeral");
     expect(snapshot.supported).toBe(true);
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(snapshot.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.required).toBe(true);
+    expect(snapshot.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("configured");
   });
 
   it("respects an explicit desired skill list without mutating a persistent home", async () => {
@@ -50,13 +50,13 @@ describe("claude local skill sync", () => {
       adapterType: "claude_local",
       config: {
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
-    }, [paperclipKey]);
+    }, [cyberpunkCompanyKey]);
 
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(snapshot.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("configured");
     expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("configured");
   });
 
@@ -73,9 +73,9 @@ describe("claude local skill sync", () => {
     });
 
     expect(snapshot.warnings).toEqual([]);
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
+    expect(snapshot.desiredSkills).toContain(cyberpunkCompanyKey);
     expect(snapshot.desiredSkills).not.toContain("cyberpunk-company");
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("configured");
     expect(snapshot.entries.find((entry) => entry.key === "cyberpunk-company")).toBeUndefined();
   });
 

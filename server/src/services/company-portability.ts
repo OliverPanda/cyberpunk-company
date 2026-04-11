@@ -400,7 +400,7 @@ type CompanyPackageIncludeEntry = {
   path: string;
 };
 
-type PaperclipExtensionDoc = {
+type CyberpunkCompanyExtensionDoc = {
   schema?: string;
   company?: Record<string, unknown> | null;
   agents?: Record<string, Record<string, unknown>> | null;
@@ -1421,7 +1421,7 @@ function filterPortableExtensionYaml(yaml: string, selectedFiles: Set<string>) {
 function filterExportFiles(
   files: Record<string, CompanyPortabilityFileEntry>,
   selectedFilesInput: string[] | undefined,
-  cyberpunkExtensionPath: string,
+  cyberpunkCompanyExtensionPath: string,
 ) {
   if (!selectedFilesInput || selectedFilesInput.length === 0) {
     return files;
@@ -1438,15 +1438,15 @@ function filterExportFiles(
     filtered[filePath] = content;
   }
 
-  const extensionEntry = filtered[cyberpunkExtensionPath];
-  if (selectedFiles.has(cyberpunkExtensionPath) && typeof extensionEntry === "string") {
-    filtered[cyberpunkExtensionPath] = filterPortableExtensionYaml(extensionEntry, selectedFiles);
+  const extensionEntry = filtered[cyberpunkCompanyExtensionPath];
+  if (selectedFiles.has(cyberpunkCompanyExtensionPath) && typeof extensionEntry === "string") {
+    filtered[cyberpunkCompanyExtensionPath] = filterPortableExtensionYaml(extensionEntry, selectedFiles);
   }
 
   return filtered;
 }
 
-function findCyberpunkExtensionPath(files: Record<string, CompanyPortabilityFileEntry>) {
+function findCyberpunkCompanyExtensionPath(files: Record<string, CompanyPortabilityFileEntry>) {
   if (typeof files[".cyberpunk-company.yaml"] === "string") return ".cyberpunk-company.yaml";
   if (typeof files[".cyberpunk-company.yml"] === "string") return ".cyberpunk-company.yml";
   return Object.keys(files).find((entry) => entry.endsWith("/.cyberpunk-company.yaml") || entry.endsWith("/.cyberpunk-company.yml")) ?? null;
@@ -2238,16 +2238,16 @@ function buildManifestFromPackageFiles(
   }
   const companyDoc = parseFrontmatterMarkdown(companyMarkdown);
   const companyFrontmatter = companyDoc.frontmatter;
-  const cyberpunkExtensionPath = findCyberpunkExtensionPath(normalizedFiles);
-  const cyberpunkExtension = cyberpunkExtensionPath
-    ? parseYamlFile(readPortableTextFile(normalizedFiles, cyberpunkExtensionPath) ?? "")
+  const cyberpunkCompanyExtensionPath = findCyberpunkCompanyExtensionPath(normalizedFiles);
+  const cyberpunkExtension = cyberpunkCompanyExtensionPath
+    ? parseYamlFile(readPortableTextFile(normalizedFiles, cyberpunkCompanyExtensionPath) ?? "")
     : {};
   const cyberpunkCompany = isPlainRecord(cyberpunkExtension.company) ? cyberpunkExtension.company : {};
   const cyberpunkSidebar = normalizePortableSidebarOrder(cyberpunkExtension.sidebar);
   const cyberpunkAgents = isPlainRecord(cyberpunkExtension.agents) ? cyberpunkExtension.agents : {};
-  const paperclipProjects = isPlainRecord(cyberpunkExtension.projects) ? cyberpunkExtension.projects : {};
-  const paperclipTasks = isPlainRecord(cyberpunkExtension.tasks) ? cyberpunkExtension.tasks : {};
-  const paperclipRoutines = isPlainRecord(cyberpunkExtension.routines) ? cyberpunkExtension.routines : {};
+  const cyberpunkCompanyProjects = isPlainRecord(cyberpunkExtension.projects) ? cyberpunkExtension.projects : {};
+  const cyberpunkCompanyTasks = isPlainRecord(cyberpunkExtension.tasks) ? cyberpunkExtension.tasks : {};
+  const cyberpunkCompanyRoutines = isPlainRecord(cyberpunkExtension.routines) ? cyberpunkExtension.routines : {};
   const companyName =
     asString(companyFrontmatter.name)
     ?? opts?.sourceLabel?.companyName
@@ -2468,7 +2468,7 @@ function buildManifestFromPackageFiles(
       projectPath,
     );
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipProjects[slug]) ? paperclipProjects[slug] : {};
+    const extension = isPlainRecord(cyberpunkCompanyProjects[slug]) ? cyberpunkCompanyProjects[slug] : {};
     const workspaceExtensions = isPlainRecord(extension.workspaces) ? extension.workspaces : {};
     const workspaces = Object.entries(workspaceExtensions)
       .map(([workspaceKey, entry]) => normalizePortableProjectWorkspaceExtension(workspaceKey, entry))
@@ -2504,9 +2504,9 @@ function buildManifestFromPackageFiles(
     const frontmatter = taskDoc.frontmatter;
     const fallbackSlug = normalizeAgentUrlKey(path.posix.basename(path.posix.dirname(taskPath))) ?? "task";
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipTasks[slug]) ? paperclipTasks[slug] : {};
-    const routineExtension = normalizeRoutineExtension(paperclipRoutines[slug]);
-    const routineExtensionRaw = isPlainRecord(paperclipRoutines[slug]) ? paperclipRoutines[slug] : {};
+    const extension = isPlainRecord(cyberpunkCompanyTasks[slug]) ? cyberpunkCompanyTasks[slug] : {};
+    const routineExtension = normalizeRoutineExtension(cyberpunkCompanyRoutines[slug]);
+    const routineExtensionRaw = isPlainRecord(cyberpunkCompanyRoutines[slug]) ? cyberpunkCompanyRoutines[slug] : {};
     const schedule = isPlainRecord(frontmatter.schedule) ? frontmatter.schedule : null;
     const legacyRecurrence = schedule && isPlainRecord(schedule.recurrence)
       ? schedule.recurrence
@@ -2961,10 +2961,10 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
     }
 
     const cyberpunkAgentsOut: Record<string, Record<string, unknown>> = {};
-    const paperclipProjectsOut: Record<string, Record<string, unknown>> = {};
-    const paperclipTasksOut: Record<string, Record<string, unknown>> = {};
+    const cyberpunkCompanyProjectsOut: Record<string, Record<string, unknown>> = {};
+    const cyberpunkCompanyTasksOut: Record<string, Record<string, unknown>> = {};
     const unportableTaskWorkspaceRefs = new Map<string, { workspaceId: string; taskSlugs: string[] }>();
-    const paperclipRoutinesOut: Record<string, Record<string, unknown>> = {};
+    const cyberpunkCompanyRoutinesOut: Record<string, Record<string, unknown>> = {};
 
     const skillByReference = new Map<string, typeof companySkillRows[number]>();
     for (const skill of companySkillRows) {
@@ -3120,7 +3120,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
         ) ?? undefined,
         workspaces: portableWorkspaces.extension,
       });
-      paperclipProjectsOut[slug] = isPlainRecord(extension) ? extension : {};
+      cyberpunkCompanyProjectsOut[slug] = isPlainRecord(extension) ? extension : {};
     }
 
     for (const issue of selectedIssueRows) {
@@ -3162,7 +3162,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
         executionWorkspaceSettings: issue.executionWorkspaceSettings ?? undefined,
         assigneeAdapterOverrides: issue.assigneeAdapterOverrides ?? undefined,
       });
-      paperclipTasksOut[taskSlug] = isPlainRecord(extension) ? extension : {};
+      cyberpunkCompanyTasksOut[taskSlug] = isPlainRecord(extension) ? extension : {};
     }
 
     for (const { workspaceId, taskSlugs } of unportableTaskWorkspaceRefs.values()) {
@@ -3202,23 +3202,23 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             : undefined,
         })),
       });
-      paperclipRoutinesOut[taskSlug] = isPlainRecord(extension) ? extension : {};
+      cyberpunkCompanyRoutinesOut[taskSlug] = isPlainRecord(extension) ? extension : {};
     }
 
-    const cyberpunkExtensionPath = ".cyberpunk-company.yaml";
+    const cyberpunkCompanyExtensionPath = ".cyberpunk-company.yaml";
     const cyberpunkAgents = Object.fromEntries(
       Object.entries(cyberpunkAgentsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipProjects = Object.fromEntries(
-      Object.entries(paperclipProjectsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const cyberpunkCompanyProjects = Object.fromEntries(
+      Object.entries(cyberpunkCompanyProjectsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipTasks = Object.fromEntries(
-      Object.entries(paperclipTasksOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const cyberpunkCompanyTasks = Object.fromEntries(
+      Object.entries(cyberpunkCompanyTasksOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipRoutines = Object.fromEntries(
-      Object.entries(paperclipRoutinesOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const cyberpunkCompanyRoutines = Object.fromEntries(
+      Object.entries(cyberpunkCompanyRoutinesOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    files[cyberpunkExtensionPath] = buildYamlFile(
+    files[cyberpunkCompanyExtensionPath] = buildYamlFile(
       {
         schema: "cyberpunk-company/v1",
         company: stripEmptyValues({
@@ -3228,14 +3228,14 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
         }),
         sidebar: stripEmptyValues(sidebarOrder),
         agents: Object.keys(cyberpunkAgents).length > 0 ? cyberpunkAgents : undefined,
-        projects: Object.keys(paperclipProjects).length > 0 ? paperclipProjects : undefined,
-        tasks: Object.keys(paperclipTasks).length > 0 ? paperclipTasks : undefined,
-        routines: Object.keys(paperclipRoutines).length > 0 ? paperclipRoutines : undefined,
+        projects: Object.keys(cyberpunkCompanyProjects).length > 0 ? cyberpunkCompanyProjects : undefined,
+        tasks: Object.keys(cyberpunkCompanyTasks).length > 0 ? cyberpunkCompanyTasks : undefined,
+        routines: Object.keys(cyberpunkCompanyRoutines).length > 0 ? cyberpunkCompanyRoutines : undefined,
       },
       { preserveEmptyStrings: true },
     );
 
-    let finalFiles = filterExportFiles(files, input.selectedFiles, cyberpunkExtensionPath);
+    let finalFiles = filterExportFiles(files, input.selectedFiles, cyberpunkCompanyExtensionPath);
     let resolved = buildManifestFromPackageFiles(finalFiles, {
       sourceLabel: {
         companyId: company.id,
@@ -3291,7 +3291,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
       manifest: resolved.manifest,
       files: finalFiles,
       warnings: resolved.warnings,
-      cyberpunkExtensionPath,
+      cyberpunkCompanyExtensionPath,
     };
   }
 

@@ -179,8 +179,8 @@ HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable CYBERPUNK COMPANYAI_VERSION=
 Automated browser smoke is also available:
 
 ```bash
-gh workflow run release-smoke.yml -f paperclip_version=canary
-gh workflow run release-smoke.yml -f paperclip_version=latest
+gh workflow run release-smoke.yml -f cyberpunk-company_version=canary
+gh workflow run release-smoke.yml -f cyberpunk-company_version=latest
 ```
 
 Minimum checks:

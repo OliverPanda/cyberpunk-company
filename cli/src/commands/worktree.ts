@@ -45,11 +45,11 @@ import {
   formatEmbeddedPostgresError,
 } from "@cyberpunk-company/db";
 import type { Command } from "commander";
-import { ensureAgentJwtSecret, loadPaperclipEnvFile, mergePaperclipEnvEntries, readPaperclipEnvEntries, resolveCyberpunkEnvFile } from "../config/env.js";
+import { ensureAgentJwtSecret, loadCyberpunkCompanyEnvFile, mergeCyberpunkCompanyEnvEntries, readCyberpunkCompanyEnvEntries, resolveCyberpunkEnvFile } from "../config/env.js";
 import { expandHomePrefix } from "../config/home.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { CyberpunkCompanyConfig } from "../config/schema.js";
 import { readConfig, resolveConfigPath, writeConfig } from "../config/store.js";
-import { printPaperclipCliBanner } from "../utils/banner.js";
+import { printCyberpunkCompanyCliBanner } from "../utils/banner.js";
 import { resolveRuntimeLikePath } from "../utils/path-resolver.js";
 import {
   buildWorktreeConfig,
@@ -272,7 +272,7 @@ function buildS3ObjectKey(prefix: string, objectKey: string): string {
 
 const dynamicImport = new Function("specifier", "return import(specifier);") as (specifier: string) => Promise<any>;
 
-function createConfiguredStorageFromPaperclipConfig(config: PaperclipConfig): ConfiguredStorage {
+function createConfiguredStorageFromCyberpunkCompanyConfig(config: CyberpunkCompanyConfig): ConfiguredStorage {
   if (config.storage.provider === "local_disk") {
     const baseDir = expandHomePrefix(config.storage.localDisk.baseDir);
     return {
@@ -341,7 +341,7 @@ function openConfiguredStorage(configPath: string): ConfiguredStorage {
   if (!config) {
     throw new Error(`Config not found at ${configPath}.`);
   }
-  return createConfiguredStorageFromPaperclipConfig(config);
+  return createConfiguredStorageFromCyberpunkCompanyConfig(config);
 }
 
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
@@ -721,7 +721,7 @@ export function resolveSourceConfigPath(opts: WorktreeInitOptions): string {
   return path.resolve(sourceHome, "instances", sourceInstanceId, "config.json");
 }
 
-function resolveSourceConnectionString(config: PaperclipConfig, envEntries: Record<string, string>, portOverride?: number): string {
+function resolveSourceConnectionString(config: CyberpunkCompanyConfig, envEntries: Record<string, string>, portOverride?: number): string {
   if (config.database.mode === "postgres") {
     const connectionString = nonEmpty(envEntries.DATABASE_URL) ?? nonEmpty(config.database.connectionString);
     if (!connectionString) {
@@ -738,7 +738,7 @@ function resolveSourceConnectionString(config: PaperclipConfig, envEntries: Reco
 
 export function copySeededSecretsKey(input: {
   sourceConfigPath: string;
-  sourceConfig: PaperclipConfig;
+  sourceConfig: CyberpunkCompanyConfig;
   sourceEnvEntries: Record<string, string>;
   targetKeyFilePath: string;
 }): void {
@@ -853,15 +853,15 @@ async function ensureEmbeddedPostgres(dataDir: string, preferredPort: number): P
 
 async function seedWorktreeDatabase(input: {
   sourceConfigPath: string;
-  sourceConfig: PaperclipConfig;
-  targetConfig: PaperclipConfig;
+  sourceConfig: CyberpunkCompanyConfig;
+  targetConfig: CyberpunkCompanyConfig;
   targetPaths: WorktreeLocalPaths;
   instanceId: string;
   seedMode: WorktreeSeedMode;
 }): Promise<SeedWorktreeDatabaseResult> {
   const seedPlan = resolveWorktreeSeedPlan(input.seedMode);
   const sourceEnvFile = resolveCyberpunkEnvFile(input.sourceConfigPath);
-  const sourceEnvEntries = readPaperclipEnvEntries(sourceEnvFile);
+  const sourceEnvEntries = readCyberpunkCompanyEnvEntries(sourceEnvFile);
   copySeededSecretsKey({
     sourceConfigPath: input.sourceConfigPath,
     sourceConfig: input.sourceConfig,
@@ -975,11 +975,11 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
   });
 
   writeConfig(targetConfig, paths.configPath);
-  const sourceEnvEntries = readPaperclipEnvEntries(resolveCyberpunkEnvFile(sourceConfigPath));
+  const sourceEnvEntries = readCyberpunkCompanyEnvEntries(resolveCyberpunkEnvFile(sourceConfigPath));
   const existingAgentJwtSecret =
     nonEmpty(sourceEnvEntries.CYBERPUNK_AGENT_JWT_SECRET) ??
     nonEmpty(process.env.CYBERPUNK_AGENT_JWT_SECRET);
-  mergePaperclipEnvEntries(
+  mergeCyberpunkCompanyEnvEntries(
     {
       ...buildWorktreeEnvEntries(paths, branding),
       ...(existingAgentJwtSecret ? { CYBERPUNK_AGENT_JWT_SECRET: existingAgentJwtSecret } : {}),
@@ -987,7 +987,7 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
     paths.envPath,
   );
   ensureAgentJwtSecret(paths.configPath);
-  loadPaperclipEnvFile(paths.configPath);
+  loadCyberpunkCompanyEnvFile(paths.configPath);
   const copiedGitHooks = copyGitHooksToWorktreeGitDir(cwd);
 
   let seedSummary: string | null = null;
@@ -1046,13 +1046,13 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
 }
 
 export async function worktreeInitCommand(opts: WorktreeInitOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printCyberpunkCompanyCliBanner();
   p.intro(pc.bgCyan(pc.black(" cyberpunk-company worktree init ")));
   await runWorktreeInit(opts);
 }
 
 export async function worktreeMakeCommand(nameArg: string, opts: WorktreeMakeOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printCyberpunkCompanyCliBanner();
   p.intro(pc.bgCyan(pc.black(" cyberpunk-company worktree:make ")));
 
   const name = resolveWorktreeMakeName(nameArg);
@@ -1144,7 +1144,7 @@ type MergeSourceChoice = {
   worktree: string;
   branch: string | null;
   branchLabel: string;
-  hasPaperclipConfig: boolean;
+  hasCyberpunkCompanyConfig: boolean;
   isCurrent: boolean;
 };
 
@@ -1202,7 +1202,7 @@ function toMergeSourceChoices(cwd: string): MergeSourceChoice[] {
       worktree: worktreePath,
       branch: entry.branch,
       branchLabel,
-      hasPaperclipConfig: existsSync(path.resolve(worktreePath, ".cyberpunk-company", "config.json")),
+      hasCyberpunkCompanyConfig: existsSync(path.resolve(worktreePath, ".cyberpunk-company", "config.json")),
       isCurrent: worktreePath === currentCwd,
     };
   });
@@ -1248,7 +1248,7 @@ function worktreePathHasUncommittedChanges(worktreePath: string): boolean {
 }
 
 export async function worktreeCleanupCommand(nameArg: string, opts: WorktreeCleanupOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printCyberpunkCompanyCliBanner();
   p.intro(pc.bgCyan(pc.black(" cyberpunk-company worktree:cleanup ")));
 
   const name = resolveWorktreeMakeName(nameArg);
@@ -1386,7 +1386,7 @@ export async function worktreeCleanupCommand(nameArg: string, opts: WorktreeClea
 export async function worktreeEnvCommand(opts: WorktreeEnvOptions): Promise<void> {
   const configPath = resolveConfigPath(opts.config);
   const envPath = resolveCyberpunkEnvFile(configPath);
-  const envEntries = readPaperclipEnvEntries(envPath);
+  const envEntries = readCyberpunkCompanyEnvEntries(envPath);
   const out = {
     CYBERPUNK_CONFIG: configPath,
     ...(envEntries.CYBERPUNK_HOME ? { CYBERPUNK_HOME: envEntries.CYBERPUNK_HOME } : {}),
@@ -1440,7 +1440,7 @@ function resolveAttachmentLookupStorages(input: {
     resolveCurrentEndpoint().configPath,
     input.targetEndpoint.configPath,
     ...toMergeSourceChoices(process.cwd())
-      .filter((choice) => choice.hasPaperclipConfig)
+      .filter((choice) => choice.hasCyberpunkCompanyConfig)
       .map((choice) => path.resolve(choice.worktree, ".cyberpunk-company", "config.json")),
   ];
   const seen = new Set<string>();
@@ -1459,7 +1459,7 @@ async function openConfiguredDb(configPath: string): Promise<OpenDbHandle> {
   if (!config) {
     throw new Error(`Config not found at ${configPath}.`);
   }
-  const envEntries = readPaperclipEnvEntries(resolveCyberpunkEnvFile(configPath));
+  const envEntries = readCyberpunkCompanyEnvEntries(resolveCyberpunkEnvFile(configPath));
   let embeddedHandle: EmbeddedPostgresHandle | null = null;
 
   try {
@@ -1993,7 +1993,7 @@ export async function worktreeListCommand(opts: WorktreeListOptions): Promise<vo
   for (const choice of choices) {
     const flags = [
       choice.isCurrent ? "current" : null,
-      choice.hasPaperclipConfig ? "cyberpunk-company" : "no-cyberpunk-company-config",
+      choice.hasCyberpunkCompanyConfig ? "cyberpunk-company" : "no-cyberpunk-company-config",
     ].filter((value): value is string => value !== null);
     p.log.message(`${choice.branchLabel}  ${choice.worktree}  [${flags.join(", ")}]`);
   }
@@ -2055,7 +2055,7 @@ function resolveWorktreeEndpointFromSelector(
       `Could not resolve worktree "${selector}". Use a path, a listed worktree directory name, branch name, or "current".`,
     );
   }
-  if (!matched.hasPaperclipConfig && !matched.isCurrent) {
+  if (!matched.hasCyberpunkCompanyConfig && !matched.isCurrent) {
     throw new Error(`Resolved worktree "${selector}" does not look like a Cyberpunk Company worktree.`);
   }
   return resolveEndpointFromChoice(matched);
@@ -2065,7 +2065,7 @@ async function promptForSourceEndpoint(excludeWorktreePath?: string): Promise<Re
   const excluded = excludeWorktreePath ? path.resolve(excludeWorktreePath) : null;
   const currentEndpoint = resolveCurrentEndpoint();
   const choices = toMergeSourceChoices(process.cwd())
-    .filter((choice) => choice.hasPaperclipConfig || choice.isCurrent)
+    .filter((choice) => choice.hasCyberpunkCompanyConfig || choice.isCurrent)
     .filter((choice) => path.resolve(choice.worktree) !== excluded)
     .map((choice) => ({
       value: choice.isCurrent ? "__current__" : choice.worktree,

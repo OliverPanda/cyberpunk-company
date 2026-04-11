@@ -12,7 +12,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 }
 
 describe("codex local skill sync", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -33,17 +33,17 @@ describe("codex local skill sync", () => {
           CODEX_HOME: codexHome,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
     const before = await listCodexSkills(ctx);
     expect(before.mode).toBe("ephemeral");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.detail).toContain("CODEX_HOME/skills/");
+    expect(before.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.required).toBe(true);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("configured");
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.detail).toContain("CODEX_HOME/skills/");
   });
 
   it("does not persist Cyberpunk Company skills into CODEX_HOME during sync", async () => {
@@ -59,14 +59,14 @@ describe("codex local skill sync", () => {
           CODEX_HOME: codexHome,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
-    const after = await syncCodexSkills(configuredCtx, [paperclipKey]);
+    const after = await syncCodexSkills(configuredCtx, [cyberpunkCompanyKey]);
     expect(after.mode).toBe("ephemeral");
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("configured");
     await expect(fs.lstat(path.join(codexHome, "skills", "cyberpunk-company"))).rejects.toMatchObject({
       code: "ENOENT",
     });
@@ -91,8 +91,8 @@ describe("codex local skill sync", () => {
     } as const;
 
     const after = await syncCodexSkills(configuredCtx, []);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(after.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("configured");
   });
 
   it("normalizes legacy flat Cyberpunk Company skill refs before reporting configured state", async () => {
@@ -114,9 +114,9 @@ describe("codex local skill sync", () => {
     });
 
     expect(snapshot.warnings).toEqual([]);
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
+    expect(snapshot.desiredSkills).toContain(cyberpunkCompanyKey);
     expect(snapshot.desiredSkills).not.toContain("cyberpunk-company");
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
+    expect(snapshot.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("configured");
     expect(snapshot.entries.find((entry) => entry.key === "cyberpunk-company")).toBeUndefined();
   });
 });

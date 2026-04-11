@@ -12,7 +12,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 }
 
 describe("gemini local skill sync", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -33,19 +33,19 @@ describe("gemini local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
     const before = await listGeminiSkills(ctx);
     expect(before.mode).toBe("persistent");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.required).toBe(true);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("missing");
 
-    const after = await syncGeminiSkills(ctx, [paperclipKey]);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    const after = await syncGeminiSkills(ctx, [cyberpunkCompanyKey]);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".gemini", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 
@@ -62,12 +62,12 @@ describe("gemini local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
-    await syncGeminiSkills(configuredCtx, [paperclipKey]);
+    await syncGeminiSkills(configuredCtx, [cyberpunkCompanyKey]);
 
     const clearedCtx = {
       ...configuredCtx,
@@ -82,8 +82,8 @@ describe("gemini local skill sync", () => {
     } as const;
 
     const after = await syncGeminiSkills(clearedCtx, []);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    expect(after.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".gemini", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 });

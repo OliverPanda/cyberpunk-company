@@ -288,14 +288,14 @@ describe("realizeExecutionWorkspace", () => {
   it("writes an isolated repo-local Cyberpunk Company config and worktree branding when provisioning", async () => {
     const repoRoot = await createTempRepo();
     const previousCwd = process.cwd();
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-worktree-home-"));
+    const cyberpunkCompanyHome = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-worktree-home-"));
     const isolatedWorktreeHome = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-company-worktrees-"));
     const instanceId = "worktree-base";
-    const sharedConfigDir = path.join(paperclipHome, "instances", instanceId);
+    const sharedConfigDir = path.join(cyberpunkCompanyHome, "instances", instanceId);
     const sharedConfigPath = path.join(sharedConfigDir, "config.json");
     const sharedEnvPath = path.join(sharedConfigDir, ".env");
 
-    process.env.CYBERPUNK_HOME = paperclipHome;
+    process.env.CYBERPUNK_HOME = cyberpunkCompanyHome;
     process.env.CYBERPUNK_INSTANCE_ID = instanceId;
     process.env.CYBERPUNK_WORKTREES_DIR = isolatedWorktreeHome;
 
@@ -844,9 +844,9 @@ describe("ensureRuntimeServicesForRun", () => {
         [
           "const fs = require('node:fs');",
           `fs.writeFileSync(${JSON.stringify(envCapturePath)}, JSON.stringify({`,
-          "paperclipConfig: process.env.CYBERPUNK_CONFIG ?? null,",
-          "paperclipHome: process.env.CYBERPUNK_HOME ?? null,",
-          "paperclipInstanceId: process.env.CYBERPUNK_INSTANCE_ID ?? null,",
+          "cyberpunkCompanyConfig: process.env.CYBERPUNK_CONFIG ?? null,",
+          "cyberpunkCompanyHome: process.env.CYBERPUNK_HOME ?? null,",
+          "cyberpunkCompanyInstanceId: process.env.CYBERPUNK_INSTANCE_ID ?? null,",
           "databaseUrl: process.env.DATABASE_URL ?? null,",
           "customEnv: process.env.RUNTIME_CUSTOM_ENV ?? null,",
           "port: process.env.PORT ?? null,",
@@ -903,9 +903,9 @@ describe("ensureRuntimeServicesForRun", () => {
 
     expect(services).toHaveLength(1);
     const captured = JSON.parse(await fs.readFile(envCapturePath, "utf8")) as Record<string, string | null>;
-    expect(captured.paperclipConfig).toBeNull();
-    expect(captured.paperclipHome).toBeNull();
-    expect(captured.paperclipInstanceId).toBeNull();
+    expect(captured.cyberpunkCompanyConfig).toBeNull();
+    expect(captured.cyberpunkCompanyHome).toBeNull();
+    expect(captured.cyberpunkCompanyInstanceId).toBeNull();
     expect(captured.databaseUrl).toBeNull();
     expect(captured.customEnv).toBe("from-adapter");
     expect(captured.port).toMatch(/^\d+$/);

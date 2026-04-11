@@ -3,11 +3,11 @@ set -euo pipefail
 
 base_cwd="${CYBERPUNK_WORKSPACE_BASE_CWD:?CYBERPUNK_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${CYBERPUNK_WORKSPACE_CWD:?CYBERPUNK_WORKSPACE_CWD is required}"
-paperclip_home="${CYBERPUNK_HOME:-$HOME/.cyberpunk-company}"
-paperclip_instance_id="${CYBERPUNK_INSTANCE_ID:-default}"
-paperclip_dir="$worktree_cwd/.cyberpunk-company"
-worktree_config_path="$paperclip_dir/config.json"
-worktree_env_path="$paperclip_dir/.env"
+cyberpunk-company_home="${CYBERPUNK_HOME:-$HOME/.cyberpunk-company}"
+cyberpunk-company_instance_id="${CYBERPUNK_INSTANCE_ID:-default}"
+cyberpunk-company_dir="$worktree_cwd/.cyberpunk-company"
+worktree_config_path="$cyberpunk-company_dir/config.json"
+worktree_env_path="$cyberpunk-company_dir/.env"
 worktree_name="${CYBERPUNK_WORKSPACE_BRANCH:-$(basename "$worktree_cwd")}"
 
 if [[ ! -d "$base_cwd" ]]; then
@@ -25,11 +25,11 @@ if [[ -z "$source_config_path" && ( -e "$base_cwd/.cyberpunk-company/config.json
   source_config_path="$base_cwd/.cyberpunk-company/config.json"
 fi
 if [[ -z "$source_config_path" ]]; then
-  source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
+  source_config_path="$cyberpunk-company_home/instances/$cyberpunk-company_instance_id/config.json"
 fi
 source_env_path="$(dirname "$source_config_path")/.env"
 
-mkdir -p "$paperclip_dir"
+mkdir -p "$cyberpunk-company_dir"
 
 run_isolated_worktree_init() {
   if command -v pnpm >/dev/null 2>&1 && pnpm cyberpunk-company --help >/dev/null 2>&1; then
@@ -49,7 +49,7 @@ write_fallback_worktree_config() {
   WORKTREE_NAME="$worktree_name" \
   BASE_CWD="$base_cwd" \
   WORKTREE_CWD="$worktree_cwd" \
-  CYBERPUNK_DIR="$paperclip_dir" \
+  CYBERPUNK_DIR="$cyberpunk-company_dir" \
   SOURCE_CONFIG_PATH="$source_config_path" \
   SOURCE_ENV_PATH="$source_env_path" \
   CYBERPUNK_WORKTREES_DIR="${CYBERPUNK_WORKTREES_DIR:-}" \
@@ -162,14 +162,14 @@ function resolveRuntimeLikePath(value, configPath) {
 
 async function main() {
   const worktreeName = process.env.WORKTREE_NAME;
-  const paperclipDir = process.env.CYBERPUNK_DIR;
+  const cyberpunkCompanyDir = process.env.CYBERPUNK_DIR;
   const sourceConfigPath = process.env.SOURCE_CONFIG_PATH;
   const sourceEnvPath = process.env.SOURCE_ENV_PATH;
   const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.CYBERPUNK_WORKTREES_DIR) ?? "~/.cyberpunk-company-worktrees"));
   const instanceId = sanitizeInstanceId(worktreeName);
   const instanceRoot = path.resolve(worktreeHome, "instances", instanceId);
-  const configPath = path.resolve(paperclipDir, "config.json");
-  const envPath = path.resolve(paperclipDir, ".env");
+  const configPath = path.resolve(cyberpunkCompanyDir, "config.json");
+  const envPath = path.resolve(cyberpunkCompanyDir, ".env");
 
   let sourceConfig = null;
   if (sourceConfigPath && fs.existsSync(sourceConfigPath)) {

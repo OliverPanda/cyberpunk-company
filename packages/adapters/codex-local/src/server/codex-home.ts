@@ -31,11 +31,11 @@ export function resolveManagedCodexHomeDir(
   env: NodeJS.ProcessEnv,
   companyId?: string,
 ): string {
-  const paperclipHome = nonEmpty(env.CYBERPUNK_HOME) ?? path.resolve(os.homedir(), ".cyberpunk-company");
+  const cyberpunkCompanyHome = nonEmpty(env.CYBERPUNK_HOME) ?? path.resolve(os.homedir(), ".cyberpunk-company");
   const instanceId = nonEmpty(env.CYBERPUNK_INSTANCE_ID) ?? DEFAULT_CYBERPUNK_INSTANCE_ID;
   return companyId
-    ? path.resolve(paperclipHome, "instances", instanceId, "companies", companyId, "codex-home")
-    : path.resolve(paperclipHome, "instances", instanceId, "codex-home");
+    ? path.resolve(cyberpunkCompanyHome, "instances", instanceId, "companies", companyId, "codex-home")
+    : path.resolve(cyberpunkCompanyHome, "instances", instanceId, "codex-home");
 }
 
 async function ensureParentDir(target: string): Promise<void> {

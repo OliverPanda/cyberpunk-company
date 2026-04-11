@@ -6,7 +6,7 @@ import type {
   AdapterSkillSnapshot,
 } from "@cyberpunk-company/adapter-utils";
 import {
-  readPaperclipRuntimeSkillEntries,
+  readCyberpunkCompanyRuntimeSkillEntries,
   resolveCyberpunkDesiredSkillNames,
 } from "@cyberpunk-company/adapter-utils/server-utils";
 
@@ -15,7 +15,7 @@ const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 async function buildCodexSkillSnapshot(
   config: Record<string, unknown>,
 ): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const availableEntries = await readCyberpunkCompanyRuntimeSkillEntries(config, __moduleDir);
   const availableByKey = new Map(availableEntries.map((entry) => [entry.key, entry]));
   const desiredSkills = resolveCyberpunkDesiredSkillNames(config, availableEntries);
   const desiredSet = new Set(desiredSkills);
@@ -25,7 +25,7 @@ async function buildCodexSkillSnapshot(
     desired: desiredSet.has(entry.key),
     managed: true,
     state: desiredSet.has(entry.key) ? "configured" : "available",
-    origin: entry.required ? "paperclip_required" : "company_managed",
+    origin: entry.required ? "cyberpunk-company_required" : "company_managed",
     originLabel: entry.required ? "Required by Cyberpunk Company" : "Managed by Cyberpunk Company",
     readOnly: false,
     sourcePath: entry.source,

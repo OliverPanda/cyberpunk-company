@@ -44,11 +44,11 @@ describe("buildInviteOnboardingTextDocument", () => {
     expect(text).toContain("Suggested Cyberpunk Company base URLs to try");
     expect(text).toContain("http://localhost:3100");
     expect(text).toContain("host.docker.internal");
-    expect(text).toContain("paperclipApiUrl");
+    expect(text).toContain("cyberpunkCompanyApiUrl");
     expect(text).toContain("adapterType \"openclaw_gateway\"");
     expect(text).toContain("headers.x-openclaw-token");
     expect(text).toContain("Do NOT use /v1/responses or /hooks/*");
-    expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.paperclipApiUrl");
+    expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.cyberpunkCompanyApiUrl");
     expect(text).toContain("~/.openclaw/workspace/cyberpunk-company-claimed-api-key.json");
     expect(text).toContain("CYBERPUNK_API_KEY");
     expect(text).toContain("saved token field");

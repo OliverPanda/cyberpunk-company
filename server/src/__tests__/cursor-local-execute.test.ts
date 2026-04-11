@@ -12,7 +12,7 @@ const capturePath = process.env.CYBERPUNK_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
-  paperclipEnvKeys: Object.keys(process.env)
+  cyberpunkCompanyEnvKeys: Object.keys(process.env)
     .filter((key) => key.startsWith("CYBERPUNK_"))
     .sort(),
 };
@@ -43,7 +43,7 @@ console.log(JSON.stringify({
 type CapturePayload = {
   argv: string[];
   prompt: string;
-  paperclipEnvKeys: string[];
+  cyberpunkCompanyEnvKeys: string[];
 };
 
 async function createSkillDir(root: string, name: string) {
@@ -106,7 +106,7 @@ describe("cursor execute", () => {
       expect(capture.argv).not.toContain("Follow the cyberpunk-company heartbeat.");
       expect(capture.argv).not.toContain("--mode");
       expect(capture.argv).not.toContain("ask");
-      expect(capture.paperclipEnvKeys).toEqual(
+      expect(capture.cyberpunkCompanyEnvKeys).toEqual(
         expect.arrayContaining([
           "CYBERPUNK_AGENT_ID",
           "CYBERPUNK_API_KEY",
@@ -195,7 +195,7 @@ describe("cursor execute", () => {
     await fs.mkdir(workspace, { recursive: true });
     await writeFakeCursorCommand(commandPath);
 
-    const paperclipDir = await createSkillDir(runtimeSkillsRoot, "cyberpunk-company");
+    const cyberpunkCompanyDir = await createSkillDir(runtimeSkillsRoot, "cyberpunk-company");
     const asciiHeartDir = await createSkillDir(runtimeSkillsRoot, "ascii-heart");
 
     const previousHome = process.env.HOME;
@@ -221,10 +221,10 @@ describe("cursor execute", () => {
           command: commandPath,
           cwd: workspace,
           model: "auto",
-          paperclipRuntimeSkills: [
+          cyberpunkCompanyRuntimeSkills: [
             {
               name: "cyberpunk-company",
-              source: paperclipDir,
+              source: cyberpunkCompanyDir,
               required: true,
               requiredReason: "Bundled Cyberpunk Company skills are always available for local adapters.",
             },

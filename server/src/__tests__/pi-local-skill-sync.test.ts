@@ -12,7 +12,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 }
 
 describe("pi local skill sync", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -33,19 +33,19 @@ describe("pi local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
     const before = await listPiSkills(ctx);
     expect(before.mode).toBe("persistent");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.required).toBe(true);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("missing");
 
-    const after = await syncPiSkills(ctx, [paperclipKey]);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    const after = await syncPiSkills(ctx, [cyberpunkCompanyKey]);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 
@@ -62,12 +62,12 @@ describe("pi local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
-    await syncPiSkills(configuredCtx, [paperclipKey]);
+    await syncPiSkills(configuredCtx, [cyberpunkCompanyKey]);
 
     const clearedCtx = {
       ...configuredCtx,
@@ -82,8 +82,8 @@ describe("pi local skill sync", () => {
     } as const;
 
     const after = await syncPiSkills(clearedCtx, []);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    expect(after.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 });

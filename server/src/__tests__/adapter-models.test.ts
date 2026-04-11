@@ -96,7 +96,7 @@ describe("adapter model listing", () => {
   });
 
   it("returns no opencode models when opencode command is unavailable", async () => {
-    process.env.CYBERPUNK_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
+    process.env.CYBERPUNK_OPENCODE_COMMAND = "__cyberpunk-company_missing_opencode_command__";
 
     const models = await listAdapterModels("opencode_local");
     expect(models).toEqual([]);

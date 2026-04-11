@@ -11,8 +11,8 @@ import {
   asStringArray,
   parseObject,
   parseJson,
-  buildPaperclipEnv,
-  readPaperclipRuntimeSkillEntries,
+  buildCyberpunkCompanyEnv,
+  readCyberpunkCompanyRuntimeSkillEntries,
   joinPromptSections,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
@@ -41,7 +41,7 @@ async function buildSkillsDir(config: Record<string, unknown>): Promise<string> 
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-company-skills-"));
   const target = path.join(tmp, ".claude", "skills");
   await fs.mkdir(target, { recursive: true });
-  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const availableEntries = await readCyberpunkCompanyRuntimeSkillEntries(config, __moduleDir);
   const desiredNames = new Set(
     resolveClaudeDesiredSkillNames(
       config,
@@ -141,7 +141,7 @@ async function buildClaudeRuntimeConfig(input: ClaudeExecutionInput): Promise<Cl
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
     typeof envConfig.CYBERPUNK_API_KEY === "string" && envConfig.CYBERPUNK_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildPaperclipEnv(agent) };
+  const env: Record<string, string> = { ...buildCyberpunkCompanyEnv(agent) };
   env.CYBERPUNK_RUN_ID = runId;
 
   const wakeTaskId =

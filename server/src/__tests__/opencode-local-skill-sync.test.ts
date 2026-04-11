@@ -12,7 +12,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 }
 
 describe("opencode local skill sync", () => {
-  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const cyberpunkCompanyKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -33,7 +33,7 @@ describe("opencode local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
@@ -41,12 +41,12 @@ describe("opencode local skill sync", () => {
     const before = await listOpenCodeSkills(ctx);
     expect(before.mode).toBe("persistent");
     expect(before.warnings).toContain("OpenCode currently uses the shared Claude skills home (~/.claude/skills).");
-    expect(before.desiredSkills).toContain(paperclipKey);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.required).toBe(true);
-    expect(before.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("missing");
+    expect(before.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.required).toBe(true);
+    expect(before.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("missing");
 
-    const after = await syncOpenCodeSkills(ctx, [paperclipKey]);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    const after = await syncOpenCodeSkills(ctx, [cyberpunkCompanyKey]);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".claude", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 
@@ -63,12 +63,12 @@ describe("opencode local skill sync", () => {
           HOME: home,
         },
         cyberpunkSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [cyberpunkCompanyKey],
         },
       },
     } as const;
 
-    await syncOpenCodeSkills(configuredCtx, [paperclipKey]);
+    await syncOpenCodeSkills(configuredCtx, [cyberpunkCompanyKey]);
 
     const clearedCtx = {
       ...configuredCtx,
@@ -83,8 +83,8 @@ describe("opencode local skill sync", () => {
     } as const;
 
     const after = await syncOpenCodeSkills(clearedCtx, []);
-    expect(after.desiredSkills).toContain(paperclipKey);
-    expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
+    expect(after.desiredSkills).toContain(cyberpunkCompanyKey);
+    expect(after.entries.find((entry) => entry.key === cyberpunkCompanyKey)?.state).toBe("installed");
     expect((await fs.lstat(path.join(home, ".claude", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 });

@@ -297,7 +297,7 @@ Suggested `package.json` keys:
 {
   "name": "@cyberpunk-company/plugin-linear",
   "version": "0.1.0",
-  "paperclipPlugin": {
+  "cyberpunkCompanyPlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js",
     "ui": "./dist/ui/"
@@ -1490,7 +1490,7 @@ For developing a plugin against a running Cyberpunk Company instance:
 
 The host should publish a starter template (`create-cyberpunk-company-plugin`) that scaffolds:
 
-- `package.json` with correct `paperclipPlugin` keys
+- `package.json` with correct `cyberpunkCompanyPlugin` keys
 - manifest with placeholder values
 - worker entry with SDK type imports and example event handler
 - UI entry with example `DashboardWidget` using bridge hooks

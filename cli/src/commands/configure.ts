@@ -1,7 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { readConfig, writeConfig, configExists, resolveConfigPath } from "../config/store.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { CyberpunkCompanyConfig } from "../config/schema.js";
 import { ensureLocalSecretsKeyFile } from "../config/secrets-key.js";
 import { promptDatabase } from "../prompts/database.js";
 import { promptLlm } from "../prompts/llm.js";
@@ -15,7 +15,7 @@ import {
   resolveDefaultLogsDir,
   resolveCyberpunkInstanceId,
 } from "../config/home.js";
-import { printPaperclipCliBanner } from "../utils/banner.js";
+import { printCyberpunkCompanyCliBanner } from "../utils/banner.js";
 
 type Section = "llm" | "database" | "logging" | "server" | "storage" | "secrets";
 
@@ -28,7 +28,7 @@ const SECTION_LABELS: Record<Section, string> = {
   secrets: "Secrets",
 };
 
-function defaultConfig(): PaperclipConfig {
+function defaultConfig(): CyberpunkCompanyConfig {
   const instanceId = resolveCyberpunkInstanceId();
   return {
     $meta: {
@@ -72,7 +72,7 @@ export async function configure(opts: {
   config?: string;
   section?: string;
 }): Promise<void> {
-  printPaperclipCliBanner();
+  printCyberpunkCompanyCliBanner();
   p.intro(pc.bgCyan(pc.black(" cyberpunk-company configure ")));
   const configPath = resolveConfigPath(opts.config);
 
@@ -82,7 +82,7 @@ export async function configure(opts: {
     return;
   }
 
-  let config: PaperclipConfig;
+  let config: CyberpunkCompanyConfig;
   try {
     config = readConfig(opts.config) ?? defaultConfig();
   } catch (err) {

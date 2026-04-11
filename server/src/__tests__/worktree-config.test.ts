@@ -85,13 +85,13 @@ describe("worktree config repair", () => {
   it("repairs legacy repo-local worktree config and env files into an isolated instance", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-worktree-repair-"));
     const worktreeRoot = path.join(tempRoot, "PAP-884-ai-commits-component");
-    const paperclipDir = path.join(worktreeRoot, ".cyberpunk-company");
-    const configPath = path.join(paperclipDir, "config.json");
-    const envPath = path.join(paperclipDir, ".env");
+    const cyberpunkCompanyDir = path.join(worktreeRoot, ".cyberpunk-company");
+    const configPath = path.join(cyberpunkCompanyDir, "config.json");
+    const envPath = path.join(cyberpunkCompanyDir, ".env");
     const sharedRoot = path.join(tempRoot, ".cyberpunk-company", "instances", "default");
     const isolatedHome = path.join(tempRoot, ".cyberpunk-company-worktrees");
 
-    await fs.mkdir(paperclipDir, { recursive: true });
+    await fs.mkdir(cyberpunkCompanyDir, { recursive: true });
     await fs.writeFile(configPath, JSON.stringify(buildLegacyConfig(sharedRoot), null, 2) + "\n", "utf8");
     await fs.writeFile(
       envPath,
@@ -142,14 +142,14 @@ describe("worktree config repair", () => {
   it("avoids sibling worktree ports when repairing legacy configs", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-worktree-repair-ports-"));
     const worktreeRoot = path.join(tempRoot, "PAP-880-thumbs-capture-for-evals-feature");
-    const paperclipDir = path.join(worktreeRoot, ".cyberpunk-company");
-    const configPath = path.join(paperclipDir, "config.json");
-    const envPath = path.join(paperclipDir, ".env");
+    const cyberpunkCompanyDir = path.join(worktreeRoot, ".cyberpunk-company");
+    const configPath = path.join(cyberpunkCompanyDir, "config.json");
+    const envPath = path.join(cyberpunkCompanyDir, ".env");
     const sharedRoot = path.join(tempRoot, ".cyberpunk-company", "instances", "default");
     const isolatedHome = path.join(tempRoot, ".cyberpunk-company-worktrees");
     const siblingInstanceRoot = path.join(isolatedHome, "instances", "pap-878-create-a-mine-tab-in-inbox");
 
-    await fs.mkdir(paperclipDir, { recursive: true });
+    await fs.mkdir(cyberpunkCompanyDir, { recursive: true });
     await fs.mkdir(siblingInstanceRoot, { recursive: true });
     await fs.writeFile(configPath, JSON.stringify(buildLegacyConfig(sharedRoot), null, 2) + "\n", "utf8");
     await fs.writeFile(
@@ -213,13 +213,13 @@ describe("worktree config repair", () => {
     const siblingWorktreeRoot = path.join(repoWorktreesRoot, "PAP-878-create-a-mine-tab-in-inbox");
     const siblingInstanceRoot = path.join(isolatedHome, "instances", "pap-878-create-a-mine-tab-in-inbox");
     const currentWorktreeRoot = path.join(repoWorktreesRoot, "PAP-884-ai-commits-component");
-    const paperclipDir = path.join(currentWorktreeRoot, ".cyberpunk-company");
-    const configPath = path.join(paperclipDir, "config.json");
-    const envPath = path.join(paperclipDir, ".env");
+    const cyberpunkCompanyDir = path.join(currentWorktreeRoot, ".cyberpunk-company");
+    const configPath = path.join(cyberpunkCompanyDir, "config.json");
+    const envPath = path.join(cyberpunkCompanyDir, ".env");
     const currentInstanceRoot = path.join(isolatedHome, "instances", "pap-884-ai-commits-component");
     const siblingConfigPath = path.join(siblingWorktreeRoot, ".cyberpunk-company", "config.json");
 
-    await fs.mkdir(paperclipDir, { recursive: true });
+    await fs.mkdir(cyberpunkCompanyDir, { recursive: true });
     await fs.mkdir(path.dirname(siblingConfigPath), { recursive: true });
     await fs.writeFile(
       configPath,
@@ -331,12 +331,12 @@ describe("worktree config repair", () => {
   it("persists runtime-selected worktree ports back into config", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-worktree-ports-"));
     const worktreeRoot = path.join(tempRoot, "PAP-878-create-a-mine-tab-in-inbox");
-    const paperclipDir = path.join(worktreeRoot, ".cyberpunk-company");
-    const configPath = path.join(paperclipDir, "config.json");
+    const cyberpunkCompanyDir = path.join(worktreeRoot, ".cyberpunk-company");
+    const configPath = path.join(cyberpunkCompanyDir, "config.json");
     const isolatedHome = path.join(tempRoot, ".cyberpunk-company-worktrees");
     const instanceRoot = path.join(isolatedHome, "instances", "pap-878-create-a-mine-tab-in-inbox");
 
-    await fs.mkdir(paperclipDir, { recursive: true });
+    await fs.mkdir(cyberpunkCompanyDir, { recursive: true });
     await fs.writeFile(
       configPath,
       JSON.stringify(

@@ -406,7 +406,7 @@ create_and_approve_gateway_join() {
     --arg name "$OPENCLAW_AGENT_NAME" \
     --arg url "$OPENCLAW_GATEWAY_URL" \
     --arg token "$gateway_token" \
-    --arg paperclipApiUrl "$CYBERPUNK_API_URL_FOR_OPENCLAW" \
+    --arg cyberpunkCompanyApiUrl "$CYBERPUNK_API_URL_FOR_OPENCLAW" \
     --argjson timeoutSec "$OPENCLAW_ADAPTER_TIMEOUT_SEC" \
     --argjson waitTimeoutMs "$OPENCLAW_ADAPTER_WAIT_TIMEOUT_MS" \
     '{
@@ -423,7 +423,7 @@ create_and_approve_gateway_join() {
         sessionKey: "cyberpunk-company",
         timeoutSec: $timeoutSec,
         waitTimeoutMs: $waitTimeoutMs,
-        paperclipApiUrl: $paperclipApiUrl
+        cyberpunkCompanyApiUrl: $cyberpunkCompanyApiUrl
       }
     }')"
 

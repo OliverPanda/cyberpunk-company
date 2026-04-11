@@ -9,7 +9,7 @@ import type {
 import {
   buildPersistentSkillSnapshot,
   ensureCyberpunkSkillSymlink,
-  readPaperclipRuntimeSkillEntries,
+  readCyberpunkCompanyRuntimeSkillEntries,
   readInstalledSkillTargets,
   resolveCyberpunkDesiredSkillNames,
 } from "@cyberpunk-company/adapter-utils/server-utils";
@@ -31,7 +31,7 @@ function resolveCursorSkillsHome(config: Record<string, unknown>) {
 }
 
 async function buildCursorSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const availableEntries = await readCyberpunkCompanyRuntimeSkillEntries(config, __moduleDir);
   const desiredSkills = resolveCyberpunkDesiredSkillNames(config, availableEntries);
   const skillsHome = resolveCursorSkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
@@ -56,7 +56,7 @@ export async function syncCursorSkills(
   ctx: AdapterSkillContext,
   desiredSkills: string[],
 ): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(ctx.config, __moduleDir);
+  const availableEntries = await readCyberpunkCompanyRuntimeSkillEntries(ctx.config, __moduleDir);
   const desiredSet = new Set([
     ...desiredSkills,
     ...availableEntries.filter((entry) => entry.required).map((entry) => entry.key),

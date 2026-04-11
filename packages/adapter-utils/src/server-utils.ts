@@ -90,7 +90,7 @@ function buildManagedSkillOrigin(entry: { required?: boolean }): Pick<
 > {
   if (entry.required) {
     return {
-      origin: "paperclip_required",
+      origin: "cyberpunk-company_required",
       originLabel: "Required by Cyberpunk Company",
       readOnly: false,
     };
@@ -201,7 +201,7 @@ export function redactEnvForLogs(env: Record<string, string>): Record<string, st
   return redacted;
 }
 
-export function buildPaperclipEnv(agent: { id: string; companyId: string }): Record<string, string> {
+export function buildCyberpunkCompanyEnv(agent: { id: string; companyId: string }): Record<string, string> {
   const resolveHostForUrl = (rawHost: string): string => {
     const host = rawHost.trim();
     if (!host || host === "0.0.0.0" || host === "::") return "localhost";
@@ -499,7 +499,7 @@ export function buildPersistentSkillSnapshot(
   };
 }
 
-function normalizeConfiguredPaperclipRuntimeSkills(value: unknown): CyberpunkSkillEntry[] {
+function normalizeConfiguredCyberpunkCompanyRuntimeSkills(value: unknown): CyberpunkSkillEntry[] {
   if (!Array.isArray(value)) return [];
   const out: CyberpunkSkillEntry[] = [];
   for (const rawEntry of value) {
@@ -522,12 +522,12 @@ function normalizeConfiguredPaperclipRuntimeSkills(value: unknown): CyberpunkSki
   return out;
 }
 
-export async function readPaperclipRuntimeSkillEntries(
+export async function readCyberpunkCompanyRuntimeSkillEntries(
   config: Record<string, unknown>,
   moduleDir: string,
   additionalCandidates: string[] = [],
 ): Promise<CyberpunkSkillEntry[]> {
-  const configuredEntries = normalizeConfiguredPaperclipRuntimeSkills(config.paperclipRuntimeSkills);
+  const configuredEntries = normalizeConfiguredCyberpunkCompanyRuntimeSkills(config.cyberpunkCompanyRuntimeSkills);
   if (configuredEntries.length > 0) return configuredEntries;
   return listCyberpunkSkillEntries(moduleDir, additionalCandidates);
 }

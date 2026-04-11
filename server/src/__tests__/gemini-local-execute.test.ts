@@ -11,7 +11,7 @@ const fs = require("node:fs");
 const capturePath = process.env.CYBERPUNK_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
-  paperclipEnvKeys: Object.keys(process.env)
+  cyberpunkCompanyEnvKeys: Object.keys(process.env)
     .filter((key) => key.startsWith("CYBERPUNK_"))
     .sort(),
 };
@@ -41,7 +41,7 @@ console.log(JSON.stringify({
 
 type CapturePayload = {
   argv: string[];
-  paperclipEnvKeys: string[];
+  cyberpunkCompanyEnvKeys: string[];
 };
 
 describe("gemini execute", () => {
@@ -103,7 +103,7 @@ describe("gemini execute", () => {
       const promptArg = promptFlagIndex >= 0 ? capture.argv[promptFlagIndex + 1] : "";
       expect(promptArg).toContain("Follow the cyberpunk-company heartbeat.");
       expect(promptArg).toContain("Cyberpunk Company runtime note:");
-      expect(capture.paperclipEnvKeys).toEqual(
+      expect(capture.cyberpunkCompanyEnvKeys).toEqual(
         expect.arrayContaining([
           "CYBERPUNK_AGENT_ID",
           "CYBERPUNK_API_KEY",
