@@ -3,7 +3,7 @@ import path from "node:path";
 import type { PaperclipConfig } from "../config/schema.js";
 import { expandHomePrefix } from "../config/home.js";
 
-export const DEFAULT_WORKTREE_HOME = "~/.paperclip-worktrees";
+export const DEFAULT_WORKTREE_HOME = "~/.cyberpunk-company-worktrees";
 export const WORKTREE_SEED_MODES = ["minimal", "full"] as const;
 
 export type WorktreeSeedMode = (typeof WORKTREE_SEED_MODES)[number];
@@ -252,13 +252,13 @@ export function buildWorktreeEnvEntries(
   branding?: WorktreeUiBranding,
 ): Record<string, string> {
   return {
-    PAPERCLIP_HOME: paths.homeDir,
-    PAPERCLIP_INSTANCE_ID: paths.instanceId,
-    PAPERCLIP_CONFIG: paths.configPath,
-    PAPERCLIP_CONTEXT: paths.contextPath,
-    PAPERCLIP_IN_WORKTREE: "true",
-    ...(branding?.name ? { PAPERCLIP_WORKTREE_NAME: branding.name } : {}),
-    ...(branding?.color ? { PAPERCLIP_WORKTREE_COLOR: branding.color } : {}),
+    CYBERPUNK_HOME: paths.homeDir,
+    CYBERPUNK_INSTANCE_ID: paths.instanceId,
+    CYBERPUNK_CONFIG: paths.configPath,
+    CYBERPUNK_CONTEXT: paths.contextPath,
+    CYBERPUNK_IN_WORKTREE: "true",
+    ...(branding?.name ? { CYBERPUNK_WORKTREE_NAME: branding.name } : {}),
+    ...(branding?.color ? { CYBERPUNK_WORKTREE_COLOR: branding.color } : {}),
   };
 }
 

@@ -97,7 +97,7 @@ function stableStringify(value: unknown): string {
 export function sanitizeRuntimeServiceBaseEnv(baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...baseEnv };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("PAPERCLIP_")) {
+    if (key.startsWith("CYBERPUNK_")) {
       delete env[key];
     }
   }
@@ -300,24 +300,24 @@ function buildWorkspaceCommandEnv(input: {
   created: boolean;
 }) {
   const env: NodeJS.ProcessEnv = { ...process.env };
-  env.PAPERCLIP_WORKSPACE_CWD = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_PATH = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_WORKTREE_PATH = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_BRANCH = input.branchName;
-  env.PAPERCLIP_WORKSPACE_BASE_CWD = input.base.baseCwd;
-  env.PAPERCLIP_WORKSPACE_REPO_ROOT = input.repoRoot;
-  env.PAPERCLIP_WORKSPACE_SOURCE = input.base.source;
-  env.PAPERCLIP_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
-  env.PAPERCLIP_WORKSPACE_CREATED = input.created ? "true" : "false";
-  env.PAPERCLIP_PROJECT_ID = input.base.projectId ?? "";
-  env.PAPERCLIP_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
-  env.PAPERCLIP_AGENT_ID = input.agent.id;
-  env.PAPERCLIP_AGENT_NAME = input.agent.name;
-  env.PAPERCLIP_COMPANY_ID = input.agent.companyId;
-  env.PAPERCLIP_ISSUE_ID = input.issue?.id ?? "";
-  env.PAPERCLIP_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
-  env.PAPERCLIP_ISSUE_TITLE = input.issue?.title ?? "";
+  env.CYBERPUNK_WORKSPACE_CWD = input.worktreePath;
+  env.CYBERPUNK_WORKSPACE_PATH = input.worktreePath;
+  env.CYBERPUNK_WORKSPACE_WORKTREE_PATH = input.worktreePath;
+  env.CYBERPUNK_WORKSPACE_BRANCH = input.branchName;
+  env.CYBERPUNK_WORKSPACE_BASE_CWD = input.base.baseCwd;
+  env.CYBERPUNK_WORKSPACE_REPO_ROOT = input.repoRoot;
+  env.CYBERPUNK_WORKSPACE_SOURCE = input.base.source;
+  env.CYBERPUNK_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
+  env.CYBERPUNK_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
+  env.CYBERPUNK_WORKSPACE_CREATED = input.created ? "true" : "false";
+  env.CYBERPUNK_PROJECT_ID = input.base.projectId ?? "";
+  env.CYBERPUNK_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
+  env.CYBERPUNK_AGENT_ID = input.agent.id;
+  env.CYBERPUNK_AGENT_NAME = input.agent.name;
+  env.CYBERPUNK_COMPANY_ID = input.agent.companyId;
+  env.CYBERPUNK_ISSUE_ID = input.issue?.id ?? "";
+  env.CYBERPUNK_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
+  env.CYBERPUNK_ISSUE_TITLE = input.issue?.title ?? "";
   return env;
 }
 
@@ -505,18 +505,18 @@ function buildExecutionWorkspaceCleanupEnv(input: {
   projectWorkspaceCwd?: string | null;
 }) {
   const env: NodeJS.ProcessEnv = sanitizeRuntimeServiceBaseEnv(process.env);
-  env.PAPERCLIP_WORKSPACE_CWD = input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_PATH = input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_WORKTREE_PATH =
+  env.CYBERPUNK_WORKSPACE_CWD = input.workspace.cwd ?? "";
+  env.CYBERPUNK_WORKSPACE_PATH = input.workspace.cwd ?? "";
+  env.CYBERPUNK_WORKSPACE_WORKTREE_PATH =
     input.workspace.providerRef ?? input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_BRANCH = input.workspace.branchName ?? "";
-  env.PAPERCLIP_WORKSPACE_BASE_CWD = input.projectWorkspaceCwd ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_ROOT = input.projectWorkspaceCwd ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_URL = input.workspace.repoUrl ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_REF = input.workspace.baseRef ?? "";
-  env.PAPERCLIP_PROJECT_ID = input.workspace.projectId ?? "";
-  env.PAPERCLIP_PROJECT_WORKSPACE_ID = input.workspace.projectWorkspaceId ?? "";
-  env.PAPERCLIP_ISSUE_ID = input.workspace.sourceIssueId ?? "";
+  env.CYBERPUNK_WORKSPACE_BRANCH = input.workspace.branchName ?? "";
+  env.CYBERPUNK_WORKSPACE_BASE_CWD = input.projectWorkspaceCwd ?? "";
+  env.CYBERPUNK_WORKSPACE_REPO_ROOT = input.projectWorkspaceCwd ?? "";
+  env.CYBERPUNK_WORKSPACE_REPO_URL = input.workspace.repoUrl ?? "";
+  env.CYBERPUNK_WORKSPACE_REPO_REF = input.workspace.baseRef ?? "";
+  env.CYBERPUNK_PROJECT_ID = input.workspace.projectId ?? "";
+  env.CYBERPUNK_PROJECT_WORKSPACE_ID = input.workspace.projectWorkspaceId ?? "";
+  env.CYBERPUNK_ISSUE_ID = input.workspace.sourceIssueId ?? "";
   return env;
 }
 
@@ -573,7 +573,7 @@ export async function realizeExecutionWorkspace(input: {
   const configuredParentDir = asString(rawStrategy.worktreeParentDir, "");
   const worktreeParentDir = configuredParentDir
     ? resolveConfiguredPath(configuredParentDir, repoRoot)
-    : path.join(repoRoot, ".paperclip", "worktrees");
+    : path.join(repoRoot, ".cyberpunk-company", "worktrees");
   const worktreePath = path.join(worktreeParentDir, branchName);
   const baseRef = asString(rawStrategy.baseRef, input.base.repoRef ?? "HEAD");
 

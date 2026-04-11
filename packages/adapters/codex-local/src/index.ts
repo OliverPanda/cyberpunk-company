@@ -42,8 +42,8 @@ export const agentConfigurationDoc = `# codex_local 智能体配置
 - Prompt 通过 stdin 管道传入（Codex 接收 \`"-"\` 作为 prompt 参数）。
 - 如果配置了 instructionsFilePath，Paperclip 会在每次运行时把该文件内容追加到 stdin prompt 前面。
 - Codex exec 会自动应用当前工作区中的仓库级 AGENTS.md 指令。Paperclip 目前无法在 exec 模式下屏蔽这一发现逻辑，因此即使你只配置了显式 instructionsFilePath，仓库内的 AGENTS.md 仍可能生效。
-- Paperclip 会在执行时把期望的本地技能注入到实际使用的 CODEX_HOME/skills/ 目录中，这样 Codex 能发现 "$paperclip" 等相关技能，同时不会污染项目工作目录。在 managed-home 模式下（默认值），路径是 ~/.paperclip/instances/<id>/companies/<companyId>/codex-home/skills/；如果在 adapter config 中显式覆盖了 CODEX_HOME，则使用该覆盖值。
+- Paperclip 会在执行时把期望的本地技能注入到实际使用的 CODEX_HOME/skills/ 目录中，这样 Codex 能发现 "$paperclip" 等相关技能，同时不会污染项目工作目录。在 managed-home 模式下（默认值），路径是 ~/.cyberpunk-company/instances/<id>/companies/<companyId>/codex-home/skills/；如果在 adapter config 中显式覆盖了 CODEX_HOME，则使用该覆盖值。
 - 除非在 adapter config 中显式覆盖，否则 Paperclip 会在当前实例下为每个公司使用托管的 CODEX_HOME，并从共享 Codex home（环境变量 CODEX_HOME 指向的位置，或 ~/.codex）复制认证和配置。
 - 某些模型/工具组合会拒绝部分推理强度设置（例如启用 web search 时使用 minimal）。
-- 当 Paperclip 为某次运行准备好工作区或运行时后，会为智能体侧工具注入 PAPERCLIP_WORKSPACE_* 和 PAPERCLIP_RUNTIME_* 环境变量。
+- 当 Paperclip 为某次运行准备好工作区或运行时后，会为智能体侧工具注入 CYBERPUNK_WORKSPACE_* 和 CYBERPUNK_RUNTIME_* 环境变量。
 `;

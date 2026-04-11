@@ -140,9 +140,9 @@ async function buildClaudeRuntimeConfig(input: ClaudeExecutionInput): Promise<Cl
 
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
-    typeof envConfig.PAPERCLIP_API_KEY === "string" && envConfig.PAPERCLIP_API_KEY.trim().length > 0;
+    typeof envConfig.CYBERPUNK_API_KEY === "string" && envConfig.CYBERPUNK_API_KEY.trim().length > 0;
   const env: Record<string, string> = { ...buildPaperclipEnv(agent) };
-  env.PAPERCLIP_RUN_ID = runId;
+  env.CYBERPUNK_RUN_ID = runId;
 
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||
@@ -169,61 +169,61 @@ async function buildClaudeRuntimeConfig(input: ClaudeExecutionInput): Promise<Cl
     : [];
 
   if (wakeTaskId) {
-    env.PAPERCLIP_TASK_ID = wakeTaskId;
+    env.CYBERPUNK_TASK_ID = wakeTaskId;
   }
   if (wakeReason) {
-    env.PAPERCLIP_WAKE_REASON = wakeReason;
+    env.CYBERPUNK_WAKE_REASON = wakeReason;
   }
   if (wakeCommentId) {
-    env.PAPERCLIP_WAKE_COMMENT_ID = wakeCommentId;
+    env.CYBERPUNK_WAKE_COMMENT_ID = wakeCommentId;
   }
   if (approvalId) {
-    env.PAPERCLIP_APPROVAL_ID = approvalId;
+    env.CYBERPUNK_APPROVAL_ID = approvalId;
   }
   if (approvalStatus) {
-    env.PAPERCLIP_APPROVAL_STATUS = approvalStatus;
+    env.CYBERPUNK_APPROVAL_STATUS = approvalStatus;
   }
   if (linkedIssueIds.length > 0) {
-    env.PAPERCLIP_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+    env.CYBERPUNK_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
   }
   if (effectiveWorkspaceCwd) {
-    env.PAPERCLIP_WORKSPACE_CWD = effectiveWorkspaceCwd;
+    env.CYBERPUNK_WORKSPACE_CWD = effectiveWorkspaceCwd;
   }
   if (workspaceSource) {
-    env.PAPERCLIP_WORKSPACE_SOURCE = workspaceSource;
+    env.CYBERPUNK_WORKSPACE_SOURCE = workspaceSource;
   }
   if (workspaceStrategy) {
-    env.PAPERCLIP_WORKSPACE_STRATEGY = workspaceStrategy;
+    env.CYBERPUNK_WORKSPACE_STRATEGY = workspaceStrategy;
   }
   if (workspaceId) {
-    env.PAPERCLIP_WORKSPACE_ID = workspaceId;
+    env.CYBERPUNK_WORKSPACE_ID = workspaceId;
   }
   if (workspaceRepoUrl) {
-    env.PAPERCLIP_WORKSPACE_REPO_URL = workspaceRepoUrl;
+    env.CYBERPUNK_WORKSPACE_REPO_URL = workspaceRepoUrl;
   }
   if (workspaceRepoRef) {
-    env.PAPERCLIP_WORKSPACE_REPO_REF = workspaceRepoRef;
+    env.CYBERPUNK_WORKSPACE_REPO_REF = workspaceRepoRef;
   }
   if (workspaceBranch) {
-    env.PAPERCLIP_WORKSPACE_BRANCH = workspaceBranch;
+    env.CYBERPUNK_WORKSPACE_BRANCH = workspaceBranch;
   }
   if (workspaceWorktreePath) {
-    env.PAPERCLIP_WORKSPACE_WORKTREE_PATH = workspaceWorktreePath;
+    env.CYBERPUNK_WORKSPACE_WORKTREE_PATH = workspaceWorktreePath;
   }
   if (agentHome) {
     env.AGENT_HOME = agentHome;
   }
   if (workspaceHints.length > 0) {
-    env.PAPERCLIP_WORKSPACES_JSON = JSON.stringify(workspaceHints);
+    env.CYBERPUNK_WORKSPACES_JSON = JSON.stringify(workspaceHints);
   }
   if (runtimeServiceIntents.length > 0) {
-    env.PAPERCLIP_RUNTIME_SERVICE_INTENTS_JSON = JSON.stringify(runtimeServiceIntents);
+    env.CYBERPUNK_RUNTIME_SERVICE_INTENTS_JSON = JSON.stringify(runtimeServiceIntents);
   }
   if (runtimeServices.length > 0) {
-    env.PAPERCLIP_RUNTIME_SERVICES_JSON = JSON.stringify(runtimeServices);
+    env.CYBERPUNK_RUNTIME_SERVICES_JSON = JSON.stringify(runtimeServices);
   }
   if (runtimePrimaryUrl) {
-    env.PAPERCLIP_RUNTIME_PRIMARY_URL = runtimePrimaryUrl;
+    env.CYBERPUNK_RUNTIME_PRIMARY_URL = runtimePrimaryUrl;
   }
 
   for (const [key, value] of Object.entries(envConfig)) {
@@ -231,7 +231,7 @@ async function buildClaudeRuntimeConfig(input: ClaudeExecutionInput): Promise<Cl
   }
 
   if (!hasExplicitApiKey && authToken) {
-    env.PAPERCLIP_API_KEY = authToken;
+    env.CYBERPUNK_API_KEY = authToken;
   }
 
   const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });

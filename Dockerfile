@@ -46,11 +46,11 @@ ENV NODE_ENV=production \
   HOST=0.0.0.0 \
   PORT=3100 \
   SERVE_UI=true \
-  PAPERCLIP_HOME=/paperclip \
-  PAPERCLIP_INSTANCE_ID=default \
-  PAPERCLIP_CONFIG=/paperclip/instances/default/config.json \
-  PAPERCLIP_DEPLOYMENT_MODE=authenticated \
-  PAPERCLIP_DEPLOYMENT_EXPOSURE=private
+  CYBERPUNK_HOME=/paperclip \
+  CYBERPUNK_INSTANCE_ID=default \
+  CYBERPUNK_CONFIG=/paperclip/instances/default/config.json \
+  CYBERPUNK_DEPLOYMENT_MODE=authenticated \
+  CYBERPUNK_DEPLOYMENT_EXPOSURE=private
 
 VOLUME ["/paperclip"]
 EXPOSE 3100
