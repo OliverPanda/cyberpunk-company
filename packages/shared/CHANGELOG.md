@@ -1,4 +1,4 @@
-# @paperclipai/shared
+# @cyberpunk-company/shared
 
 ## 0.3.1
 

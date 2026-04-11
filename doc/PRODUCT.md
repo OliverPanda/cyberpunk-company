@@ -1,8 +1,8 @@
-# Paperclip — 产品定义
+# Cyberpunk Company — 产品定义
 
 ## 它是什么
 
-Paperclip 是自治 AI 公司的控制平面。一个 Paperclip 实例可以运行多个 company。**company** 是一等对象。
+Cyberpunk Company 是自治 AI 公司的控制平面。一个 Cyberpunk Company 实例可以运行多个 company。**company** 是一等对象。
 
 ## 核心概念
 
@@ -22,7 +22,7 @@ Paperclip 是自治 AI 公司的控制平面。一个 Paperclip 实例可以运�
 
 每位员工都有：
 
-- **适配器类型 + 配置**：定义该智能体如何运行，以及它的身份与行为如何确定。这完全由适配器决定。例如 OpenClaw 智能体可能使用 `SOUL.md` 和 `HEARTBEAT.md` 文件；Claude Code 智能体可能使用 `CLAUDE.md`；裸脚本可能使用 CLI 参数。Paperclip 不规定格式，适配器才规定格式。
+- **适配器类型 + 配置**：定义该智能体如何运行，以及它的身份与行为如何确定。这完全由适配器决定。例如 OpenClaw 智能体可能使用 `SOUL.md` 和 `HEARTBEAT.md` 文件；Claude Code 智能体可能使用 `CLAUDE.md`；裸脚本可能使用 CLI 参数。Cyberpunk Company 不规定格式，适配器才规定格式。
 - **角色与汇报关系**：职位、向谁汇报、谁向他汇报
 - **能力描述**：一小段文字，说明该智能体做什么、何时适合参与（帮助其他智能体发现谁能提供帮助）
 
@@ -34,8 +34,8 @@ Paperclip 是自治 AI 公司的控制平面。一个 Paperclip 实例可以运�
 
 运行智能体 heartbeat 有两种基础模式：
 
-1. **运行命令**：Paperclip 启动一个进程（shell 命令、Python 脚本等）并跟踪它。heartbeat 的含义是“执行这个命令并监控它”。
-2. **发出请求后不等待**：Paperclip 向外部正在运行的智能体发送 webhook/API 调用。heartbeat 的含义是“通知这个智能体醒来”。OpenClaw hooks 就是这种方式。
+1. **运行命令**：Cyberpunk Company 启动一个进程（shell 命令、Python 脚本等）并跟踪它。heartbeat 的含义是“执行这个命令并监控它”。
+2. **发出请求后不等待**：Cyberpunk Company 向外部正在运行的智能体发送 webhook/API 调用。heartbeat 的含义是“通知这个智能体醒来”。OpenClaw hooks 就是这种方式。
 
 我们会提供合理默认值，例如一个默认智能体：能用你的配置启动 Claude Code 或 Codex，记住 session ID，并运行基础脚本。但你也可以接入任何运行时。
 
@@ -58,19 +58,19 @@ Paperclip 是自治 AI 公司的控制平面。一个 Paperclip 实例可以运�
 
 ## 原则
 
-1. **不限制你如何运行智能体。** 你的智能体可以是 OpenClaw 机器人、Python 脚本、Node 脚本、Claude Code 会话、Codex 实例，我们不在乎。Paperclip 只定义沟通控制平面，并为 heartbeat 提供基础设施，不强制指定智能体运行时。
+1. **不限制你如何运行智能体。** 你的智能体可以是 OpenClaw 机器人、Python 脚本、Node 脚本、Claude Code 会话、Codex 实例，我们不在乎。Cyberpunk Company 只定义沟通控制平面，并为 heartbeat 提供基础设施，不强制指定智能体运行时。
 
-2. **Company 是组织的基本单位。** 所有东西都从属于某个 company。一个 Paperclip 实例，可以容纳很多 company。
+2. **Company 是组织的基本单位。** 所有东西都从属于某个 company。一个 Cyberpunk Company 实例，可以容纳很多 company。
 
 3. **适配器配置定义智能体。** 每个智能体都有一个适配器类型与配置，它控制该智能体的身份与行为。最低契约只是“可以被调用”。
 
 4. **所有工作都必须追溯到目标。** 分层任务管理意味着没有任何东西是孤立存在的。如果你无法解释一个任务为什么对公司目标重要，那它就不应该存在。
 
-5. **控制平面，而不是执行平面。** Paperclip 负责编排。智能体在各自运行的地方运行，并向控制平面回报。
+5. **控制平面，而不是执行平面。** Cyberpunk Company 负责编排。智能体在各自运行的地方运行，并向控制平面回报。
 
 ## 用户流程（理想场景）
 
-1. 打开 Paperclip，创建一个新 company
+1. 打开 Cyberpunk Company，创建一个新 company
 2. 定义 company 目标：“在 3 个月内做出月经常性收入 $1M 的第一 AI 笔记应用”
 3. 创建 CEO
    - 选择适配器（例如 Claude Code 的进程适配器，或者 OpenClaw 的 HTTP 适配器）
@@ -84,7 +84,7 @@ Paperclip 是自治 AI 公司的控制平面。一个 Paperclip 实例可以运�
 
 ## 指南
 
-Paperclip 必须支持两种运行模式：
+Cyberpunk Company 必须支持两种运行模式：
 
 - `local_trusted`（默认）：单用户、本地可信部署，无登录摩擦
 - `authenticated`：需要登录的模式，同时支持私有网络与公开暴露策略
@@ -97,9 +97,9 @@ Paperclip 必须支持两种运行模式：
 
 ---
 
-Paperclip 的核心身份是一个 **自治 AI 公司的控制平面**，围绕 **companies、组织结构、goals、issues/comments、heartbeats、budgets、approvals 和 board governance** 展开。公开文档也明确了当前边界：**tasks/comments 是内建沟通模型**，Paperclip **不是聊天机器人**，也 **不是代码评审工具**。路线图已经指向 **更轻松的 onboarding、云端智能体、更简单的智能体配置、插件、更好的文档，以及类似 ClipMart/ClipHub 的可复用公司/模板**。
+Cyberpunk Company 的核心身份是一个 **自治 AI 公司的控制平面**，围绕 **companies、组织结构、goals、issues/comments、heartbeats、budgets、approvals 和 board governance** 展开。公开文档也明确了当前边界：**tasks/comments 是内建沟通模型**，Cyberpunk Company **不是聊天机器人**，也 **不是代码评审工具**。路线图已经指向 **更轻松的 onboarding、云端智能体、更简单的智能体配置、插件、更好的文档，以及类似 ClipMart/ClipHub 的可复用公司/模板**。
 
-## Paperclip 应该做什么，不应该做什么
+## Cyberpunk Company 应该做什么，不应该做什么
 
 **应该做**
 
@@ -114,7 +114,7 @@ Paperclip 的核心身份是一个 **自治 AI 公司的控制平面**，围绕 
 **不应该做**
 
 - 不要把核心产品做成通用聊天应用。当前产品定义明确以任务/评论为中心，并且“不是 chatbot”，这个边界很有价值。
-- 不要构建完整的 Jira/GitHub 替代品。仓库和文档已经将 Paperclip 定位为组织编排，而不是 PR review 工具。
+- 不要构建完整的 Jira/GitHub 替代品。仓库和文档已经将 Cyberpunk Company 定位为组织编排，而不是 PR review 工具。
 - 不要一开始就做企业级 RBAC。当前 V1 规范仍把多董事会治理与细粒度人类权限排除在范围外，因此第一个多用户版本应当保持粗粒度、company 作用域。
 - 不要默认把原始 bash 日志和 transcript 放在最前面。默认视图应该先展示人类可读的意图与进度，原始细节放在下面。
 - 除非绝对必要，不要强迫用户理解 provider/API key 接线细节。当前 onboarding 与 auth 已经存在摩擦，这部分的阻力是真实的。

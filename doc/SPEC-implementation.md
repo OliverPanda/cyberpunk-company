@@ -1,4 +1,4 @@
-# Paperclip V1 实现规范
+# Cyberpunk Company V1 实现规范
 
 状态：首个版本（V1）的实现契约  
 日期：2026-02-17  
@@ -15,7 +15,7 @@
 
 ## 2. V1 目标结果
 
-Paperclip V1 必须为自治智能体提供完整的控制平面闭环：
+Cyberpunk Company V1 必须为自治智能体提供完整的控制平面闭环：
 
 1. 人类董事会创建 company 并定义 goals。
 2. 董事会在组织树中创建和管理 agents。
@@ -94,11 +94,11 @@ V1 实现将在这个基础上，扩展为一个以 company 为中心、具备�
 ## 6.2 数据存储
 
 - 主存储：PostgreSQL
-- 本地默认：内嵌 PostgreSQL，路径 `~/.paperclip/instances/default/db`
+- 本地默认：内嵌 PostgreSQL，路径 `~/.cyberpunk-company/instances/default/db`
 - 可选本地类生产：Docker Postgres
 - 可选托管：Supabase/Postgres 兼容服务
 - 文件/对象存储：
-  - 本地默认：`~/.paperclip/instances/default/data/storage`（`local_disk`）
+  - 本地默认：`~/.cyberpunk-company/instances/default/data/storage`（`local_disk`）
   - 云端：S3 兼容对象存储（`s3`）
 
 ## 6.3 后台处理
@@ -848,7 +848,7 @@ V1 支持通过可移植 package 契约进行 company import/export：
 
 - 以 Markdown 为核心，根文件是 `COMPANY.md`
 - 按约定进行隐式目录发现
-- 使用 `.paperclip.yaml` sidecar 保存 Paperclip 特定保真信息
+- 使用 `.cyberpunk-company.yaml` sidecar 保存 Cyberpunk Company 特定保真信息
 - 规范基础 package 保持 vendor-neutral，并与 `docs/companies/companies-spec.md` 对齐
 - 通用约定：
   - `agents/<slug>/AGENTS.md`
@@ -860,11 +860,11 @@ V1 支持通过可移植 package 契约进行 company import/export：
 
 V1 中 export/import 行为：
 
-- export 输出一个干净、vendor-neutral 的 markdown package，并附带 `.paperclip.yaml`
+- export 输出一个干净、vendor-neutral 的 markdown package，并附带 `.cyberpunk-company.yaml`
 - projects 和 starter tasks 是按需导出内容，而不是默认 package 内容
-- 周期性 `TASK.md` 条目在基础 package 中使用 `recurring: true`，在 `.paperclip.yaml` 中使用 Paperclip routine fidelity
-- Paperclip 在导入 recurring task package 时，会把它们导入为 routines，而不是降级成一次性 issues
-- export 会移除环境相关路径（`cwd`、本地 instruction file path、内联 prompt 重复内容），同时保留可移植的 project repo/workspace 元数据，例如 `repoUrl`、refs 和 `.paperclip.yaml` 中键控的 workspace-policy 引用
+- 周期性 `TASK.md` 条目在基础 package 中使用 `recurring: true`，在 `.cyberpunk-company.yaml` 中使用 Cyberpunk Company routine fidelity
+- Cyberpunk Company 在导入 recurring task package 时，会把它们导入为 routines，而不是降级成一次性 issues
+- export 会移除环境相关路径（`cwd`、本地 instruction file path、内联 prompt 重复内容），同时保留可移植的 project repo/workspace 元数据，例如 `repoUrl`、refs 和 `.cyberpunk-company.yaml` 中键控的 workspace-policy 引用
 - export 永不包含 secret values；环境变量输入只会以可移植声明形式报告
 - import 支持目标模式：
   - 创建一个新 company

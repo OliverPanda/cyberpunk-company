@@ -1,6 +1,6 @@
 # Plugin Authoring Smoke Example
 
-A Paperclip plugin
+A Cyberpunk Company plugin
 
 ## Development
 
@@ -11,13 +11,13 @@ pnpm dev:ui         # local dev server with hot-reload events
 pnpm test
 ```
 
-## Install Into Paperclip
+## Install Into Cyberpunk Company
 
 ```bash
-pnpm paperclipai plugin install ./
+pnpm cyberpunk-company plugin install ./
 ```
 
 ## Build Options
 
-- `pnpm build` uses esbuild presets from `@paperclipai/plugin-sdk/bundlers`.
+- `pnpm build` uses esbuild presets from `@cyberpunk-company/plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.

@@ -4,7 +4,7 @@
 
 ## 1. 目标
 
-Paperclip 是 AI 智能体公司的控制平面。
+Cyberpunk Company 是 AI 智能体公司的控制平面。
 当前的实现目标是 V1，定义见 `doc/SPEC-implementation.md`。
 
 ## 2. 优先阅读

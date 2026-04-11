@@ -1,4 +1,4 @@
-# Paperclip V2 演进规范
+# Cyberpunk Company V2 演进规范
 
 状态：当前系统实现全景  
 日期：2026-04-11  
@@ -41,7 +41,7 @@ V1 规范定义了一个以 company/agent/task 为核心的控制平面。实际
 
 ### 3.1 设计理念
 
-插件系统将 Paperclip 从封闭控制平面升级为 **可扩展平台**。插件可以注册新的适配器类型、挂接生命周期事件、贡献 UI 组件、暴露自定义工具，并运行后台作业。
+插件系统将 Cyberpunk Company 从封闭控制平面升级为 **可扩展平台**。插件可以注册新的适配器类型、挂接生命周期事件、贡献 UI 组件、暴露自定义工具，并运行后台作业。
 
 ### 3.2 插件生命周期
 
@@ -157,7 +157,7 @@ interface AgentAdapter {
 - Heartbeat 协议实现
 - 上下文格式化
 - 任务会话管理
-- 环境变量注入（`PAPERCLIP_*` 系列环境变量）
+- 环境变量注入（`CYBERPUNK_*` 系列环境变量）
 
 ### 4.4 唤醒机制
 
@@ -298,7 +298,7 @@ Issue Documents 是附着在任务上的结构化文档，用于记录计划、�
 
 ```
 COMPANY.md              # 公司定义（vendor-neutral）
-.paperclip.yaml         # Paperclip 特定保真信息（sidecar）
+.cyberpunk-company.yaml         # Cyberpunk Company 特定保真信息（sidecar）
 agents/
   <slug>/AGENTS.md      # 智能体定义
 teams/
@@ -316,7 +316,7 @@ skills/
 ### 8.3 导出行为
 
 - 输出干净、vendor-neutral 的 Markdown 包
-- 附带 `.paperclip.yaml` sidecar 保存 Paperclip 特定元数据
+- 附带 `.cyberpunk-company.yaml` sidecar 保存 Cyberpunk Company 特定元数据
 - 生成组织架构 SVG 图
 - 移除环境相关路径（`cwd`、本地指令文件路径）
 - 保留可移植的项目工作空间元数据（`repoUrl`、refs）
@@ -700,7 +700,7 @@ V1 定义了 Issue 的基本 CRUD、状态机、原子 Checkout 和评论系统�
 
 ### 20.1 概念
 
-OpenClaw 是外部的智能体运行时。Paperclip 通过 `openclaw_gateway` 适配器与 OpenClaw 集成。
+OpenClaw 是外部的智能体运行时。Cyberpunk Company 通过 `openclaw_gateway` 适配器与 OpenClaw 集成。
 
 ### 20.2 入职流程
 
@@ -865,7 +865,7 @@ OpenClaw 是外部的智能体运行时。Paperclip 通过 `openclaw_gateway` �
 
 ### 延续自 V1
 
-1. **运行时无关**：Paperclip 编排，不执行
+1. **运行时无关**：Cyberpunk Company 编排，不执行
 2. **Company 作用域**：所有实体严格隔离
 3. **任务即通信**：所有沟通流经 tasks + comments
 4. **工作追溯目标**：分层管理，无孤立任务
@@ -928,7 +928,7 @@ V1 反需求仍然成立，新增以下约束：
 
 ## 29. 上下文管理与缓存优化
 
-基于 Claude Code v2.1.88 源码分析（详见 `CLAUDE_CODE_ARCHITECTURE_ANALYSIS.md`），本章节定义 Paperclip 的上下文管理架构方向。
+基于 Claude Code v2.1.88 源码分析（详见 `CLAUDE_CODE_ARCHITECTURE_ANALYSIS.md`），本章节定义 Cyberpunk Company 的上下文管理架构方向。
 
 ### 29.1 设计理念
 
@@ -942,12 +942,12 @@ V1 反需求仍然成立，新增以下约束：
 
 ### 29.2 上下文分层模型
 
-Paperclip 将智能体上下文分为四层，每层有不同的缓存特性：
+Cyberpunk Company 将智能体上下文分为四层，每层有不同的缓存特性：
 
 | 层级 | 内容 | 缓存特性 | 更新频率 |
 |------|------|----------|----------|
 | L0: 角色层 | 身份、职责、行为准则、核心规则 | 跨 heartbeat 可缓存（静态区） | 极低（仅指令文件变更时） |
-| L1: 技能层 | Paperclip Skill、API 文档、流程说明 | 跨 session 可缓存 | 低（技能更新时） |
+| L1: 技能层 | Cyberpunk Company Skill、API 文档、流程说明 | 跨 session 可缓存 | 低（技能更新时） |
 | L2: 任务层 | 当前任务状态、祖先链、项目目标 | 跨同任务 heartbeat 可缓存 | 中（任务状态变更时） |
 | L3: 运行层 | 唤醒原因、新评论、审批状态 | 不可缓存（每次 heartbeat 变化） | 高（每次 heartbeat） |
 

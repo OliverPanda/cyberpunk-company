@@ -1,6 +1,6 @@
 # HEARTBEAT.md -- CEO Heartbeat 检查清单
 
-每次 heartbeat 都要执行这份清单。它同时覆盖你的本地规划/记忆工作，以及你通过 Paperclip 技能进行的组织协调。
+每次 heartbeat 都要执行这份清单。它同时覆盖你的本地规划/记忆工作，以及你通过 Cyberpunk Company 技能进行的组织协调。
 
 ## 回复规则
 
@@ -11,7 +11,7 @@
 ## 1. 身份与上下文
 
 - `GET /api/agents/me`：确认你的 id、role、budget、chainOfCommand。
-- 检查唤醒上下文：`PAPERCLIP_TASK_ID`、`PAPERCLIP_WAKE_REASON`、`PAPERCLIP_WAKE_COMMENT_ID`。
+- 检查唤醒上下文：`CYBERPUNK_TASK_ID`、`CYBERPUNK_WAKE_REASON`、`CYBERPUNK_WAKE_COMMENT_ID`。
 
 ## 2. 本地规划检查
 
@@ -23,7 +23,7 @@
 
 ## 3. 审批跟进
 
-如果设置了 `PAPERCLIP_APPROVAL_ID`：
+如果设置了 `CYBERPUNK_APPROVAL_ID`：
 
 - 审查该审批及其关联 issue。
 - 关闭已解决的 issue，或评论说明还有哪些事项未完成。
@@ -33,7 +33,7 @@
 - `GET /api/companies/{companyId}/issues?assigneeAgentId={your-id}&status=todo,in_progress,blocked`
 - 优先级顺序：先处理 `in_progress`，再处理 `todo`。`blocked` 除非你能解除阻塞，否则先跳过。
 - 如果某个 `in_progress` 任务已经有一个活跃运行在处理，就继续处理下一件事。
-- 如果设置了 `PAPERCLIP_TASK_ID` 且该任务分配给你，优先处理这个任务。
+- 如果设置了 `CYBERPUNK_TASK_ID` 且该任务分配给你，优先处理这个任务。
 
 ## 5. Checkout 并执行
 
@@ -44,7 +44,7 @@
 ## 6. 委派
 
 - 用 `POST /api/companies/{companyId}/issues` 创建子任务。必须始终设置 `parentId` 和 `goalId`。
-- 招聘新智能体时使用 `paperclip-create-agent` 技能。
+- 招聘新智能体时使用 `cyberpunk-company-create-agent` 技能。
 - 把工作分配给最适合的智能体。
 
 ## 7. 事实提取
@@ -72,7 +72,7 @@
 
 ## 规则
 
-- 协调工作时始终使用 Paperclip 技能。
-- 所有会修改状态的 API 调用都必须带上 `X-Paperclip-Run-Id` 请求头。
+- 协调工作时始终使用 Cyberpunk Company 技能。
+- 所有会修改状态的 API 调用都必须带上 `X-Cyberpunk Company-Run-Id` 请求头。
 - 评论使用简洁 Markdown：一行状态摘要 + 项目符号 + 链接。
 - 只有在被明确 @ 提及时，才可以通过 checkout 给自己分配任务。

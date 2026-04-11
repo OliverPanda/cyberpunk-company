@@ -1,7 +1,7 @@
 # Token Optimization Plan
 
 Date: 2026-03-13  
-Related discussion: https://github.com/paperclipai/paperclip/discussions/449
+Related discussion: https://github.com/cyberpunk-company/cyberpunk-company/discussions/449
 
 ## Goal
 
@@ -12,7 +12,7 @@ This plan is based on:
 - the current V1 control-plane design
 - the current adapter and heartbeat implementation
 - the linked user discussion
-- local runtime data from the default Paperclip instance on 2026-03-13
+- local runtime data from the default Cyberpunk Company instance on 2026-03-13
 
 ## Executive Summary
 
@@ -27,7 +27,7 @@ After reviewing the code and local run data, the token problem appears to have f
 
 1. **Measurement inflation on sessioned adapters.** Some token counters, especially for `codex_local`, appear to be recorded as cumulative session totals instead of per-heartbeat deltas.
 2. **Avoidable session resets.** Task sessions are intentionally reset on timer wakes and manual wakes, which destroys cache locality for common heartbeat paths.
-3. **Repeated context reacquisition.** The `paperclip` skill tells agents to re-fetch assignments, issue details, ancestors, and full comment threads on every heartbeat. The API does not currently offer efficient delta-oriented alternatives.
+3. **Repeated context reacquisition.** The `cyberpunk-company` skill tells agents to re-fetch assignments, issue details, ancestors, and full comment threads on every heartbeat. The API does not currently offer efficient delta-oriented alternatives.
 4. **Large static instruction surfaces.** Agent instruction files and globally injected skills are reintroduced at startup even when most of that content is unchanged and not needed for the current task.
 
 The correct approach is:
@@ -84,7 +84,7 @@ So timer wakes are the largest heartbeat path and are mostly not resuming prior 
 
 ### 3. We repeatedly ask agents to reload the same task context
 
-The `paperclip` skill currently tells agents to do this on essentially every heartbeat:
+The `cyberpunk-company` skill currently tells agents to do this on essentially every heartbeat:
 
 - fetch assignments
 - fetch issue details
@@ -121,16 +121,16 @@ Local adapters inject repo skills into runtime skill directories.
 Important `codex_local` nuance:
 
 - Codex does not read skills directly from the active worktree.
-- Paperclip discovers repo skills from the current checkout, then symlinks them into `$CODEX_HOME/skills` or `~/.codex/skills`.
-- If an existing Paperclip skill symlink already points at another live checkout, the current implementation skips it instead of repointing it.
-- This can leave Codex using stale skill content from a different worktree even after Paperclip-side skill changes land.
+- Cyberpunk Company discovers repo skills from the current checkout, then symlinks them into `$CODEX_HOME/skills` or `~/.codex/skills`.
+- If an existing Cyberpunk Company skill symlink already points at another live checkout, the current implementation skips it instead of repointing it.
+- This can leave Codex using stale skill content from a different worktree even after Cyberpunk Company-side skill changes land.
 - That is both a correctness risk and a token-analysis risk, because runtime behavior may not reflect the instructions in the checkout being tested.
 
 Current repo skill sizes:
 
-- `skills/paperclip/SKILL.md`: 17,441 bytes
+- `skills/cyberpunk-company/SKILL.md`: 17,441 bytes
 - `.agents/skills/create-agent-adapter/SKILL.md`: 31,832 bytes
-- `skills/paperclip-create-agent/SKILL.md`: 4,718 bytes
+- `skills/cyberpunk-company-create-agent/SKILL.md`: 4,718 bytes
 - `skills/para-memory-files/SKILL.md`: 3,978 bytes
 
 That is nearly 58 KB of skill markdown before any company-specific instructions.
@@ -157,7 +157,7 @@ This should happen first.
 
 - Store both:
   - raw adapter-reported usage
-  - Paperclip-normalized per-run usage
+  - Cyberpunk Company-normalized per-run usage
 - For sessioned adapters, compute normalized deltas against prior usage for the same persisted session.
 - Add explicit fields for:
   - `sessionReused`
@@ -223,7 +223,7 @@ This is the right version of the discussion’s bootstrap idea.
 
 Static instructions and dynamic wake context have different cache behavior and should be modeled separately.
 
-For `codex_local`, this also requires isolating the Codex skill home per worktree or teaching Paperclip to repoint its own skill symlinks when the source checkout changes. Otherwise prompt and skill improvements in the active worktree may not reach the running agent.
+For `codex_local`, this also requires isolating the Codex skill home per worktree or teaching Cyberpunk Company to repoint its own skill symlinks when the source checkout changes. Otherwise prompt and skill improvements in the active worktree may not reach the running agent.
 
 ### Success criteria
 
@@ -252,7 +252,7 @@ Add heartbeat-oriented endpoints and skill behavior:
 - optional `GET /api/issues/:id/context-digest`
   - server-generated compact summary for heartbeat use
 
-Update the `paperclip` skill so the default pattern becomes:
+Update the `cyberpunk-company` skill so the default pattern becomes:
 
 1. fetch compact inbox
 2. fetch compact task context
@@ -309,15 +309,15 @@ Even when reuse is desirable, some sessions become too expensive to keep alive i
 
 - Move from “inject all repo skills” to an allowlist per agent or per adapter.
 - Default local runtime skill set should likely be:
-  - `paperclip`
+  - `cyberpunk-company`
 - Add opt-in skills for specialized agents:
-  - `paperclip-create-agent`
+  - `cyberpunk-company-create-agent`
   - `para-memory-files`
   - `create-agent-adapter`
 - Expose active skill set in agent config and run metadata.
 - For `codex_local`, either:
   - run with a worktree-specific `CODEX_HOME`, or
-  - treat Paperclip-owned Codex skill symlinks as repairable when they point at a different checkout
+  - treat Cyberpunk Company-owned Codex skill symlinks as repairable when they point at a different checkout
 
 ### Why
 
@@ -335,7 +335,7 @@ Recommended order:
 1. telemetry normalization
 2. timer-wake session reuse
 3. bootstrap prompt implementation
-4. heartbeat delta APIs + `paperclip` skill rewrite
+4. heartbeat delta APIs + `cyberpunk-company` skill rewrite
 5. session compaction/rotation
 6. skill allowlists
 
@@ -373,7 +373,7 @@ Initial targets:
 3. Change `shouldResetTaskSessionForWake(...)` so timer wakes do not reset by default.
 4. Implement `bootstrapPromptTemplate` end-to-end in adapter execution.
 5. Add compact heartbeat context and incremental comment APIs.
-6. Rewrite `skills/paperclip/SKILL.md` around delta-fetch behavior.
+6. Rewrite `skills/cyberpunk-company/SKILL.md` around delta-fetch behavior.
 7. Add session rotation with carry-forward summaries.
 8. Replace global skill injection with explicit allowlists.
 9. Fix `codex_local` skill resolution so worktree-local skill changes reliably reach the runtime.
@@ -408,7 +408,7 @@ If we only do Track B without fixing telemetry first, we will not be able to pro
 - 单工具阈值：50K chars（超出部分持久化到磁盘，只传 preview + 文件路径）
 - 单消息聚合阈值：200K chars（防止 N 个并行工具结果集体溢出上下文窗口）
 
-**Paperclip 应用**：
+**Cyberpunk Company 应用**：
 - 在 adapter-utils 中实现 `ContextBudgeter` 接口
 - 当 heartbeat context + 工具输出超过自适应阈值时，提前触发 session rotation
 - 启发式规则：若 `context + lastRunStdout > budgetTokens * 0.4`，标记需要 rotation
@@ -423,7 +423,7 @@ If we only do Track B without fixing telemetry first, we will not be able to pro
 5. Partial Compact → 只摘要前缀消息，保留近期消息原文
 6. Transcript Reference → 压缩后仍可通过 Read 工具读取完整transcript
 
-**Paperclip 应用**：
+**Cyberpunk Company 应用**：
 - Phase 5 session compaction 应参考此管线设计 carry-forward summary
 - 在 session handoff markdown 中采用结构化 9 段摘要模板（Primary Request、Key Concepts、Files Touched、Errors、Problem Solving、User Messages、Pending Tasks、Current Work、Next Step）
 - carry-forward summary 生成时使用 `<analysis>` scratchpad 模式：先让模型在 scratchpad 中推理，再提取结构化摘要，scratchpad 内容不进入最终上下文
@@ -435,7 +435,7 @@ If we only do Track B without fixing telemetry first, we will not be able to pro
 - 工具描述变为静态（"Available agent types are listed in system-reminder messages"）
 - 动态内容通过消息附件自由更新，不影响缓存
 
-**Paperclip 应用**：
+**Cyberpunk Company 应用**：
 - Skill 内容注入时，将稳定的 API 文档和流程说明作为 bootstrap（可缓存）
 - 将动态的 agent 列表、项目上下文等作为 per-heartbeat 注入
 - 这与 Phase 3 的 bootstrap/heartbeat 分离互补
@@ -446,7 +446,7 @@ If we only do Track B without fixing telemetry first, we will not be able to pro
 - 跟踪 `cachedInputTokens` vs `inputTokens`
 - 用 `DANGEROUS_uncachedSystemPromptSection` 命名惯例防止意外破坏缓存
 
-**Paperclip 应用**：
+**Cyberpunk Company 应用**：
 - 在 costService 中新增计算指标：`cacheHitRate = cachedInputTokens / (cachedInputTokens + inputTokens)`
 - 月度基线存储在 agent state JSON 中
 - 当 cache hit rate < 0.2 时报警（上下文太不稳定或 bootstrap 太小）
@@ -459,7 +459,7 @@ If we only do Track B without fixing telemetry first, we will not be able to pro
 - 压缩后自动重新注入最近读取的 5 个文件（50K token 预算，每文件 5K）
 - 同时恢复最近加载的 skill 指令（25K 预算）
 
-**Paperclip 应用**：
+**Cyberpunk Company 应用**：
 - Session rotation 时，carry-forward summary 应包含"活跃文件列表"
 - 新 session 的 bootstrap 中可选择性注入关键文件内容的摘要
 - 在 `evaluateSessionCompaction()` 中跟踪最近读取的文件列表

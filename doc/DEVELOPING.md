@@ -52,7 +52,7 @@ pnpm dev --tailscale-auth
 允许附加私有主机名（例如自定义 Tailscale 主机名）：
 
 ```sh
-pnpm paperclipai allowed-hostname dotta-macbook-pro
+pnpm cyberpunk-company allowed-hostname dotta-macbook-pro
 ```
 
 ## 一条命令本地运行
@@ -60,27 +60,27 @@ pnpm paperclipai allowed-hostname dotta-macbook-pro
 对于首次本地安装，你可以用一条命令完成初始化并启动：
 
 ```sh
-pnpm paperclipai run
+pnpm cyberpunk-company run
 ```
 
-`paperclipai run` 会执行：
+`cyberpunk-company run` 会执行：
 
 1. 如果缺少配置，则自动完成 onboarding
-2. 执行启用修复能力的 `paperclipai doctor`
+2. 执行启用修复能力的 `cyberpunk-company doctor`
 3. 在检查通过后启动服务端
 
 ## Docker 快速开始（无需本地安装 Node）
 
-在 Docker 中构建并运行 Paperclip：
+在 Docker 中构建并运行 Cyberpunk Company：
 
 ```sh
-docker build -t paperclip-local .
-docker run --name paperclip \
+docker build -t cyberpunk-company-local .
+docker run --name cyberpunk-company \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e PAPERCLIP_HOME=/paperclip \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -e CYBERPUNK_HOME=/cyberpunk-company \
+  -v "$(pwd)/data/docker-cyberpunk-company:/cyberpunk-company" \
+  cyberpunk-company-local
 ```
 
 或者使用 Compose：
@@ -100,12 +100,12 @@ docker compose -f docker-compose.quickstart.yml up --build
 在本地开发中，将 `DATABASE_URL` 留空即可。
 服务端会自动使用内嵌 PostgreSQL，并把数据持久化到：
 
-- `~/.paperclip/instances/default/db`
+- `~/.cyberpunk-company/instances/default/db`
 
 覆盖 home 与 instance：
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+CYBERPUNK_HOME=/custom/path CYBERPUNK_INSTANCE_ID=dev pnpm cyberpunk-company run
 ```
 
 这种模式不需要 Docker 或外部数据库。
@@ -114,45 +114,45 @@ PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
 
 在本地开发中，默认存储 provider 是 `local_disk`，上传的图片和附件会持久化到：
 
-- `~/.paperclip/instances/default/data/storage`
+- `~/.cyberpunk-company/instances/default/data/storage`
 
 配置存储 provider 与设置：
 
 ```sh
-pnpm paperclipai configure --section storage
+pnpm cyberpunk-company configure --section storage
 ```
 
 ## 默认智能体工作区
 
-当某个本地 agent run 没有解析出 project/session workspace 时，Paperclip 会退回到实例根目录下的 agent home workspace：
+当某个本地 agent run 没有解析出 project/session workspace 时，Cyberpunk Company 会退回到实例根目录下的 agent home workspace：
 
-- `~/.paperclip/instances/default/workspaces/<agent-id>`
+- `~/.cyberpunk-company/instances/default/workspaces/<agent-id>`
 
-在非默认配置下，这个路径同样遵循 `PAPERCLIP_HOME` 和 `PAPERCLIP_INSTANCE_ID`。
+在非默认配置下，这个路径同样遵循 `CYBERPUNK_HOME` 和 `CYBERPUNK_INSTANCE_ID`。
 
-对于 `codex_local`，Paperclip 还会在实例根目录下按 company 管理一个 Codex home，并从共享 Codex 登录/配置目录（`$CODEX_HOME` 或 `~/.codex`）中进行初始化：
+对于 `codex_local`，Cyberpunk Company 还会在实例根目录下按 company 管理一个 Codex home，并从共享 Codex 登录/配置目录（`$CODEX_HOME` 或 `~/.codex`）中进行初始化：
 
-- `~/.paperclip/instances/default/companies/<company-id>/codex-home`
+- `~/.cyberpunk-company/instances/default/companies/<company-id>/codex-home`
 
 ## Worktree 本地实例
 
-当你在多个 git worktree 中开发时，不要让两个 Paperclip 服务同时指向同一个内嵌 PostgreSQL 数据目录。
+当你在多个 git worktree 中开发时，不要让两个 Cyberpunk Company 服务同时指向同一个内嵌 PostgreSQL 数据目录。
 
-正确做法是：为当前 worktree 创建 repo-local 的 Paperclip 配置，并为它创建一个隔离实例：
+正确做法是：为当前 worktree 创建 repo-local 的 Cyberpunk Company 配置，并为它创建一个隔离实例：
 
 ```sh
-paperclipai worktree init
+cyberpunk-company worktree init
 # 或者一步同时创建 git worktree 并初始化：
-pnpm paperclipai worktree:make paperclip-pr-432
+pnpm cyberpunk-company worktree:make cyberpunk-company-pr-432
 ```
 
 这个命令会：
 
-- 在 `.paperclip/config.json` 和 `.paperclip/.env` 写入 repo-local 文件
-- 在 `~/.paperclip-worktrees/instances/<worktree-id>/` 下创建隔离实例
+- 在 `.cyberpunk-company/config.json` 和 `.cyberpunk-company/.env` 写入 repo-local 文件
+- 在 `~/.cyberpunk-company-worktrees/instances/<worktree-id>/` 下创建隔离实例
 - 当在一个 linked git worktree 中运行时，把当前生效的 git hooks 镜像到该 worktree 的私有 git 目录
 - 选择一个可用的 app 端口和内嵌 PostgreSQL 端口
-- 默认通过逻辑 SQL 快照，以 `minimal` 模式从当前生效的 Paperclip instance/config 进行 DB 初始化（如果存在 repo-local worktree config 则以它为准，否则使用默认 instance）
+- 默认通过逻辑 SQL 快照，以 `minimal` 模式从当前生效的 Cyberpunk Company instance/config 进行 DB 初始化（如果存在 repo-local worktree config 则以它为准，否则使用默认 instance）
 
 Seed 模式：
 
@@ -160,35 +160,35 @@ Seed 模式：
 - `full`：对源实例做完整逻辑克隆
 - `--no-seed`：创建一个空的隔离实例
 
-执行 `worktree init` 之后，在该 worktree 中运行的服务端与 CLI 都会自动加载 repo-local 的 `.paperclip/.env`，因此 `pnpm dev`、`paperclipai doctor` 和 `paperclipai db:backup` 等常规命令都会自动作用于该 worktree 实例。
+执行 `worktree init` 之后，在该 worktree 中运行的服务端与 CLI 都会自动加载 repo-local 的 `.cyberpunk-company/.env`，因此 `pnpm dev`、`cyberpunk-company doctor` 和 `cyberpunk-company db:backup` 等常规命令都会自动作用于该 worktree 实例。
 
 这个 repo-local env 还会设置：
 
-- `PAPERCLIP_IN_WORKTREE=true`
-- `PAPERCLIP_WORKTREE_NAME=<worktree-name>`
-- `PAPERCLIP_WORKTREE_COLOR=<hex-color>`
+- `CYBERPUNK_IN_WORKTREE=true`
+- `CYBERPUNK_WORKTREE_NAME=<worktree-name>`
+- `CYBERPUNK_WORKTREE_COLOR=<hex-color>`
 
 服务端和 UI 会使用这些值做 worktree 专属品牌标记，例如顶部横幅和动态着色的 favicon。
 
 如需显式打印 shell exports：
 
 ```sh
-paperclipai worktree env
+cyberpunk-company worktree env
 # 或：
-eval "$(paperclipai worktree env)"
+eval "$(cyberpunk-company worktree env)"
 ```
 
 ### Worktree CLI 参考
 
-**`pnpm paperclipai worktree init [options]`**：为当前 worktree 创建 repo-local config/env 和隔离实例。
+**`pnpm cyberpunk-company worktree init [options]`**：为当前 worktree 创建 repo-local config/env 和隔离实例。
 
 | 选项 | 说明 |
 |---|---|
 | `--name <name>` | 用于派生 instance id 的显示名称 |
 | `--instance <id>` | 显式指定隔离 instance id |
-| `--home <path>` | worktree 实例的 home 根目录（默认：`~/.paperclip-worktrees`） |
+| `--home <path>` | worktree 实例的 home 根目录（默认：`~/.cyberpunk-company-worktrees`） |
 | `--from-config <path>` | 用于 seed 的源 config.json |
-| `--from-data-dir <path>` | 派生源配置时使用的源 PAPERCLIP_HOME |
+| `--from-data-dir <path>` | 派生源配置时使用的源 CYBERPUNK_HOME |
 | `--from-instance <id>` | 源 instance id（默认：`default`） |
 | `--server-port <port>` | 期望使用的服务端端口 |
 | `--db-port <port>` | 期望使用的内嵌 Postgres 端口 |
@@ -199,33 +199,33 @@ eval "$(paperclipai worktree env)"
 示例：
 
 ```sh
-paperclipai worktree init --no-seed
-paperclipai worktree init --seed-mode full
-paperclipai worktree init --from-instance default
-paperclipai worktree init --from-data-dir ~/.paperclip
-paperclipai worktree init --force
+cyberpunk-company worktree init --no-seed
+cyberpunk-company worktree init --seed-mode full
+cyberpunk-company worktree init --from-instance default
+cyberpunk-company worktree init --from-data-dir ~/.cyberpunk-company
+cyberpunk-company worktree init --force
 ```
 
 修复一个已经创建好的 repo-managed worktree，并从主默认安装重新 seed 它的隔离实例：
 
 ```sh
-cd ~/.paperclip/worktrees/PAP-884-ai-commits-component
-pnpm paperclipai worktree init --force --seed-mode minimal \
+cd ~/.cyberpunk-company/worktrees/PAP-884-ai-commits-component
+pnpm cyberpunk-company worktree init --force --seed-mode minimal \
   --name PAP-884-ai-commits-component \
-  --from-config ~/.paperclip/instances/default/config.json
+  --from-config ~/.cyberpunk-company/instances/default/config.json
 ```
 
-这个命令会重写 worktree-local 的 `.paperclip/config.json` 和 `.paperclip/.env`，在 `~/.paperclip-worktrees/instances/<worktree-id>/` 下重建隔离实例，同时保留 git worktree 的实际代码内容。
+这个命令会重写 worktree-local 的 `.cyberpunk-company/config.json` 和 `.cyberpunk-company/.env`，在 `~/.cyberpunk-company-worktrees/instances/<worktree-id>/` 下重建隔离实例，同时保留 git worktree 的实际代码内容。
 
-**`pnpm paperclipai worktree:make <name> [options]`**：在 `~/NAME` 下创建一个 git worktree，并在其中初始化隔离的 Paperclip 实例。它把 `git worktree add` 与 `worktree init` 合并到一步中。
+**`pnpm cyberpunk-company worktree:make <name> [options]`**：在 `~/NAME` 下创建一个 git worktree，并在其中初始化隔离的 Cyberpunk Company 实例。它把 `git worktree add` 与 `worktree init` 合并到一步中。
 
 | 选项 | 说明 |
 |---|---|
 | `--start-point <ref>` | 新分支的基准远程引用（例如 `origin/main`） |
 | `--instance <id>` | 显式指定隔离 instance id |
-| `--home <path>` | worktree 实例的 home 根目录（默认：`~/.paperclip-worktrees`） |
+| `--home <path>` | worktree 实例的 home 根目录（默认：`~/.cyberpunk-company-worktrees`） |
 | `--from-config <path>` | 用于 seed 的源 config.json |
-| `--from-data-dir <path>` | 派生源配置时使用的源 PAPERCLIP_HOME |
+| `--from-data-dir <path>` | 派生源配置时使用的源 CYBERPUNK_HOME |
 | `--from-instance <id>` | 源 instance id（默认：`default`） |
 | `--server-port <port>` | 期望使用的服务端端口 |
 | `--db-port <port>` | 期望使用的内嵌 Postgres 端口 |
@@ -236,12 +236,12 @@ pnpm paperclipai worktree init --force --seed-mode minimal \
 示例：
 
 ```sh
-pnpm paperclipai worktree:make paperclip-pr-432
-pnpm paperclipai worktree:make my-feature --start-point origin/main
-pnpm paperclipai worktree:make experiment --no-seed
+pnpm cyberpunk-company worktree:make cyberpunk-company-pr-432
+pnpm cyberpunk-company worktree:make my-feature --start-point origin/main
+pnpm cyberpunk-company worktree:make experiment --no-seed
 ```
 
-**`pnpm paperclipai worktree env [options]`**：打印当前 worktree-local Paperclip 实例的 shell exports。
+**`pnpm cyberpunk-company worktree env [options]`**：打印当前 worktree-local Cyberpunk Company 实例的 shell exports。
 
 | 选项 | 说明 |
 |---|---|
@@ -251,12 +251,12 @@ pnpm paperclipai worktree:make experiment --no-seed
 示例：
 
 ```sh
-pnpm paperclipai worktree env
-pnpm paperclipai worktree env --json
-eval "$(pnpm paperclipai worktree env)"
+pnpm cyberpunk-company worktree env
+pnpm cyberpunk-company worktree env --json
+eval "$(pnpm cyberpunk-company worktree env)"
 ```
 
-对于项目执行 worktree，Paperclip 还可以在创建或复用隔离 git worktree 后，执行项目定义的 provision command。通过项目的执行工作区策略（`workspaceStrategy.provisionCommand`）进行配置。该命令会在派生出来的 worktree 中运行，并接收 `PAPERCLIP_WORKSPACE_*`、`PAPERCLIP_PROJECT_ID`、`PAPERCLIP_AGENT_ID` 和 `PAPERCLIP_ISSUE_*` 环境变量，以便每个仓库按自己的方式完成自举。
+对于项目执行 worktree，Cyberpunk Company 还可以在创建或复用隔离 git worktree 后，执行项目定义的 provision command。通过项目的执行工作区策略（`workspaceStrategy.provisionCommand`）进行配置。该命令会在派生出来的 worktree 中运行，并接收 `CYBERPUNK_WORKSPACE_*`、`CYBERPUNK_PROJECT_ID`、`CYBERPUNK_AGENT_ID` 和 `CYBERPUNK_ISSUE_*` 环境变量，以便每个仓库按自己的方式完成自举。
 
 ## 快速健康检查
 
@@ -277,7 +277,7 @@ curl http://localhost:3100/api/companies
 如果你想清空本地开发数据并重新开始：
 
 ```sh
-rm -rf ~/.paperclip/instances/default/db
+rm -rf ~/.cyberpunk-company/instances/default/db
 pnpm dev
 ```
 
@@ -287,33 +287,33 @@ pnpm dev
 
 ## 自动数据库备份
 
-Paperclip 可以按定时任务自动执行数据库备份。默认值为：
+Cyberpunk Company 可以按定时任务自动执行数据库备份。默认值为：
 
 - 启用
 - 每 60 分钟一次
 - 保留 30 天
-- 备份目录：`~/.paperclip/instances/default/data/backups`
+- 备份目录：`~/.cyberpunk-company/instances/default/data/backups`
 
 可通过以下命令配置：
 
 ```sh
-pnpm paperclipai configure --section database
+pnpm cyberpunk-company configure --section database
 ```
 
 手动运行一次备份：
 
 ```sh
-pnpm paperclipai db:backup
+pnpm cyberpunk-company db:backup
 # 或：
 pnpm db:backup
 ```
 
 环境变量覆盖项：
 
-- `PAPERCLIP_DB_BACKUP_ENABLED=true|false`
-- `PAPERCLIP_DB_BACKUP_INTERVAL_MINUTES=<minutes>`
-- `PAPERCLIP_DB_BACKUP_RETENTION_DAYS=<days>`
-- `PAPERCLIP_DB_BACKUP_DIR=/absolute/or/~/path`
+- `CYBERPUNK_DB_BACKUP_ENABLED=true|false`
+- `CYBERPUNK_DB_BACKUP_INTERVAL_MINUTES=<minutes>`
+- `CYBERPUNK_DB_BACKUP_RETENTION_DAYS=<days>`
+- `CYBERPUNK_DB_BACKUP_DIR=/absolute/or/~/path`
 
 ## 开发环境中的密钥
 

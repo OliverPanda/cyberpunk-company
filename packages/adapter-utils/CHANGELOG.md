@@ -1,4 +1,4 @@
-# @paperclipai/adapter-utils
+# @cyberpunk-company/adapter-utils
 
 ## 0.3.1
 

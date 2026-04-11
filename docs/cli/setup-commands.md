@@ -5,32 +5,32 @@ summary: Onboard, run, doctor, and configure
 
 Instance setup and diagnostics commands.
 
-## `paperclipai run`
+## `cyberpunk-company run`
 
 One-command bootstrap and start:
 
 ```sh
-pnpm paperclipai run
+pnpm cyberpunk-company run
 ```
 
 Does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclipai doctor` with repair enabled
+2. Runs `cyberpunk-company doctor` with repair enabled
 3. Starts the server when checks pass
 
 Choose a specific instance:
 
 ```sh
-pnpm paperclipai run --instance dev
+pnpm cyberpunk-company run --instance dev
 ```
 
-## `paperclipai onboard`
+## `cyberpunk-company onboard`
 
 Interactive first-time setup:
 
 ```sh
-pnpm paperclipai onboard
+pnpm cyberpunk-company onboard
 ```
 
 First prompt:
@@ -41,22 +41,22 @@ First prompt:
 Start immediately after onboarding:
 
 ```sh
-pnpm paperclipai onboard --run
+pnpm cyberpunk-company onboard --run
 ```
 
 Non-interactive defaults + immediate start (opens browser on server listen):
 
 ```sh
-pnpm paperclipai onboard --yes
+pnpm cyberpunk-company onboard --yes
 ```
 
-## `paperclipai doctor`
+## `cyberpunk-company doctor`
 
 Health checks with optional auto-repair:
 
 ```sh
-pnpm paperclipai doctor
-pnpm paperclipai doctor --repair
+pnpm cyberpunk-company doctor
+pnpm cyberpunk-company doctor --repair
 ```
 
 Validates:
@@ -67,51 +67,51 @@ Validates:
 - Storage configuration
 - Missing key files
 
-## `paperclipai configure`
+## `cyberpunk-company configure`
 
 Update configuration sections:
 
 ```sh
-pnpm paperclipai configure --section server
-pnpm paperclipai configure --section secrets
-pnpm paperclipai configure --section storage
+pnpm cyberpunk-company configure --section server
+pnpm cyberpunk-company configure --section secrets
+pnpm cyberpunk-company configure --section storage
 ```
 
-## `paperclipai env`
+## `cyberpunk-company env`
 
 Show resolved environment configuration:
 
 ```sh
-pnpm paperclipai env
+pnpm cyberpunk-company env
 ```
 
-## `paperclipai allowed-hostname`
+## `cyberpunk-company allowed-hostname`
 
 Allow a private hostname for authenticated/private mode:
 
 ```sh
-pnpm paperclipai allowed-hostname my-tailscale-host
+pnpm cyberpunk-company allowed-hostname my-tailscale-host
 ```
 
 ## Local Storage Paths
 
 | Data | Default Path |
 |------|-------------|
-| Config | `~/.paperclip/instances/default/config.json` |
-| Database | `~/.paperclip/instances/default/db` |
-| Logs | `~/.paperclip/instances/default/logs` |
-| Storage | `~/.paperclip/instances/default/data/storage` |
-| Secrets key | `~/.paperclip/instances/default/secrets/master.key` |
+| Config | `~/.cyberpunk-company/instances/default/config.json` |
+| Database | `~/.cyberpunk-company/instances/default/db` |
+| Logs | `~/.cyberpunk-company/instances/default/logs` |
+| Storage | `~/.cyberpunk-company/instances/default/data/storage` |
+| Secrets key | `~/.cyberpunk-company/instances/default/secrets/master.key` |
 
 Override with:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+CYBERPUNK_HOME=/custom/home CYBERPUNK_INSTANCE_ID=dev pnpm cyberpunk-company run
 ```
 
 Or pass `--data-dir` directly on any command:
 
 ```sh
-pnpm paperclipai run --data-dir ./tmp/paperclip-dev
-pnpm paperclipai doctor --data-dir ./tmp/paperclip-dev
+pnpm cyberpunk-company run --data-dir ./tmp/cyberpunk-company-dev
+pnpm cyberpunk-company doctor --data-dir ./tmp/cyberpunk-company-dev
 ```
