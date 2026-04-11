@@ -17,7 +17,7 @@ Examples:
 Environment overrides:
   KEEP_TEMP=1                 Keep the temp directory and detached worktree for debugging
   PC_TEST_ROOT=/tmp/custom    Base temp directory to use
-  PC_DATA=/tmp/data           Paperclip data dir to use
+  PC_DATA=/tmp/data           Cyberpunk Company data dir to use
   CYBERPUNK_HOST=127.0.0.1    Host passed to the onboarded server
   CYBERPUNK_PORT=3232         Port passed to the onboarded server
 
@@ -40,10 +40,10 @@ fi
 TARGET_COMMIT="$(git -C "$REPO_ROOT" rev-parse --verify "${TARGET_REF}^{commit}")"
 
 export KEEP_TEMP="${KEEP_TEMP:-0}"
-export PC_TEST_ROOT="${PC_TEST_ROOT:-$(mktemp -d /tmp/paperclip-clean-ref.XXXXXX)}"
+export PC_TEST_ROOT="${PC_TEST_ROOT:-$(mktemp -d /tmp/cyberpunk-company-clean-ref.XXXXXX)}"
 export PC_HOME="${PC_HOME:-$PC_TEST_ROOT/home}"
 export PC_CACHE="${PC_CACHE:-$PC_TEST_ROOT/npm-cache}"
-export PC_DATA="${PC_DATA:-$PC_TEST_ROOT/paperclip-data}"
+export PC_DATA="${PC_DATA:-$PC_TEST_ROOT/cyberpunk-company-data}"
 export PC_REPO="${PC_REPO:-$PC_TEST_ROOT/repo}"
 export CYBERPUNK_HOST="${CYBERPUNK_HOST:-127.0.0.1}"
 export CYBERPUNK_PORT="${CYBERPUNK_PORT:-3100}"
@@ -83,4 +83,4 @@ env \
   HOST="$CYBERPUNK_HOST" \
   PORT="$CYBERPUNK_PORT" \
   CYBERPUNK_OPEN_ON_LISTEN="$CYBERPUNK_OPEN_ON_LISTEN" \
-  pnpm paperclipai onboard --yes --data-dir "$PC_DATA"
+  pnpm cyberpunk-company onboard --yes --data-dir "$PC_DATA"

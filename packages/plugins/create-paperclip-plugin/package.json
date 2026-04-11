@@ -1,19 +1,19 @@
 {
-  "name": "@cyberpunk-company/create-paperclip-plugin",
+  "name": "@cyberpunk-company/create-cyberpunk-plugin",
   "version": "0.1.0",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/cyberpunk-company/cyberpunk-company",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/cyberpunk-company/cyberpunk-company/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
-    "directory": "packages/plugins/create-paperclip-plugin"
+    "url": "https://github.com/cyberpunk-company/cyberpunk-company",
+    "directory": "packages/plugins/create-cyberpunk-plugin"
   },
   "type": "module",
   "bin": {
-    "create-paperclip-plugin": "./dist/index.js"
+    "create-cyberpunk-plugin": "./dist/index.js"
   },
   "exports": {
     ".": "./src/index.ts"
@@ -21,7 +21,7 @@
   "publishConfig": {
     "access": "public",
     "bin": {
-      "create-paperclip-plugin": "./dist/index.js"
+      "create-cyberpunk-plugin": "./dist/index.js"
     },
     "exports": {
       ".": {

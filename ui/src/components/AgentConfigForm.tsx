@@ -1324,7 +1324,7 @@ function EnvVarEditor({
       })}
       {sealError && <p className="text-[11px] text-destructive">{sealError}</p>}
       <p className="text-[11px] text-muted-foreground/60">
-        `PAPERCLIP_*` 变量会在运行时自动注入。
+        `CYBERPUNK_*` 变量会在运行时自动注入。
       </p>
     </div>
   );

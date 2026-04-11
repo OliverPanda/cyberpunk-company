@@ -3,9 +3,9 @@ set -euo pipefail
 
 base_cwd="${CYBERPUNK_WORKSPACE_BASE_CWD:?CYBERPUNK_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${CYBERPUNK_WORKSPACE_CWD:?CYBERPUNK_WORKSPACE_CWD is required}"
-paperclip_home="${CYBERPUNK_HOME:-$HOME/.paperclip}"
+paperclip_home="${CYBERPUNK_HOME:-$HOME/.cyberpunk-company}"
 paperclip_instance_id="${CYBERPUNK_INSTANCE_ID:-default}"
-paperclip_dir="$worktree_cwd/.paperclip"
+paperclip_dir="$worktree_cwd/.cyberpunk-company"
 worktree_config_path="$paperclip_dir/config.json"
 worktree_env_path="$paperclip_dir/.env"
 worktree_name="${CYBERPUNK_WORKSPACE_BRANCH:-$(basename "$worktree_cwd")}"
@@ -32,13 +32,13 @@ source_env_path="$(dirname "$source_config_path")/.env"
 mkdir -p "$paperclip_dir"
 
 run_isolated_worktree_init() {
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclipai --help >/dev/null 2>&1; then
-    pnpm paperclipai worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+  if command -v pnpm >/dev/null 2>&1 && pnpm cyberpunk-company --help >/dev/null 2>&1; then
+    pnpm cyberpunk-company worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
     return 0
   fi
 
-  if command -v paperclipai >/dev/null 2>&1; then
-    paperclipai worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+  if command -v cyberpunk-company >/dev/null 2>&1; then
+    cyberpunk-company worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
     return 0
   fi
 
@@ -232,7 +232,7 @@ async function main() {
         baseDir: path.resolve(instanceRoot, "data", "storage"),
       },
       s3: {
-        bucket: sourceConfig?.storage?.s3?.bucket ?? "paperclip",
+        bucket: sourceConfig?.storage?.s3?.bucket ?? "cyberpunk-company",
         region: sourceConfig?.storage?.s3?.region ?? "us-east-1",
         endpoint: sourceConfig?.storage?.s3?.endpoint,
         prefix: sourceConfig?.storage?.s3?.prefix ?? "",
@@ -296,7 +296,7 @@ EOF
 }
 
 if ! run_isolated_worktree_init; then
-  echo "paperclipai CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
+  echo "cyberpunk-company CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
   write_fallback_worktree_config
 fi
 

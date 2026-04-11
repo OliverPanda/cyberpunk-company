@@ -61,7 +61,7 @@ OPENCLAW_IMAGE="${OPENCLAW_IMAGE:-openclaw:local}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-${TMPDIR:-/tmp}}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR%/}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-/tmp}"
-OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$OPENCLAW_TMP_DIR/openclaw-paperclip-smoke}"
+OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$OPENCLAW_TMP_DIR/openclaw-cyberpunk-company-smoke}"
 OPENCLAW_WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-$OPENCLAW_CONFIG_DIR/workspace}"
 OPENCLAW_GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 OPENCLAW_BRIDGE_PORT="${OPENCLAW_BRIDGE_PORT:-18790}"
@@ -189,7 +189,7 @@ OPENCLAW_IMAGE=$OPENCLAW_IMAGE
 OPENAI_API_KEY=$OPENAI_API_KEY
 EOF
 
-COMPOSE_OVERRIDE="${OPENCLAW_DOCKER_DIR}/.paperclip-openclaw.override.yml"
+COMPOSE_OVERRIDE="${OPENCLAW_DOCKER_DIR}/.cyberpunk-company-openclaw.override.yml"
 cat > "$COMPOSE_OVERRIDE" <<EOF
 services:
   openclaw-gateway:
@@ -266,7 +266,7 @@ Model:
   ${OPENCLAW_MODEL_PRIMARY} (fallback: ${OPENCLAW_MODEL_FALLBACK})
 State:
   OPENCLAW_RESET_STATE=$OPENCLAW_RESET_STATE
-Paperclip URL for OpenClaw container:
+Cyberpunk Company URL for OpenClaw container:
 EOF
   if [[ -n "$paperclip_base_url" ]]; then
     cat <<EOF
@@ -277,9 +277,9 @@ EOF
     cat <<EOF
   Auto-detect failed. Try: http://host.docker.internal:${CYBERPUNK_HOST_PORT}
   (Do not use http://127.0.0.1:${CYBERPUNK_HOST_PORT} inside the container.)
-  If Paperclip rejects the host, run on host machine:
-    pnpm paperclipai allowed-hostname host.docker.internal
-  Then restart Paperclip and re-run this script.
+  If Cyberpunk Company rejects the host, run on host machine:
+    pnpm cyberpunk-company allowed-hostname host.docker.internal
+  Then restart Cyberpunk Company and re-run this script.
 EOF
   fi
   cat <<EOF
@@ -299,7 +299,7 @@ Model:
   ${OPENCLAW_MODEL_PRIMARY} (fallback: ${OPENCLAW_MODEL_FALLBACK})
 State:
   OPENCLAW_RESET_STATE=$OPENCLAW_RESET_STATE
-Paperclip URL for OpenClaw container:
+Cyberpunk Company URL for OpenClaw container:
 EOF
   if [[ -n "$paperclip_base_url" ]]; then
     cat <<EOF
@@ -310,9 +310,9 @@ EOF
     cat <<EOF
   Auto-detect failed. Try: http://host.docker.internal:${CYBERPUNK_HOST_PORT}
   (Do not use http://127.0.0.1:${CYBERPUNK_HOST_PORT} inside the container.)
-  If Paperclip rejects the host, run on host machine:
-    pnpm paperclipai allowed-hostname host.docker.internal
-  Then restart Paperclip and re-run this script.
+  If Cyberpunk Company rejects the host, run on host machine:
+    pnpm cyberpunk-company allowed-hostname host.docker.internal
+  Then restart Cyberpunk Company and re-run this script.
 EOF
   fi
   cat <<EOF

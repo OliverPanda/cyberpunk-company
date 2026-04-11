@@ -1,5 +1,5 @@
 services:
-  paperclip:
+  cyberpunk-company:
     build:
       context: .
       dockerfile: Dockerfile
@@ -7,7 +7,7 @@ services:
       - "${CYBERPUNK_PORT:-3100}:3100"
     environment:
       HOST: "0.0.0.0"
-      CYBERPUNK_HOME: "/paperclip"
+      CYBERPUNK_HOME: "/cyberpunk-company"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
       CYBERPUNK_DEPLOYMENT_MODE: "authenticated"
@@ -15,4 +15,4 @@ services:
       CYBERPUNK_PUBLIC_URL: "${CYBERPUNK_PUBLIC_URL:-http://localhost:3100}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
-      - "${CYBERPUNK_DATA_DIR:-./data/docker-paperclip}:/paperclip"
+      - "${CYBERPUNK_DATA_DIR:-./data/docker-cyberpunk-company}:/cyberpunk-company"

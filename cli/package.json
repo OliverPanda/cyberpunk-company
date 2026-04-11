@@ -7,7 +7,7 @@
     "cyberpunk-company": "./dist/index.js"
   },
   "keywords": [
-    "paperclip",
+    "cyberpunk-company",
     "ai",
     "agents",
     "orchestration",
@@ -16,12 +16,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/cyberpunk-company/cyberpunk-company",
     "directory": "cli"
   },
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/cyberpunk-company/cyberpunk-company",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/cyberpunk-company/cyberpunk-company/issues"
   },
   "files": [
     "dist"

@@ -24,7 +24,7 @@ OPENCLAW_METHOD="${OPENCLAW_METHOD:-POST}"
 OPENCLAW_AUTH_HEADER="${OPENCLAW_AUTH_HEADER:-}"
 OPENCLAW_TIMEOUT_SEC="${OPENCLAW_TIMEOUT_SEC:-180}"
 OPENCLAW_MODEL="${OPENCLAW_MODEL:-openclaw}"
-OPENCLAW_USER="${OPENCLAW_USER:-paperclip-smoke}"
+OPENCLAW_USER="${OPENCLAW_USER:-cyberpunk-company-smoke}"
 
 CYBERPUNK_RUN_ID="${CYBERPUNK_RUN_ID:-smoke-run-$(date +%s)}"
 CYBERPUNK_AGENT_ID="${CYBERPUNK_AGENT_ID:-openclaw-smoke-agent}"
@@ -54,7 +54,7 @@ CYBERPUNK_APPROVAL_ID=${CYBERPUNK_APPROVAL_ID}
 CYBERPUNK_APPROVAL_STATUS=${CYBERPUNK_APPROVAL_STATUS}
 CYBERPUNK_LINKED_ISSUE_IDS=${CYBERPUNK_LINKED_ISSUE_IDS}
 
-Run your Paperclip heartbeat procedure now.
+Run your Cyberpunk Company heartbeat procedure now.
 EOF
 
 PAYLOAD="$(jq -nc \
@@ -87,7 +87,7 @@ PAYLOAD="$(jq -nc \
       CYBERPUNK_APPROVAL_ID: $approvalId,
       CYBERPUNK_APPROVAL_STATUS: $approvalStatus,
       CYBERPUNK_LINKED_ISSUE_IDS: $linkedIssueIds,
-      paperclip_session_key: ("paperclip:run:" + $runId)
+      paperclip_session_key: ("cyberpunk-company:run:" + $runId)
     }
   }')"
 
@@ -105,7 +105,7 @@ args=(
   -X "$OPENCLAW_METHOD"
   -H "content-type: application/json"
   -H "accept: text/event-stream"
-  -H "x-openclaw-session-key: paperclip:run:${CYBERPUNK_RUN_ID}"
+  -H "x-openclaw-session-key: cyberpunk-company:run:${CYBERPUNK_RUN_ID}"
   -D "$headers_file"
   -o "$body_file"
   --data "$PAYLOAD"

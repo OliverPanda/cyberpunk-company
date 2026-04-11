@@ -2,11 +2,11 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: paperclip
-      POSTGRES_PASSWORD: paperclip
-      POSTGRES_DB: paperclip
+      POSTGRES_USER: cyberpunk
+      POSTGRES_PASSWORD: cyberpunk
+      POSTGRES_DB: cyberpunk
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U paperclip -d paperclip"]
+      test: ["CMD-SHELL", "pg_isready -U cyberpunk -d cyberpunk"]
       interval: 2s
       timeout: 5s
       retries: 30
@@ -20,7 +20,7 @@ services:
     ports:
       - "3100:3100"
     environment:
-      DATABASE_URL: postgres://paperclip:paperclip@db:5432/paperclip
+      DATABASE_URL: postgres://cyberpunk:cyberpunk@db:5432/cyberpunk
       PORT: "3100"
       SERVE_UI: "true"
       CYBERPUNK_DEPLOYMENT_MODE: "authenticated"
@@ -28,11 +28,11 @@ services:
       CYBERPUNK_PUBLIC_URL: "${CYBERPUNK_PUBLIC_URL:-http://localhost:3100}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
-      - paperclip-data:/paperclip
+      - cyberpunk-company-data:/cyberpunk-company
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
-  paperclip-data:
+  cyberpunk-company-data:

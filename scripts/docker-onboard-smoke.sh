@@ -2,9 +2,9 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-paperclip-onboard-smoke}"
+IMAGE_NAME="${IMAGE_NAME:-cyberpunk-onboard-smoke}"
 HOST_PORT="${HOST_PORT:-3131}"
-PAPERCLIPAI_VERSION="${PAPERCLIPAI_VERSION:-latest}"
+CYBERPUNK_VERSION="${CYBERPUNK_VERSION:-latest}"
 DATA_DIR="${DATA_DIR:-$REPO_ROOT/data/docker-onboard-smoke}"
 HOST_UID="${HOST_UID:-$(id -u)}"
 SMOKE_DETACH="${SMOKE_DETACH:-false}"
@@ -14,8 +14,8 @@ CYBERPUNK_DEPLOYMENT_EXPOSURE="${CYBERPUNK_DEPLOYMENT_EXPOSURE:-private}"
 CYBERPUNK_PUBLIC_URL="${CYBERPUNK_PUBLIC_URL:-http://localhost:${HOST_PORT}}"
 SMOKE_AUTO_BOOTSTRAP="${SMOKE_AUTO_BOOTSTRAP:-true}"
 SMOKE_ADMIN_NAME="${SMOKE_ADMIN_NAME:-Smoke Admin}"
-SMOKE_ADMIN_EMAIL="${SMOKE_ADMIN_EMAIL:-smoke-admin@paperclip.local}"
-SMOKE_ADMIN_PASSWORD="${SMOKE_ADMIN_PASSWORD:-paperclip-smoke-password}"
+SMOKE_ADMIN_EMAIL="${SMOKE_ADMIN_EMAIL:-smoke-admin@cyberpunk.local}"
+SMOKE_ADMIN_PASSWORD="${SMOKE_ADMIN_PASSWORD:-cyberpunk-smoke-password}"
 CONTAINER_NAME="${IMAGE_NAME//[^a-zA-Z0-9_.-]/-}"
 LOG_PID=""
 COOKIE_JAR=""
@@ -79,7 +79,7 @@ write_metadata_file() {
     printf 'SMOKE_CONTAINER_NAME=%q\n' "$CONTAINER_NAME"
     printf 'SMOKE_DATA_DIR=%q\n' "$DATA_DIR"
     printf 'SMOKE_IMAGE_NAME=%q\n' "$IMAGE_NAME"
-    printf 'SMOKE_PAPERCLIPAI_VERSION=%q\n' "$PAPERCLIPAI_VERSION"
+    printf 'SMOKE_CYBERPUNK_VERSION=%q\n' "$CYBERPUNK_VERSION"
   } >"$SMOKE_METADATA_FILE"
 }
 
@@ -91,9 +91,9 @@ generate_bootstrap_invite_url() {
       -e CYBERPUNK_DEPLOYMENT_MODE="$CYBERPUNK_DEPLOYMENT_MODE" \
       -e CYBERPUNK_DEPLOYMENT_EXPOSURE="$CYBERPUNK_DEPLOYMENT_EXPOSURE" \
       -e CYBERPUNK_PUBLIC_URL="$CYBERPUNK_PUBLIC_URL" \
-      -e CYBERPUNK_HOME="/paperclip" \
+      -e CYBERPUNK_HOME="/cyberpunk-company" \
       "$CONTAINER_NAME" bash -lc \
-      'timeout 20s npx --yes "paperclipai@${PAPERCLIPAI_VERSION}" auth bootstrap-ceo --data-dir "$CYBERPUNK_HOME" --base-url "$CYBERPUNK_PUBLIC_URL"' \
+      'timeout 20s npx --yes "cyberpunk-company@${CYBERPUNK_VERSION}" auth bootstrap-ceo --data-dir "$CYBERPUNK_HOME" --base-url "$CYBERPUNK_PUBLIC_URL"' \
       2>&1
   )"; then
     bootstrap_status=0
@@ -240,7 +240,7 @@ auto_bootstrap_authenticated_smoke() {
 
 echo "==> Building onboard smoke image"
 docker build \
-  --build-arg PAPERCLIPAI_VERSION="$PAPERCLIPAI_VERSION" \
+  --build-arg CYBERPUNK_VERSION="$CYBERPUNK_VERSION" \
   --build-arg HOST_UID="$HOST_UID" \
   -f "$REPO_ROOT/Dockerfile.onboard-smoke" \
   -t "$IMAGE_NAME" \
@@ -267,7 +267,7 @@ docker run -d --rm \
   -e CYBERPUNK_DEPLOYMENT_MODE="$CYBERPUNK_DEPLOYMENT_MODE" \
   -e CYBERPUNK_DEPLOYMENT_EXPOSURE="$CYBERPUNK_DEPLOYMENT_EXPOSURE" \
   -e CYBERPUNK_PUBLIC_URL="$CYBERPUNK_PUBLIC_URL" \
-  -v "$DATA_DIR:/paperclip" \
+  -v "$DATA_DIR:/cyberpunk-company" \
   "$IMAGE_NAME" >/dev/null
 
 if [[ "$SMOKE_DETACH" != "true" ]]; then
@@ -275,7 +275,7 @@ if [[ "$SMOKE_DETACH" != "true" ]]; then
   LOG_PID=$!
 fi
 
-TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-onboard-smoke.XXXXXX")"
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/cyberpunk-onboard-smoke.XXXXXX")"
 COOKIE_JAR="$TMP_DIR/cookies.txt"
 
 if ! wait_for_http "$CYBERPUNK_PUBLIC_URL/api/health" 90 1; then

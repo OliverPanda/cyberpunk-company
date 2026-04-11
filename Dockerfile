@@ -29,30 +29,30 @@ FROM base AS build
 WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
-RUN pnpm --filter @paperclipai/ui build
-RUN pnpm --filter @paperclipai/plugin-sdk build
-RUN pnpm --filter @paperclipai/server build
+RUN pnpm --filter @cyberpunk-company/ui build
+RUN pnpm --filter @cyberpunk-company/plugin-sdk build
+RUN pnpm --filter @cyberpunk-company/server build
 RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" && exit 1)
 
 FROM base AS production
 WORKDIR /app
 COPY --chown=node:node --from=build /app /app
 RUN npm install --global --omit=dev @anthropic-ai/claude-code@latest @openai/codex@latest opencode-ai \
-  && mkdir -p /paperclip \
-  && chown node:node /paperclip
+  && mkdir -p /cyberpunk-company \
+  && chown node:node /cyberpunk-company
 
 ENV NODE_ENV=production \
-  HOME=/paperclip \
+  HOME=/cyberpunk-company \
   HOST=0.0.0.0 \
   PORT=3100 \
   SERVE_UI=true \
-  CYBERPUNK_HOME=/paperclip \
+  CYBERPUNK_HOME=/cyberpunk-company \
   CYBERPUNK_INSTANCE_ID=default \
-  CYBERPUNK_CONFIG=/paperclip/instances/default/config.json \
+  CYBERPUNK_CONFIG=/cyberpunk-company/instances/default/config.json \
   CYBERPUNK_DEPLOYMENT_MODE=authenticated \
   CYBERPUNK_DEPLOYMENT_EXPOSURE=private
 
-VOLUME ["/paperclip"]
+VOLUME ["/cyberpunk-company"]
 EXPOSE 3100
 
 USER node
