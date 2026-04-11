@@ -134,7 +134,7 @@ export function OpenClawGatewayConfigFields({
 
       {!isCreate && (
         <>
-          <Field label="Paperclip API 地址覆盖">
+          <Field label="Cyberpunk Company API 地址覆盖">
             <DraftInput
               value={
                 eff(
@@ -146,7 +146,7 @@ export function OpenClawGatewayConfigFields({
               onCommit={(v) => mark("adapterConfig", "paperclipApiUrl", v || undefined)}
               immediate
               className={inputClass}
-              placeholder="https://paperclip.example"
+              placeholder="https://cyberpunk-company.example"
             />
           </Field>
 
@@ -165,11 +165,11 @@ export function OpenClawGatewayConfigFields({
           {sessionStrategy === "fixed" && (
             <Field label="会话键">
               <DraftInput
-                value={eff("adapterConfig", "sessionKey", String(config.sessionKey ?? "paperclip"))}
+                value={eff("adapterConfig", "sessionKey", String(config.sessionKey ?? "cyberpunk-company"))}
                 onCommit={(v) => mark("adapterConfig", "sessionKey", v || undefined)}
                 immediate
                 className={inputClass}
-                placeholder="paperclip"
+                placeholder="cyberpunk-company"
               />
             </Field>
           )}
@@ -226,7 +226,7 @@ export function OpenClawGatewayConfigFields({
 
           <Field label="设备鉴权">
             <div className="text-xs text-muted-foreground leading-relaxed">
-              网关智能体始终启用。Paperclip 会在引导期间持久化设备密钥，以便跨多次运行保持配对批准稳定。
+              网关智能体始终启用。Cyberpunk Company 会在引导期间持久化设备密钥，以便跨多次运行保持配对批准稳定。
             </div>
           </Field>
         </>

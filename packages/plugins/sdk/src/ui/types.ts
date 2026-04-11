@@ -1,5 +1,5 @@
 /**
- * Paperclip plugin UI SDK — types for plugin frontend components.
+ * Cyberpunk Company plugin UI SDK — types for plugin frontend components.
  *
  * Plugin UI bundles import from `@cyberpunk-company/plugin-sdk/ui`.  This subpath
  * provides the bridge hooks, component prop interfaces, and error types that

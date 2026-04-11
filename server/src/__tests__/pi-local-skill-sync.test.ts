@@ -12,7 +12,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 }
 
 describe("pi local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -20,8 +20,8 @@ describe("pi local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("reports configured Paperclip skills and installs them into the Pi skills home", async () => {
-    const home = await makeTempDir("paperclip-pi-skill-sync-");
+  it("reports configured Cyberpunk Company skills and installs them into the Pi skills home", async () => {
+    const home = await makeTempDir("cyberpunk-company-pi-skill-sync-");
     cleanupDirs.add(home);
 
     const ctx = {
@@ -32,7 +32,7 @@ describe("pi local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        cyberpunkSkillSync: {
           desiredSkills: [paperclipKey],
         },
       },
@@ -46,11 +46,11 @@ describe("pi local skill sync", () => {
 
     const after = await syncPiSkills(ctx, [paperclipKey]);
     expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 
-  it("keeps required bundled Paperclip skills installed even when the desired set is emptied", async () => {
-    const home = await makeTempDir("paperclip-pi-skill-prune-");
+  it("keeps required bundled Cyberpunk Company skills installed even when the desired set is emptied", async () => {
+    const home = await makeTempDir("cyberpunk-company-pi-skill-prune-");
     cleanupDirs.add(home);
 
     const configuredCtx = {
@@ -61,7 +61,7 @@ describe("pi local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        cyberpunkSkillSync: {
           desiredSkills: [paperclipKey],
         },
       },
@@ -75,7 +75,7 @@ describe("pi local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        cyberpunkSkillSync: {
           desiredSkills: [],
         },
       },
@@ -84,6 +84,6 @@ describe("pi local skill sync", () => {
     const after = await syncPiSkills(clearedCtx, []);
     expect(after.desiredSkills).toContain(paperclipKey);
     expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(home, ".pi", "agent", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 });

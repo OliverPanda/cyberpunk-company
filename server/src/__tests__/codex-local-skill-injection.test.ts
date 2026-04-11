@@ -8,12 +8,12 @@ async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
 }
 
-async function createPaperclipRepoSkill(root: string, skillName: string) {
+async function createCyberpunkRepoSkill(root: string, skillName: string) {
   await fs.mkdir(path.join(root, "server"), { recursive: true });
   await fs.mkdir(path.join(root, "packages", "adapter-utils"), { recursive: true });
   await fs.mkdir(path.join(root, "skills", skillName), { recursive: true });
   await fs.writeFile(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n", "utf8");
-  await fs.writeFile(path.join(root, "package.json"), '{"name":"paperclip"}\n', "utf8");
+  await fs.writeFile(path.join(root, "package.json"), '{"name":"cyberpunk-company"}\n', "utf8");
   await fs.writeFile(
     path.join(root, "skills", skillName, "SKILL.md"),
     `---\nname: ${skillName}\n---\n`,
@@ -31,7 +31,7 @@ async function createCustomSkill(root: string, skillName: string) {
 }
 
 describe("codex local adapter skill injection", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -39,17 +39,17 @@ describe("codex local adapter skill injection", () => {
     cleanupDirs.clear();
   });
 
-  it("repairs a Codex Paperclip skill symlink that still points at another live checkout", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const oldRepo = await makeTempDir("paperclip-codex-old-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("repairs a Codex Cyberpunk Company skill symlink that still points at another live checkout", async () => {
+    const currentRepo = await makeTempDir("cyberpunk-company-codex-current-");
+    const oldRepo = await makeTempDir("cyberpunk-company-codex-old-");
+    const skillsHome = await makeTempDir("cyberpunk-company-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(oldRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createPaperclipRepoSkill(oldRepo, "paperclip");
-    await fs.symlink(path.join(oldRepo, "skills", "paperclip"), path.join(skillsHome, "paperclip"));
+    await createCyberpunkRepoSkill(currentRepo, "cyberpunk-company");
+    await createCyberpunkRepoSkill(oldRepo, "cyberpunk-company");
+    await fs.symlink(path.join(oldRepo, "skills", "cyberpunk-company"), path.join(skillsHome, "cyberpunk-company"));
 
     const logs: Array<{ stream: "stdout" | "stderr"; chunk: string }> = [];
     await ensureCodexSkillsInjected(
@@ -60,59 +60,59 @@ describe("codex local adapter skill injection", () => {
         skillsHome,
         skillsEntries: [{
           key: paperclipKey,
-          runtimeName: "paperclip",
-          source: path.join(currentRepo, "skills", "paperclip"),
+          runtimeName: "cyberpunk-company",
+          source: path.join(currentRepo, "skills", "cyberpunk-company"),
         }],
       },
     );
 
-    expect(await fs.realpath(path.join(skillsHome, "paperclip"))).toBe(
-      await fs.realpath(path.join(currentRepo, "skills", "paperclip")),
+    expect(await fs.realpath(path.join(skillsHome, "cyberpunk-company"))).toBe(
+      await fs.realpath(path.join(currentRepo, "skills", "cyberpunk-company")),
     );
     expect(logs).toContainEqual(
       expect.objectContaining({
         stream: "stdout",
-        chunk: expect.stringContaining('Repaired Codex skill "paperclip"'),
+        chunk: expect.stringContaining('Repaired Codex skill "cyberpunk-company"'),
       }),
     );
   });
 
-  it("preserves a custom Codex skill symlink outside Paperclip repo checkouts", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const customRoot = await makeTempDir("paperclip-codex-custom-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("preserves a custom Codex skill symlink outside Cyberpunk Company repo checkouts", async () => {
+    const currentRepo = await makeTempDir("cyberpunk-company-codex-current-");
+    const customRoot = await makeTempDir("cyberpunk-company-codex-custom-");
+    const skillsHome = await makeTempDir("cyberpunk-company-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(customRoot);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createCustomSkill(customRoot, "paperclip");
-    await fs.symlink(path.join(customRoot, "custom", "paperclip"), path.join(skillsHome, "paperclip"));
+    await createCyberpunkRepoSkill(currentRepo, "cyberpunk-company");
+    await createCustomSkill(customRoot, "cyberpunk-company");
+    await fs.symlink(path.join(customRoot, "custom", "cyberpunk-company"), path.join(skillsHome, "cyberpunk-company"));
 
     await ensureCodexSkillsInjected(async () => {}, {
       skillsHome,
       skillsEntries: [{
         key: paperclipKey,
-        runtimeName: "paperclip",
-        source: path.join(currentRepo, "skills", "paperclip"),
+        runtimeName: "cyberpunk-company",
+        source: path.join(currentRepo, "skills", "cyberpunk-company"),
       }],
     });
 
-    expect(await fs.realpath(path.join(skillsHome, "paperclip"))).toBe(
-      await fs.realpath(path.join(customRoot, "custom", "paperclip")),
+    expect(await fs.realpath(path.join(skillsHome, "cyberpunk-company"))).toBe(
+      await fs.realpath(path.join(customRoot, "custom", "cyberpunk-company")),
     );
   });
 
-  it("prunes broken symlinks for unavailable Paperclip repo skills before Codex starts", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const oldRepo = await makeTempDir("paperclip-codex-old-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("prunes broken symlinks for unavailable Cyberpunk Company repo skills before Codex starts", async () => {
+    const currentRepo = await makeTempDir("cyberpunk-company-codex-current-");
+    const oldRepo = await makeTempDir("cyberpunk-company-codex-old-");
+    const skillsHome = await makeTempDir("cyberpunk-company-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(oldRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createPaperclipRepoSkill(oldRepo, "agent-browser");
+    await createCyberpunkRepoSkill(currentRepo, "cyberpunk-company");
+    await createCyberpunkRepoSkill(oldRepo, "agent-browser");
     const staleTarget = path.join(oldRepo, "skills", "agent-browser");
     await fs.symlink(staleTarget, path.join(skillsHome, "agent-browser"));
     await fs.rm(staleTarget, { recursive: true, force: true });
@@ -126,8 +126,8 @@ describe("codex local adapter skill injection", () => {
         skillsHome,
         skillsEntries: [{
           key: paperclipKey,
-          runtimeName: "paperclip",
-          source: path.join(currentRepo, "skills", "paperclip"),
+          runtimeName: "cyberpunk-company",
+          source: path.join(currentRepo, "skills", "cyberpunk-company"),
         }],
       },
     );
@@ -143,14 +143,14 @@ describe("codex local adapter skill injection", () => {
     );
   });
 
-  it("preserves other live Paperclip skill symlinks in the shared workspace skill directory", async () => {
-    const currentRepo = await makeTempDir("paperclip-codex-current-");
-    const skillsHome = await makeTempDir("paperclip-codex-home-");
+  it("preserves other live Cyberpunk Company skill symlinks in the shared workspace skill directory", async () => {
+    const currentRepo = await makeTempDir("cyberpunk-company-codex-current-");
+    const skillsHome = await makeTempDir("cyberpunk-company-codex-home-");
     cleanupDirs.add(currentRepo);
     cleanupDirs.add(skillsHome);
 
-    await createPaperclipRepoSkill(currentRepo, "paperclip");
-    await createPaperclipRepoSkill(currentRepo, "agent-browser");
+    await createCyberpunkRepoSkill(currentRepo, "cyberpunk-company");
+    await createCyberpunkRepoSkill(currentRepo, "agent-browser");
     await fs.symlink(
       path.join(currentRepo, "skills", "agent-browser"),
       path.join(skillsHome, "agent-browser"),
@@ -160,12 +160,12 @@ describe("codex local adapter skill injection", () => {
       skillsHome,
       skillsEntries: [{
         key: paperclipKey,
-        runtimeName: "paperclip",
-        source: path.join(currentRepo, "skills", "paperclip"),
+        runtimeName: "cyberpunk-company",
+        source: path.join(currentRepo, "skills", "cyberpunk-company"),
       }],
     });
 
-    expect((await fs.lstat(path.join(skillsHome, "paperclip"))).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(skillsHome, "cyberpunk-company"))).isSymbolicLink()).toBe(true);
     expect((await fs.lstat(path.join(skillsHome, "agent-browser"))).isSymbolicLink()).toBe(true);
     expect(await fs.realpath(path.join(skillsHome, "agent-browser"))).toBe(
       await fs.realpath(path.join(currentRepo, "skills", "agent-browser")),

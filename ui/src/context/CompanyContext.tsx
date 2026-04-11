@@ -31,7 +31,7 @@ interface CompanyContextValue {
   }) => Promise<Company>;
 }
 
-const STORAGE_KEY = "paperclip.selectedCompanyId";
+const STORAGE_KEY = "cyberpunk-company.selectedCompanyId";
 
 const CompanyContext = createContext<CompanyContextValue | null>(null);
 

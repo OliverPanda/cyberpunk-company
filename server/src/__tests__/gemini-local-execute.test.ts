@@ -45,8 +45,8 @@ type CapturePayload = {
 };
 
 describe("gemini execute", () => {
-  it("passes prompt via --prompt and injects paperclip env vars", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-gemini-execute-"));
+  it("passes prompt via --prompt and injects cyberpunk-company env vars", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-company-gemini-execute-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "gemini");
     const capturePath = path.join(root, "capture.json");
@@ -80,7 +80,7 @@ describe("gemini execute", () => {
           env: {
             CYBERPUNK_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the paperclip heartbeat.",
+          promptTemplate: "Follow the cyberpunk-company heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -101,8 +101,8 @@ describe("gemini execute", () => {
       expect(capture.argv).toContain("yolo");
       const promptFlagIndex = capture.argv.indexOf("--prompt");
       const promptArg = promptFlagIndex >= 0 ? capture.argv[promptFlagIndex + 1] : "";
-      expect(promptArg).toContain("Follow the paperclip heartbeat.");
-      expect(promptArg).toContain("Paperclip runtime note:");
+      expect(promptArg).toContain("Follow the cyberpunk-company heartbeat.");
+      expect(promptArg).toContain("Cyberpunk Company runtime note:");
       expect(capture.paperclipEnvKeys).toEqual(
         expect.arrayContaining([
           "CYBERPUNK_AGENT_ID",
@@ -112,9 +112,9 @@ describe("gemini execute", () => {
           "CYBERPUNK_RUN_ID",
         ]),
       );
-      expect(invocationPrompt).toContain("Paperclip runtime note:");
+      expect(invocationPrompt).toContain("Cyberpunk Company runtime note:");
       expect(invocationPrompt).toContain("CYBERPUNK_API_URL");
-      expect(invocationPrompt).toContain("Paperclip API access note:");
+      expect(invocationPrompt).toContain("Cyberpunk Company API access note:");
       expect(invocationPrompt).toContain("run_shell_command");
       expect(result.question).toBeNull();
     } finally {
@@ -128,7 +128,7 @@ describe("gemini execute", () => {
   });
 
   it("always passes --approval-mode yolo", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-gemini-yolo-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "cyberpunk-company-gemini-yolo-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "gemini");
     const capturePath = path.join(root, "capture.json");

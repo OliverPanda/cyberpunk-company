@@ -456,7 +456,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: "保存例行流程失败",
-        body: error instanceof Error ? error.message : "Paperclip 无法保存该例行流程。",
+        body: error instanceof Error ? error.message : "Cyberpunk Company 无法保存该例行流程。",
         tone: "error",
       });
     },
@@ -477,7 +477,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: "例行流程运行失败",
-        body: error instanceof Error ? error.message : "Paperclip 无法启动该例行流程运行。",
+        body: error instanceof Error ? error.message : "Cyberpunk Company 无法启动该例行流程运行。",
         tone: "error",
       });
     },
@@ -499,7 +499,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: "更新例行流程失败",
-        body: error instanceof Error ? error.message : "Paperclip 无法更新该例行流程。",
+        body: error instanceof Error ? error.message : "Cyberpunk Company 无法更新该例行流程。",
         tone: "error",
       });
     },
@@ -540,7 +540,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: "添加触发器失败",
-        body: error instanceof Error ? error.message : "Paperclip 无法创建该触发器。",
+        body: error instanceof Error ? error.message : "Cyberpunk Company 无法创建该触发器。",
         tone: "error",
       });
     },
@@ -558,7 +558,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: "更新触发器失败",
-        body: error instanceof Error ? error.message : "Paperclip 无法更新该触发器。",
+        body: error instanceof Error ? error.message : "Cyberpunk Company 无法更新该触发器。",
         tone: "error",
       });
     },
@@ -576,7 +576,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: "删除触发器失败",
-        body: error instanceof Error ? error.message : "Paperclip 无法删除该触发器。",
+        body: error instanceof Error ? error.message : "Cyberpunk Company 无法删除该触发器。",
         tone: "error",
       });
     },
@@ -598,7 +598,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: "轮换 Webhook 密钥失败",
-        body: error instanceof Error ? error.message : "Paperclip 无法轮换该 Webhook 密钥。",
+        body: error instanceof Error ? error.message : "Cyberpunk Company 无法轮换该 Webhook 密钥。",
         tone: "error",
       });
     },
@@ -727,7 +727,7 @@ export function RoutineDetail() {
         <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-4 space-y-3 text-sm">
           <div>
             <p className="font-medium">{secretMessage.title}</p>
-            <p className="text-xs text-muted-foreground">请立即保存。Paperclip 不会再次显示该密钥值。</p>
+            <p className="text-xs text-muted-foreground">请立即保存。Cyberpunk Company 不会再次显示该密钥值。</p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2">

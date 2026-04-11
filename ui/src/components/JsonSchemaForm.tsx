@@ -494,7 +494,7 @@ const SecretField = React.memo(({
       label={label}
       description={
         description ||
-        "该密钥会通过 Paperclip 密钥提供器安全存储。"
+        "该密钥会通过 Cyberpunk Company 密钥提供器安全存储。"
       }
       required={isRequired}
       error={error}

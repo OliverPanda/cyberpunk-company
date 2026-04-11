@@ -210,7 +210,7 @@ export function RunTranscriptUxLab() {
               </div>
               <h1 className="mt-4 text-2xl font-semibold tracking-tight">运行转录样例</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                基于一次真实的 Paperclip 开发运行构建，并已清洗，确保样例中不保留任何密钥、本地路径或环境细节。
+                基于一次真实的 Cyberpunk Company 开发运行构建，并已清洗，确保样例中不保留任何密钥、本地路径或环境细节。
               </p>
             </div>
 

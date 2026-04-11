@@ -198,7 +198,7 @@ export function Routines() {
     onError: (mutationError) => {
       pushToast({
         title: "更新例程失败",
-        body: mutationError instanceof Error ? mutationError.message : "Paperclip 无法更新该例程。",
+        body: mutationError instanceof Error ? mutationError.message : "Cyberpunk Company 无法更新该例程。",
         tone: "error",
       });
     },
@@ -221,7 +221,7 @@ export function Routines() {
     onError: (mutationError) => {
       pushToast({
         title: "运行例程失败",
-        body: mutationError instanceof Error ? mutationError.message : "Paperclip 无法启动该例程。",
+        body: mutationError instanceof Error ? mutationError.message : "Cyberpunk Company 无法启动该例程。",
         tone: "error",
       });
     },
@@ -507,7 +507,7 @@ export function Routines() {
 
           <div className="flex flex-col gap-3 border-t border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm text-muted-foreground">
-              创建完成后，Paperclip 会直接带你进入触发器设置，用于配置定时、webhook 或内部运行。
+              创建完成后，Cyberpunk Company 会直接带你进入触发器设置，用于配置定时、webhook 或内部运行。
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
               <Button

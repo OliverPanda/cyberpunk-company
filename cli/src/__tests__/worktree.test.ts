@@ -81,7 +81,7 @@ function buildSourceConfig(): PaperclipConfig {
         baseDir: "/tmp/main/storage",
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "cyberpunk-company",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -104,13 +104,13 @@ describe("worktree helpers", () => {
   });
 
   it("resolves worktree:make target paths under the user home directory", () => {
-    expect(resolveWorktreeMakeTargetPath("paperclip-pr-432")).toBe(
-      path.resolve(os.homedir(), "paperclip-pr-432"),
+    expect(resolveWorktreeMakeTargetPath("cyberpunk-company-pr-432")).toBe(
+      path.resolve(os.homedir(), "cyberpunk-company-pr-432"),
     );
   });
 
   it("rejects worktree:make names that are not safe directory/branch names", () => {
-    expect(() => resolveWorktreeMakeTargetPath("paperclip/pr-432")).toThrow(
+    expect(() => resolveWorktreeMakeTargetPath("cyberpunk-company/pr-432")).toThrow(
       "Worktree name must contain only letters, numbers, dots, underscores, or dashes.",
     );
   });
@@ -157,13 +157,13 @@ describe("worktree helpers", () => {
 
   it("rewrites loopback auth URLs to the new port only", () => {
     expect(rewriteLocalUrlPort("http://127.0.0.1:3100", 3110)).toBe("http://127.0.0.1:3110/");
-    expect(rewriteLocalUrlPort("https://paperclip.example", 3110)).toBe("https://paperclip.example");
+    expect(rewriteLocalUrlPort("https://cyberpunk-company.example", 3110)).toBe("https://cyberpunk-company.example");
   });
 
   it("builds isolated config and env paths for a worktree", () => {
     const paths = resolveWorktreeLocalPaths({
-      cwd: "/tmp/paperclip-feature",
-      homeDir: "/tmp/paperclip-worktrees",
+      cwd: "/tmp/cyberpunk-company-feature",
+      homeDir: "/tmp/cyberpunk-company-worktrees",
       instanceId: "feature-worktree-support",
     });
     const config = buildWorktreeConfig({
@@ -175,20 +175,20 @@ describe("worktree helpers", () => {
     });
 
     expect(config.database.embeddedPostgresDataDir).toBe(
-      path.resolve("/tmp/paperclip-worktrees", "instances", "feature-worktree-support", "db"),
+      path.resolve("/tmp/cyberpunk-company-worktrees", "instances", "feature-worktree-support", "db"),
     );
     expect(config.database.embeddedPostgresPort).toBe(54339);
     expect(config.server.port).toBe(3110);
     expect(config.auth.publicBaseUrl).toBe("http://127.0.0.1:3110/");
     expect(config.storage.localDisk.baseDir).toBe(
-      path.resolve("/tmp/paperclip-worktrees", "instances", "feature-worktree-support", "data", "storage"),
+      path.resolve("/tmp/cyberpunk-company-worktrees", "instances", "feature-worktree-support", "data", "storage"),
     );
 
     const env = buildWorktreeEnvEntries(paths, {
       name: "feature-worktree-support",
       color: "#3abf7a",
     });
-    expect(env.CYBERPUNK_HOME).toBe(path.resolve("/tmp/paperclip-worktrees"));
+    expect(env.CYBERPUNK_HOME).toBe(path.resolve("/tmp/cyberpunk-company-worktrees"));
     expect(env.CYBERPUNK_INSTANCE_ID).toBe("feature-worktree-support");
     expect(env.CYBERPUNK_IN_WORKTREE).toBe("true");
     expect(env.CYBERPUNK_WORKTREE_NAME).toBe("feature-worktree-support");
@@ -252,7 +252,7 @@ describe("worktree helpers", () => {
   });
 
   it("copies the source local_encrypted secrets key into the seeded worktree instance", () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-secrets-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-secrets-"));
     const originalInlineMasterKey = process.env.CYBERPUNK_SECRETS_MASTER_KEY;
     const originalKeyFile = process.env.CYBERPUNK_SECRETS_MASTER_KEY_FILE;
     try {
@@ -291,7 +291,7 @@ describe("worktree helpers", () => {
   });
 
   it("writes the source inline secrets master key into the seeded worktree instance", () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-secrets-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-secrets-"));
     try {
       const sourceConfigPath = path.join(tempRoot, "source", "config.json");
       const targetKeyPath = path.join(tempRoot, "target", "secrets", "master.key");
@@ -312,7 +312,7 @@ describe("worktree helpers", () => {
   });
 
   it("persists the current agent jwt secret into the worktree env file", async () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-jwt-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-jwt-"));
     const repoRoot = path.join(tempRoot, "repo");
     const originalCwd = process.cwd();
     const originalJwtSecret = process.env.CYBERPUNK_AGENT_JWT_SECRET;
@@ -328,7 +328,7 @@ describe("worktree helpers", () => {
         home: path.join(tempRoot, ".cyberpunk-company-worktrees"),
       });
 
-      const envPath = path.join(repoRoot, ".paperclip", ".env");
+      const envPath = path.join(repoRoot, ".cyberpunk-company", ".env");
       const envContents = fs.readFileSync(envPath, "utf8");
       expect(envContents).toContain("CYBERPUNK_AGENT_JWT_SECRET=worktree-shared-secret");
       expect(envContents).toContain("CYBERPUNK_WORKTREE_NAME=repo");
@@ -345,7 +345,7 @@ describe("worktree helpers", () => {
   });
 
   it("avoids ports already claimed by sibling worktree instance configs", async () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-claimed-ports-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-claimed-ports-"));
     const repoRoot = path.join(tempRoot, "repo");
     const homeDir = path.join(tempRoot, ".cyberpunk-company-worktrees");
     const siblingInstanceRoot = path.join(homeDir, "instances", "existing-worktree");
@@ -388,7 +388,7 @@ describe("worktree helpers", () => {
                 baseDir: path.join(siblingInstanceRoot, "storage"),
               },
               s3: {
-                bucket: "paperclip",
+                bucket: "cyberpunk-company",
                 region: "us-east-1",
                 prefix: "",
                 forcePathStyle: false,
@@ -414,7 +414,7 @@ describe("worktree helpers", () => {
         home: homeDir,
       });
 
-      const config = JSON.parse(fs.readFileSync(path.join(repoRoot, ".paperclip", "config.json"), "utf8"));
+      const config = JSON.parse(fs.readFileSync(path.join(repoRoot, ".cyberpunk-company", "config.json"), "utf8"));
       expect(config.server.port).toBe(3102);
       expect(config.database.embeddedPostgresPort).not.toBe(54330);
       expect(config.database.embeddedPostgresPort).not.toBe(config.server.port);
@@ -425,10 +425,10 @@ describe("worktree helpers", () => {
     }
   });
 
-  it("defaults the seed source config to the current repo-local Paperclip config", () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-source-config-"));
+  it("defaults the seed source config to the current repo-local Cyberpunk Company config", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-source-config-"));
     const repoRoot = path.join(tempRoot, "repo");
-    const localConfigPath = path.join(repoRoot, ".paperclip", "config.json");
+    const localConfigPath = path.join(repoRoot, ".cyberpunk-company", "config.json");
     const originalCwd = process.cwd();
     const originalPaperclipConfig = process.env.CYBERPUNK_CONFIG;
 
@@ -451,7 +451,7 @@ describe("worktree helpers", () => {
   });
 
   it("preserves the source config path across worktree:make cwd changes", () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-source-override-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-source-override-"));
     const sourceConfigPath = path.join(tempRoot, "source", "config.json");
     const targetRoot = path.join(tempRoot, "target");
     const originalCwd = process.cwd();
@@ -481,33 +481,33 @@ describe("worktree helpers", () => {
   it("rebinds same-repo workspace paths onto the current worktree root", () => {
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
-        targetRepoRoot: "/Users/example/paperclip-pr-432",
-        workspaceCwd: "/Users/example/paperclip",
+        sourceRepoRoot: "/Users/example/cyberpunk-company",
+        targetRepoRoot: "/Users/example/cyberpunk-company-pr-432",
+        workspaceCwd: "/Users/example/cyberpunk-company",
       }),
-    ).toBe("/Users/example/paperclip-pr-432");
+    ).toBe("/Users/example/cyberpunk-company-pr-432");
 
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
-        targetRepoRoot: "/Users/example/paperclip-pr-432",
-        workspaceCwd: "/Users/example/paperclip/packages/db",
+        sourceRepoRoot: "/Users/example/cyberpunk-company",
+        targetRepoRoot: "/Users/example/cyberpunk-company-pr-432",
+        workspaceCwd: "/Users/example/cyberpunk-company/packages/db",
       }),
-    ).toBe("/Users/example/paperclip-pr-432/packages/db");
+    ).toBe("/Users/example/cyberpunk-company-pr-432/packages/db");
   });
 
   it("does not rebind paths outside the source repo root", () => {
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
-        targetRepoRoot: "/Users/example/paperclip-pr-432",
+        sourceRepoRoot: "/Users/example/cyberpunk-company",
+        targetRepoRoot: "/Users/example/cyberpunk-company-pr-432",
         workspaceCwd: "/Users/example/other-project",
       }),
     ).toBeNull();
   });
 
   it("copies shared git hooks into a linked worktree git dir", () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-hooks-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-hooks-"));
     const repoRoot = path.join(tempRoot, "repo");
     const worktreePath = path.join(tempRoot, "repo-feature");
 
@@ -555,10 +555,10 @@ describe("worktree helpers", () => {
   });
 
   it("creates and initializes a worktree from the top-level worktree:make command", async () => {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-make-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyberpunk-worktree-make-"));
     const repoRoot = path.join(tempRoot, "repo");
     const fakeHome = path.join(tempRoot, "home");
-    const worktreePath = path.join(fakeHome, "paperclip-make-test");
+    const worktreePath = path.join(fakeHome, "cyberpunk-company-make-test");
     const originalCwd = process.cwd();
     const homedirSpy = vi.spyOn(os, "homedir").mockReturnValue(fakeHome);
 
@@ -574,14 +574,14 @@ describe("worktree helpers", () => {
 
       process.chdir(repoRoot);
 
-      await worktreeMakeCommand("paperclip-make-test", {
+      await worktreeMakeCommand("cyberpunk-company-make-test", {
         seed: false,
         home: path.join(tempRoot, ".cyberpunk-company-worktrees"),
       });
 
       expect(fs.existsSync(path.join(worktreePath, ".git"))).toBe(true);
-      expect(fs.existsSync(path.join(worktreePath, ".paperclip", "config.json"))).toBe(true);
-      expect(fs.existsSync(path.join(worktreePath, ".paperclip", ".env"))).toBe(true);
+      expect(fs.existsSync(path.join(worktreePath, ".cyberpunk-company", "config.json"))).toBe(true);
+      expect(fs.existsSync(path.join(worktreePath, ".cyberpunk-company", ".env"))).toBe(true);
     } finally {
       process.chdir(originalCwd);
       homedirSpy.mockRestore();

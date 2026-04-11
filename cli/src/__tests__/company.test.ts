@@ -104,8 +104,8 @@ describe("resolveCompanyImportApplyConfirmationMode", () => {
 
 describe("buildCompanyDashboardUrl", () => {
   it("preserves the configured base path when building a dashboard URL", () => {
-    expect(buildCompanyDashboardUrl("https://paperclip.example/app/", "PAP")).toBe(
-      "https://paperclip.example/app/PAP/dashboard",
+    expect(buildCompanyDashboardUrl("https://cyberpunk-company.example/app/", "PAP")).toBe(
+      "https://cyberpunk-company.example/app/PAP/dashboard",
     );
   });
 });
@@ -272,7 +272,7 @@ describe("renderCompanyImportPreview", () => {
     };
 
     const rendered = renderCompanyImportPreview(preview, {
-      sourceLabel: "GitHub: https://github.com/paperclipai/companies/demo",
+      sourceLabel: "GitHub: https://github.com/cyberpunk-company/companies/demo",
       targetLabel: "Imported Co (company-123)",
       infoMessages: ["Using claude-local adapter"],
     });
@@ -314,13 +314,13 @@ describe("renderCompanyImportResult", () => {
       },
       {
         targetLabel: "Imported Co (company-123)",
-        companyUrl: "https://paperclip.example/PAP/dashboard",
+        companyUrl: "https://cyberpunk-company.example/PAP/dashboard",
         infoMessages: ["Using claude-local adapter"],
       },
     );
 
     expect(rendered).toContain("Company");
-    expect(rendered).toContain("https://paperclip.example/PAP/dashboard");
+    expect(rendered).toContain("https://cyberpunk-company.example/PAP/dashboard");
     expect(rendered).toContain("3 agents total (1 created, 1 updated, 1 skipped)");
     expect(rendered).toContain("3 projects total (1 created, 1 updated, 1 skipped)");
     expect(rendered).toContain("Agent results");
@@ -454,7 +454,7 @@ describe("import selection catalog", () => {
       files: {
         "COMPANY.md": "# Source Co",
         "README.md": "# Readme",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".cyberpunk-company.yaml": "schema: cyberpunk-company/v1\n",
         "images/company-logo.png": {
           encoding: "base64",
           data: "",
@@ -490,7 +490,7 @@ describe("import selection catalog", () => {
 
     const selectedFiles = buildSelectedFilesFromImportSelection(catalog, state);
 
-    expect(selectedFiles).toContain(".paperclip.yaml");
+    expect(selectedFiles).toContain(".cyberpunk-company.yaml");
     expect(selectedFiles).toContain("projects/alpha/PROJECT.md");
     expect(selectedFiles).toContain("projects/alpha/notes.md");
     expect(selectedFiles).not.toContain("projects/alpha/issues/kickoff/TASK.md");

@@ -20,10 +20,10 @@ export default defineConfig({
       use: { browserName: "chromium" },
     },
   ],
-  // The webServer directive starts `paperclipai run` before tests.
-  // Expects `pnpm paperclipai` to be runnable from repo root.
+  // The webServer directive starts `cyberpunk-company run` before tests.
+  // Expects `pnpm cyberpunk-company` to be runnable from repo root.
   webServer: {
-    command: `pnpm paperclipai run`,
+    command: `pnpm cyberpunk-company run`,
     url: `${BASE_URL}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

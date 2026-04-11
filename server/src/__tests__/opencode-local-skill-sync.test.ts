@@ -12,7 +12,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 }
 
 describe("opencode local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -20,8 +20,8 @@ describe("opencode local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("reports configured Paperclip skills and installs them into the shared Claude/OpenCode skills home", async () => {
-    const home = await makeTempDir("paperclip-opencode-skill-sync-");
+  it("reports configured Cyberpunk Company skills and installs them into the shared Claude/OpenCode skills home", async () => {
+    const home = await makeTempDir("cyberpunk-company-opencode-skill-sync-");
     cleanupDirs.add(home);
 
     const ctx = {
@@ -32,7 +32,7 @@ describe("opencode local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        cyberpunkSkillSync: {
           desiredSkills: [paperclipKey],
         },
       },
@@ -47,11 +47,11 @@ describe("opencode local skill sync", () => {
 
     const after = await syncOpenCodeSkills(ctx, [paperclipKey]);
     expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".claude", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(home, ".claude", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 
-  it("keeps required bundled Paperclip skills installed even when the desired set is emptied", async () => {
-    const home = await makeTempDir("paperclip-opencode-skill-prune-");
+  it("keeps required bundled Cyberpunk Company skills installed even when the desired set is emptied", async () => {
+    const home = await makeTempDir("cyberpunk-company-opencode-skill-prune-");
     cleanupDirs.add(home);
 
     const configuredCtx = {
@@ -62,7 +62,7 @@ describe("opencode local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        cyberpunkSkillSync: {
           desiredSkills: [paperclipKey],
         },
       },
@@ -76,7 +76,7 @@ describe("opencode local skill sync", () => {
         env: {
           HOME: home,
         },
-        paperclipSkillSync: {
+        cyberpunkSkillSync: {
           desiredSkills: [],
         },
       },
@@ -85,6 +85,6 @@ describe("opencode local skill sync", () => {
     const after = await syncOpenCodeSkills(clearedCtx, []);
     expect(after.desiredSkills).toContain(paperclipKey);
     expect(after.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("installed");
-    expect((await fs.lstat(path.join(home, ".claude", "skills", "paperclip"))).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(home, ".claude", "skills", "cyberpunk-company"))).isSymbolicLink()).toBe(true);
   });
 });

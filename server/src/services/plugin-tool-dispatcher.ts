@@ -24,7 +24,7 @@
 
 import type { Db } from "@cyberpunk-company/db";
 import type {
-  PaperclipPluginManifestV1,
+  CyberpunkPluginManifestV1,
   PluginRecord,
 } from "@cyberpunk-company/shared";
 import type { ToolRunContext, ToolResult } from "@cyberpunk-company/plugin-sdk";
@@ -155,7 +155,7 @@ export interface PluginToolDispatcher {
    */
   registerPluginTools(
     pluginId: string,
-    manifest: PaperclipPluginManifestV1,
+    manifest: CyberpunkPluginManifestV1,
   ): void;
 
   /**
@@ -428,7 +428,7 @@ export function createPluginToolDispatcher(
 
     registerPluginTools(
       pluginId: string,
-      manifest: PaperclipPluginManifestV1,
+      manifest: CyberpunkPluginManifestV1,
     ): void {
       registry.registerPlugin(pluginId, manifest);
     },

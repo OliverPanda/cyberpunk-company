@@ -199,7 +199,7 @@ export function NewAgent() {
     });
   }
 
-  const availableSkills = (companySkills ?? []).filter((skill) => !skill.key.startsWith("paperclipai/paperclip/"));
+  const availableSkills = (companySkills ?? []).filter((skill) => !skill.key.startsWith("cyberpunk-company/cyberpunk-company/"));
 
   function toggleSkill(key: string, checked: boolean) {
     setSelectedSkillKeys((prev) => {
@@ -293,7 +293,7 @@ export function NewAgent() {
             <div>
               <h2 className="text-sm font-medium">Company skills</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                来自公司技能库的可选技能。Paperclip 内置运行时技能会自动添加。
+                来自公司技能库的可选技能。Cyberpunk Company 内置运行时技能会自动添加。
               </p>
             </div>
             {availableSkills.length === 0 ? (

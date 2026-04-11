@@ -76,7 +76,7 @@ export function CliAuthPage() {
         <div className="rounded-lg border border-border bg-card p-6">
           <h1 className="text-xl font-semibold">CLI 访问已批准</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Paperclip CLI 现在可以在发起请求的机器上完成鉴权。
+            Cyberpunk Company CLI 现在可以在发起请求的机器上完成鉴权。
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
             命令：<span className="font-mono text-foreground">{challenge.command}</span>
@@ -120,9 +120,9 @@ export function CliAuthPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
-        <h1 className="text-xl font-semibold">批准 Paperclip CLI 访问</h1>
+        <h1 className="text-xl font-semibold">批准 Cyberpunk Company CLI 访问</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          一个本地 Paperclip CLI 进程正在请求此实例的董事会访问权限。
+          一个本地 Cyberpunk Company CLI 进程正在请求此实例的董事会访问权限。
         </p>
 
         <div className="mt-5 space-y-3 text-sm">
@@ -132,7 +132,7 @@ export function CliAuthPage() {
           </div>
           <div>
             <div className="text-muted-foreground">客户端</div>
-            <div className="text-foreground">{challenge.clientName ?? "paperclipai cli"}</div>
+            <div className="text-foreground">{challenge.clientName ?? "cyberpunk-company cli"}</div>
           </div>
           <div>
             <div className="text-muted-foreground">申请权限</div>

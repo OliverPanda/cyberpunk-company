@@ -19,8 +19,8 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("claude local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
-  const createAgentKey = "paperclipai/paperclip/paperclip-create-agent";
+  const paperclipKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company";
+  const createAgentKey = "cyberpunk-company/cyberpunk-company/cyberpunk-company-create-agent";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -28,7 +28,7 @@ describe("claude local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("defaults to mounting all built-in Paperclip skills when no explicit selection exists", async () => {
+  it("defaults to mounting all built-in Cyberpunk Company skills when no explicit selection exists", async () => {
     const snapshot = await listClaudeSkills({
       agentId: "agent-1",
       companyId: "company-1",
@@ -49,7 +49,7 @@ describe("claude local skill sync", () => {
       companyId: "company-1",
       adapterType: "claude_local",
       config: {
-        paperclipSkillSync: {
+        cyberpunkSkillSync: {
           desiredSkills: [paperclipKey],
         },
       },
@@ -60,27 +60,27 @@ describe("claude local skill sync", () => {
     expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("configured");
   });
 
-  it("normalizes legacy flat Paperclip skill refs to canonical keys", async () => {
+  it("normalizes legacy flat Cyberpunk Company skill refs to canonical keys", async () => {
     const snapshot = await listClaudeSkills({
       agentId: "agent-3",
       companyId: "company-1",
       adapterType: "claude_local",
       config: {
-        paperclipSkillSync: {
-          desiredSkills: ["paperclip"],
+        cyberpunkSkillSync: {
+          desiredSkills: ["cyberpunk-company"],
         },
       },
     });
 
     expect(snapshot.warnings).toEqual([]);
     expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.desiredSkills).not.toContain("paperclip");
+    expect(snapshot.desiredSkills).not.toContain("cyberpunk-company");
     expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
-    expect(snapshot.entries.find((entry) => entry.key === "paperclip")).toBeUndefined();
+    expect(snapshot.entries.find((entry) => entry.key === "cyberpunk-company")).toBeUndefined();
   });
 
   it("shows host-level user-installed Claude skills as read-only external entries", async () => {
-    const home = await makeTempDir("paperclip-claude-user-skills-");
+    const home = await makeTempDir("cyberpunk-company-claude-user-skills-");
     cleanupDirs.add(home);
     await createSkillDir(path.join(home, ".claude", "skills"), "crack-python");
 
@@ -104,7 +104,7 @@ describe("claude local skill sync", () => {
       originLabel: "User-installed",
       locationLabel: "~/.claude/skills",
       readOnly: true,
-      detail: "Installed outside Paperclip management in the Claude skills home.",
+      detail: "Installed outside Cyberpunk Company management in the Claude skills home.",
     }));
   });
 });

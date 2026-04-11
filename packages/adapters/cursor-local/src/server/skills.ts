@@ -8,10 +8,10 @@ import type {
 } from "@cyberpunk-company/adapter-utils";
 import {
   buildPersistentSkillSnapshot,
-  ensurePaperclipSkillSymlink,
+  ensureCyberpunkSkillSymlink,
   readPaperclipRuntimeSkillEntries,
   readInstalledSkillTargets,
-  resolvePaperclipDesiredSkillNames,
+  resolveCyberpunkDesiredSkillNames,
 } from "@cyberpunk-company/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -32,7 +32,7 @@ function resolveCursorSkillsHome(config: Record<string, unknown>) {
 
 async function buildCursorSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = resolvePaperclipDesiredSkillNames(config, availableEntries);
+  const desiredSkills = resolveCyberpunkDesiredSkillNames(config, availableEntries);
   const skillsHome = resolveCursorSkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
   return buildPersistentSkillSnapshot({
@@ -44,7 +44,7 @@ async function buildCursorSkillSnapshot(config: Record<string, unknown>): Promis
     locationLabel: "~/.cursor/skills",
     missingDetail: "Configured but not currently linked into the Cursor skills home.",
     externalConflictDetail: "Skill name is occupied by an external installation.",
-    externalDetail: "Installed outside Paperclip management.",
+    externalDetail: "Installed outside Cyberpunk Company management.",
   });
 }
 
@@ -69,7 +69,7 @@ export async function syncCursorSkills(
   for (const available of availableEntries) {
     if (!desiredSet.has(available.key)) continue;
     const target = path.join(skillsHome, available.runtimeName);
-    await ensurePaperclipSkillSymlink(available.source, target);
+    await ensureCyberpunkSkillSymlink(available.source, target);
   }
 
   for (const [name, installedEntry] of installed.entries()) {
@@ -87,5 +87,5 @@ export function resolveCursorDesiredSkillNames(
   config: Record<string, unknown>,
   availableEntries: Array<{ key: string; required?: boolean }>,
 ) {
-  return resolvePaperclipDesiredSkillNames(config, availableEntries);
+  return resolveCyberpunkDesiredSkillNames(config, availableEntries);
 }

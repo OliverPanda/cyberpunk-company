@@ -27,11 +27,11 @@ export interface ResolvedClientContext {
 
 export function addCommonClientOptions(command: Command, opts?: { includeCompany?: boolean }): Command {
   command
-    .option("-c, --config <path>", "Path to Paperclip config file")
-    .option("-d, --data-dir <path>", "Paperclip data directory root (isolates state from ~/.cyberpunk-company)")
+    .option("-c, --config <path>", "Path to Cyberpunk Company config file")
+    .option("-d, --data-dir <path>", "Cyberpunk Company data directory root (isolates state from ~/.cyberpunk-company)")
     .option("--context <path>", "Path to CLI context file")
     .option("--profile <name>", "CLI context profile name")
-    .option("--api-base <url>", "Base URL for the Paperclip API")
+    .option("--api-base <url>", "Base URL for the Cyberpunk Company API")
     .option("--api-key <token>", "Bearer token for agent-authenticated calls")
     .option("--json", "Output raw JSON");
 
@@ -69,7 +69,7 @@ export function resolveCommandContext(
 
   if (opts?.requireCompany && !companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set CYBERPUNK_COMPANY_ID, or set context profile companyId via `paperclipai context set`.",
+      "Company ID is required. Pass --company-id, set CYBERPUNK_COMPANY_ID, or set context profile companyId via `cyberpunk-company context set`.",
     );
   }
 

@@ -40,7 +40,7 @@ import type { Db } from "@cyberpunk-company/db";
 import type {
   PluginStatus,
   PluginRecord,
-  PaperclipPluginManifestV1,
+  CyberpunkPluginManifestV1,
 } from "@cyberpunk-company/shared";
 import { pluginRegistryService } from "./plugin-registry.js";
 import { pluginLoader, type PluginLoader } from "./plugin-loader.js";

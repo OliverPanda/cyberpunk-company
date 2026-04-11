@@ -194,7 +194,7 @@ export function DesignGuide() {
       <div>
         <h2 className="text-xl font-bold">设计指南</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          汇总 Paperclip 中使用的全部组件、样式与交互模式。
+          汇总 Cyberpunk Company 中使用的全部组件、样式与交互模式。
         </p>
       </div>
 
@@ -736,7 +736,7 @@ export function DesignGuide() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Paperclip App</BreadcrumbLink>
+              <BreadcrumbLink href="#">Cyberpunk Company App</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

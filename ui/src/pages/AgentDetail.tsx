@@ -1959,7 +1959,7 @@ function PromptsTab({
                       <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
-                      托管：由 Paperclip 存储并提供指令包。外部：由你提供指令包在磁盘上的路径。
+                      托管：由 Cyberpunk Company 存储并提供指令包。外部：由你提供指令包在磁盘上的路径。
                     </TooltipContent>
                   </Tooltip>
                 </span>
@@ -2014,7 +2014,7 @@ function PromptsTab({
                       <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
-                      指令包所在的磁盘绝对目录。在托管模式下，这个值由 Paperclip 自动设置。
+                      指令包所在的磁盘绝对目录。在托管模式下，这个值由 Cyberpunk Company 自动设置。
                     </TooltipContent>
                   </Tooltip>
                 </span>
@@ -2545,9 +2545,9 @@ function AgentSkillsTab({
   const unsupportedSkillMessage = useMemo(() => {
     if (skillSnapshot?.mode !== "unsupported") return null;
     if (agent.adapterType === "openclaw_gateway") {
-      return "Paperclip 目前无法在这里管理 OpenClaw 技能。请前往你的 OpenClaw 实例管理该智能体的技能。";
+      return "Cyberpunk Company 目前无法在这里管理 OpenClaw 技能。请前往你的 OpenClaw 实例管理该智能体的技能。";
     }
-    return "Paperclip 目前还不能管理该适配器的技能。请直接在适配器中管理。";
+    return "Cyberpunk Company 目前还不能管理该适配器的技能。请直接在适配器中管理。";
   }, [agent.adapterType, skillSnapshot?.mode]);
   const hasUnsavedChanges = !arraysEqual(skillDraft, lastSavedSkills);
   const saveStatusLabel = syncSkills.isPending
@@ -2705,7 +2705,7 @@ function AgentSkillsTab({
                   <section className="border-y border-border">
                     <div className="border-b border-border bg-muted/40 px-3 py-2">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Paperclip 必需
+                        Cyberpunk Company 必需
                       </span>
                     </div>
                     {requiredSkillRows.map(renderSkillRow)}
@@ -2722,7 +2722,7 @@ function AgentSkillsTab({
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setUnmanagedOpen((v) => !v); } }}
                     >
                       <span className="text-xs font-medium text-muted-foreground">
-                        （{unmanagedSkillRows.length}）用户自行安装的技能，不受 Paperclip 管理
+                        （{unmanagedSkillRows.length}）用户自行安装的技能，不受 Cyberpunk Company 管理
                       </span>
                       {unmanagedOpen ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
                     </div>
@@ -4009,7 +4009,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
           创建 API 密钥
         </h3>
         <p className="text-xs text-muted-foreground">
-          API 密钥用于让该智能体验证对 Paperclip 服务器的调用。
+          API 密钥用于让该智能体验证对 Cyberpunk Company 服务器的调用。
         </p>
         <div className="flex items-center gap-2">
           <Input

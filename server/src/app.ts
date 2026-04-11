@@ -112,7 +112,7 @@ export async function createApp(
     }
     res.json({
       session: {
-        id: `paperclip:${req.actor.source}:${req.actor.userId}`,
+        id: `cyberpunk-company:${req.actor.source}:${req.actor.userId}`,
         userId: req.actor.userId,
       },
       user: {
@@ -249,7 +249,7 @@ export async function createApp(
         res.status(200).set("Content-Type", "text/html").end(indexHtml);
       });
     } else {
-      console.warn("[paperclip] UI dist not found; running in API-only mode");
+      console.warn("[cyberpunk-company] UI dist not found; running in API-only mode");
     }
   }
 

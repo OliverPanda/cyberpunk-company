@@ -721,7 +721,7 @@ export function CompanyImport() {
   }, [companyAgents]);
 
   const localZipHelpText =
-    "请上传直接由 Paperclip 导出的 .zip 包。使用 Finder、资源管理器或其他压缩工具重新打包后的压缩包，可能无法正确导入。";
+    "请上传直接由 Cyberpunk Company 导出的 .zip 包。使用 Finder、资源管理器或其他压缩工具重新打包后的压缩包，可能无法正确导入。";
 
   useEffect(() => {
     setBreadcrumbs([
@@ -1113,7 +1113,7 @@ export function CompanyImport() {
         <div>
           <h2 className="text-base font-semibold">导入来源</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            选择 GitHub 仓库，或上传本地 Paperclip ZIP 包。
+            选择 GitHub 仓库，或上传本地 Cyberpunk Company ZIP 包。
           </p>
         </div>
 

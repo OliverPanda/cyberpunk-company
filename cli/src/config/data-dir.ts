@@ -3,7 +3,7 @@ import {
   expandHomePrefix,
   resolveDefaultConfigPath,
   resolveDefaultContextPath,
-  resolvePaperclipInstanceId,
+  resolveCyberpunkInstanceId,
 } from "./home.js";
 
 export interface DataDirOptionLike {
@@ -31,7 +31,7 @@ export function applyDataDirOverride(
   if (support.hasConfigOption) {
     const hasConfigOverride = Boolean(options.config?.trim()) || Boolean(process.env.CYBERPUNK_CONFIG?.trim());
     if (!hasConfigOverride) {
-      const instanceId = resolvePaperclipInstanceId(options.instance);
+      const instanceId = resolveCyberpunkInstanceId(options.instance);
       process.env.CYBERPUNK_INSTANCE_ID = instanceId;
       process.env.CYBERPUNK_CONFIG = resolveDefaultConfigPath(instanceId);
     }

@@ -2,7 +2,7 @@ import { readConfigFile } from "./config-file.js";
 import { existsSync, realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
-import { resolvePaperclipEnvPath } from "./paths.js";
+import { resolveCyberpunkEnvPath } from "./paths.js";
 import { maybeRepairLegacyWorktreeConfigAndEnvFiles } from "./worktree-config.js";
 import {
   AUTH_BASE_URL_MODES,
@@ -24,7 +24,7 @@ import {
   resolveHomeAwarePath,
 } from "./home-paths.js";
 
-const CYBERPUNK_ENV_FILE_PATH = resolvePaperclipEnvPath();
+const CYBERPUNK_ENV_FILE_PATH = resolveCyberpunkEnvPath();
 if (existsSync(CYBERPUNK_ENV_FILE_PATH)) {
   loadDotenv({ path: CYBERPUNK_ENV_FILE_PATH, override: false, quiet: true });
 }
@@ -112,7 +112,7 @@ export function loadConfig(): Config {
       fileStorage?.localDisk?.baseDir ??
       resolveDefaultStorageDir(),
   );
-  const storageS3Bucket = process.env.CYBERPUNK_STORAGE_S3_BUCKET ?? fileStorage?.s3?.bucket ?? "paperclip";
+  const storageS3Bucket = process.env.CYBERPUNK_STORAGE_S3_BUCKET ?? fileStorage?.s3?.bucket ?? "cyberpunk-company";
   const storageS3Region = process.env.CYBERPUNK_STORAGE_S3_REGION ?? fileStorage?.s3?.region ?? "us-east-1";
   const storageS3Endpoint = process.env.CYBERPUNK_STORAGE_S3_ENDPOINT ?? fileStorage?.s3?.endpoint ?? undefined;
   const storageS3Prefix = process.env.CYBERPUNK_STORAGE_S3_PREFIX ?? fileStorage?.s3?.prefix ?? "";

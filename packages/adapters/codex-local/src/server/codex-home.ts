@@ -31,7 +31,7 @@ export function resolveManagedCodexHomeDir(
   env: NodeJS.ProcessEnv,
   companyId?: string,
 ): string {
-  const paperclipHome = nonEmpty(env.CYBERPUNK_HOME) ?? path.resolve(os.homedir(), ".paperclip");
+  const paperclipHome = nonEmpty(env.CYBERPUNK_HOME) ?? path.resolve(os.homedir(), ".cyberpunk-company");
   const instanceId = nonEmpty(env.CYBERPUNK_INSTANCE_ID) ?? DEFAULT_CYBERPUNK_INSTANCE_ID;
   return companyId
     ? path.resolve(paperclipHome, "instances", instanceId, "companies", companyId, "codex-home")
@@ -97,7 +97,7 @@ export async function prepareManagedCodexHome(
 
   await onLog(
     "stdout",
-    `[paperclip] Using ${isWorktreeMode(env) ? "worktree-isolated" : "Paperclip-managed"} Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
+    `[cyberpunk-company] Using ${isWorktreeMode(env) ? "worktree-isolated" : "Cyberpunk Company-managed"} Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
   );
   return targetHome;
 }

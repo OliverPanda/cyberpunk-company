@@ -63,7 +63,7 @@ export const storageLocalDiskConfigSchema = z.object({
 });
 
 export const storageS3ConfigSchema = z.object({
-  bucket: z.string().min(1).default("paperclip"),
+  bucket: z.string().min(1).default("cyberpunk-company"),
   region: z.string().min(1).default("us-east-1"),
   endpoint: z.string().optional(),
   prefix: z.string().default(""),
@@ -76,7 +76,7 @@ export const storageConfigSchema = z.object({
     baseDir: "~/.cyberpunk-company/instances/default/data/storage",
   }),
   s3: storageS3ConfigSchema.default({
-    bucket: "paperclip",
+    bucket: "cyberpunk-company",
     region: "us-east-1",
     prefix: "",
     forcePathStyle: false,
@@ -112,7 +112,7 @@ export const paperclipConfigSchema = z
         baseDir: "~/.cyberpunk-company/instances/default/data/storage",
       },
       s3: {
-        bucket: "paperclip",
+        bucket: "cyberpunk-company",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,

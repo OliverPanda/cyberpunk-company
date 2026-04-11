@@ -23,12 +23,12 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   return null;
 }
 
-export function resolvePaperclipConfigPath(overridePath?: string): string {
+export function resolveCyberpunkConfigPath(overridePath?: string): string {
   if (overridePath) return path.resolve(overridePath);
   if (process.env.CYBERPUNK_CONFIG) return path.resolve(process.env.CYBERPUNK_CONFIG);
   return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath();
 }
 
-export function resolvePaperclipEnvPath(overrideConfigPath?: string): string {
-  return path.resolve(path.dirname(resolvePaperclipConfigPath(overrideConfigPath)), CYBERPUNK_ENV_FILENAME);
+export function resolveCyberpunkEnvPath(overrideConfigPath?: string): string {
+  return path.resolve(path.dirname(resolveCyberpunkConfigPath(overrideConfigPath)), CYBERPUNK_ENV_FILENAME);
 }

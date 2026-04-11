@@ -82,7 +82,7 @@ const PROTOCOL_VERSION = 3;
 const DEFAULT_SCOPES = ["operator.admin"];
 const DEFAULT_CLIENT_ID = "gateway-client";
 const DEFAULT_CLIENT_MODE = "backend";
-const DEFAULT_CLIENT_VERSION = "paperclip";
+const DEFAULT_CLIENT_VERSION = "cyberpunk-company";
 const DEFAULT_ROLE = "operator";
 
 const SENSITIVE_LOG_KEY_PATTERN =
@@ -132,9 +132,9 @@ function resolveSessionKey(input: {
   runId: string;
   issueId: string | null;
 }): string {
-  const fallback = input.configuredSessionKey ?? "paperclip";
-  if (input.strategy === "run") return `paperclip:run:${input.runId}`;
-  if (input.strategy === "issue" && input.issueId) return `paperclip:issue:${input.issueId}`;
+  const fallback = input.configuredSessionKey ?? "cyberpunk-company";
+  if (input.strategy === "run") return `cyberpunk-company:run:${input.runId}`;
+  if (input.strategy === "issue" && input.issueId) return `cyberpunk-company:issue:${input.issueId}`;
   return fallback;
 }
 
@@ -301,7 +301,7 @@ function buildWakePayload(ctx: AdapterExecutionContext): WakePayload {
   };
 }
 
-function resolvePaperclipApiUrlOverride(value: unknown): string | null {
+function resolveCyberpunkApiUrlOverride(value: unknown): string | null {
   const raw = nonEmpty(value);
   if (!raw) return null;
   try {
@@ -314,7 +314,7 @@ function resolvePaperclipApiUrlOverride(value: unknown): string | null {
 }
 
 function buildPaperclipEnvForWake(ctx: AdapterExecutionContext, wakePayload: WakePayload): Record<string, string> {
-  const paperclipApiUrlOverride = resolvePaperclipApiUrlOverride(ctx.config.paperclipApiUrl);
+  const paperclipApiUrlOverride = resolveCyberpunkApiUrlOverride(ctx.config.paperclipApiUrl);
   const paperclipEnv: Record<string, string> = {
     ...buildPaperclipEnv(ctx.agent),
     CYBERPUNK_RUN_ID: ctx.runId,
@@ -336,7 +336,7 @@ function buildPaperclipEnvForWake(ctx: AdapterExecutionContext, wakePayload: Wak
 }
 
 function buildWakeText(payload: WakePayload, paperclipEnv: Record<string, string>): string {
-  const claimedApiKeyPath = "~/.openclaw/workspace/paperclip-claimed-api-key.json";
+  const claimedApiKeyPath = "~/.openclaw/workspace/cyberpunk-company-claimed-api-key.json";
   const orderedKeys = [
     "CYBERPUNK_RUN_ID",
     "CYBERPUNK_AGENT_ID",
@@ -361,7 +361,7 @@ function buildWakeText(payload: WakePayload, paperclipEnv: Record<string, string
   const apiBaseHint = paperclipEnv.CYBERPUNK_API_URL ?? "<set CYBERPUNK_API_URL>";
 
   const lines = [
-    "Paperclip wake event for a cloud adapter.",
+    "Cyberpunk Company wake event for a cloud adapter.",
     "",
     "Run this procedure now. Do not guess undocumented endpoints and do not ask for additional heartbeat docs.",
     "",
@@ -382,7 +382,7 @@ function buildWakeText(payload: WakePayload, paperclipEnv: Record<string, string
     "",
     "HTTP rules:",
     "- Use Authorization: Bearer $CYBERPUNK_API_KEY on every API call.",
-    "- Use X-Paperclip-Run-Id: $CYBERPUNK_RUN_ID on every mutating API call.",
+    "- Use X-Cyberpunk Company-Run-Id: $CYBERPUNK_RUN_ID on every mutating API call.",
     "- Use only /api endpoints listed below.",
     "- Do NOT call guessed endpoints like /api/cloud-adapter/*, /api/cloud-adapters/*, /api/adapters/cloud/*, or /api/heartbeat.",
     "",
@@ -421,14 +421,14 @@ function buildStandardPaperclipPayload(
   paperclipEnv: Record<string, string>,
   payloadTemplate: Record<string, unknown>,
 ): Record<string, unknown> {
-  const templatePaperclip = parseObject(payloadTemplate.paperclip);
-  const workspace = asRecord(ctx.context.paperclipWorkspace);
-  const workspaces = Array.isArray(ctx.context.paperclipWorkspaces)
-    ? ctx.context.paperclipWorkspaces.filter((entry): entry is Record<string, unknown> => Boolean(asRecord(entry)))
+  const templatePaperclip = parseObject(payloadTemplate.cyberpunk-company);
+  const workspace = asRecord(ctx.context.cyberpunkWorkspace);
+  const workspaces = Array.isArray(ctx.context.cyberpunkWorkspaces)
+    ? ctx.context.cyberpunkWorkspaces.filter((entry): entry is Record<string, unknown> => Boolean(asRecord(entry)))
     : [];
   const configuredWorkspaceRuntime = parseObject(ctx.config.workspaceRuntime);
-  const runtimeServiceIntents = Array.isArray(ctx.context.paperclipRuntimeServiceIntents)
-    ? ctx.context.paperclipRuntimeServiceIntents.filter(
+  const runtimeServiceIntents = Array.isArray(ctx.context.cyberpunkRuntimeServiceIntents)
+    ? ctx.context.cyberpunkRuntimeServiceIntents.filter(
         (entry): entry is Record<string, unknown> => Boolean(asRecord(entry)),
       )
     : [];
@@ -713,7 +713,7 @@ class GatewayWsClient {
 
   close() {
     if (!this.ws) return;
-    this.ws.close(1000, "paperclip-complete");
+    this.ws.close(1000, "cyberpunk-company-complete");
     this.ws = null;
   }
 

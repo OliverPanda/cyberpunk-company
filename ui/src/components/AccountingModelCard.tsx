@@ -34,7 +34,7 @@ export function AccountingModelCard() {
           记账模型
         </CardTitle>
         <CardDescription className="max-w-2xl text-sm leading-6">
-          Paperclip 现在将请求级推理用量与账户级财务事件分开记录。
+          Cyberpunk Company 现在将请求级推理用量与账户级财务事件分开记录。
           当计费方是 OpenRouter、Cloudflare、Bedrock 或其他中间层时，这样可以保持提供商统计更准确。
         </CardDescription>
       </CardHeader>

@@ -182,10 +182,10 @@ export function renderRuntimeBrandingMeta(branding: WorktreeUiBranding): string 
   if (!branding.enabled || !branding.name || !branding.color || !branding.textColor) return "";
 
   return [
-    '<meta name="paperclip-worktree-enabled" content="true" />',
-    `<meta name="paperclip-worktree-name" content="${escapeHtmlAttribute(branding.name)}" />`,
-    `<meta name="paperclip-worktree-color" content="${escapeHtmlAttribute(branding.color)}" />`,
-    `<meta name="paperclip-worktree-text-color" content="${escapeHtmlAttribute(branding.textColor)}" />`,
+    '<meta name="cyberpunk-worktree-enabled" content="true" />',
+    `<meta name="cyberpunk-worktree-name" content="${escapeHtmlAttribute(branding.name)}" />`,
+    `<meta name="cyberpunk-worktree-color" content="${escapeHtmlAttribute(branding.color)}" />`,
+    `<meta name="cyberpunk-worktree-text-color" content="${escapeHtmlAttribute(branding.textColor)}" />`,
   ].join("\n");
 }
 

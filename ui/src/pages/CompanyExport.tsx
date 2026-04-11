@@ -72,7 +72,7 @@ function checkedSlugs(checkedFiles: Set<string>): {
 }
 
 /**
- * Filter .paperclip.yaml content so it only includes entries whose
+ * Filter .cyberpunk-company.yaml content so it only includes entries whose
  * corresponding files are checked. Works by line-level YAML parsing
  * since the file has a known, simple structure produced by our own
  * renderYamlBlock.
@@ -429,7 +429,7 @@ function generateReadmeFromSelection(
 
   lines.push("## 包含内容");
   lines.push("");
-  lines.push("这是一个 [智能体公司](https://paperclip.ing) 软件包。");
+  lines.push("这是一个 [智能体公司](https://cyberpunk-company.ing) 软件包。");
   lines.push("");
 
   const counts: Array<[string, number]> = [];
@@ -473,13 +473,13 @@ function generateReadmeFromSelection(
   lines.push("## 开始使用");
   lines.push("");
   lines.push("```bash");
-  lines.push("pnpm paperclipai company import this-github-url-or-folder");
+  lines.push("pnpm cyberpunk-company company import this-github-url-or-folder");
   lines.push("```");
   lines.push("");
-  lines.push("更多信息见 [Paperclip](https://paperclip.ing)。");
+  lines.push("更多信息见 [Cyberpunk Company](https://cyberpunk-company.ing)。");
   lines.push("");
   lines.push("---");
-  lines.push(`由 [Paperclip](https://paperclip.ing) 于 ${new Date().toISOString().split("T")[0]} 导出`);
+  lines.push(`由 [Cyberpunk Company](https://cyberpunk-company.ing) 于 ${new Date().toISOString().split("T")[0]} 导出`);
   lines.push("");
 
   return lines.join("\n");
@@ -775,13 +775,13 @@ export function CompanyExport() {
     };
   }, [tree, treeSearch, checkedFiles, taskLimit]);
 
-  // Recompute .paperclip.yaml and README.md content whenever checked files
+  // Recompute .cyberpunk-company.yaml and README.md content whenever checked files
   // change so the preview & download always reflect the current selection.
   const effectiveFiles = useMemo(() => {
     if (!exportData) return {} as Record<string, CompanyPortabilityFileEntry>;
     const filtered = { ...exportData.files };
 
-    // Filter .paperclip.yaml
+    // Filter .cyberpunk-company.yaml
     const yamlPath = exportData.paperclipExtensionPath;
     if (yamlPath && typeof exportData.files[yamlPath] === "string") {
       filtered[yamlPath] = filterPaperclipYaml(exportData.files[yamlPath], checkedFiles);

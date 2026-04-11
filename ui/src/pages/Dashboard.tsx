@@ -168,7 +168,7 @@ export function Dashboard() {
       return (
         <EmptyState
           icon={LayoutDashboard}
-          message="欢迎使用 Paperclip。先创建你的第一个公司和智能体，然后开始运行。"
+          message="欢迎使用 Cyberpunk Company。先创建你的第一个公司和智能体，然后开始运行。"
           action="开始使用"
           onAction={openOnboarding}
         />

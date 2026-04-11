@@ -55,11 +55,11 @@ function BootstrapPendingPage({ hasActiveInvite = false }: { hasActiveInvite?: b
         <h1 className="text-xl font-semibold">需要完成实例初始化</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {hasActiveInvite
-            ? "当前还没有实例管理员，且已有一个初始化邀请正在生效。请查看 Paperclip 启动日志中的首个管理员邀请链接，或运行下面的命令重新生成："
-            : "当前还没有实例管理员。请在你的 Paperclip 环境中运行下面的命令生成首个管理员邀请链接："}
+            ? "当前还没有实例管理员，且已有一个初始化邀请正在生效。请查看 Cyberpunk Company 启动日志中的首个管理员邀请链接，或运行下面的命令重新生成："
+            : "当前还没有实例管理员。请在你的 Cyberpunk Company 环境中运行下面的命令生成首个管理员邀请链接："}
         </p>
         <pre className="mt-4 overflow-x-auto rounded-md border border-border bg-muted/30 p-3 text-xs">
-{`pnpm paperclipai auth bootstrap-ceo`}
+{`pnpm cyberpunk-company auth bootstrap-ceo`}
         </pre>
       </div>
     </div>

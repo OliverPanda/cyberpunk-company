@@ -180,15 +180,15 @@ function normalizePortablePath(filePath: string): string {
 function shouldIncludePortableFile(filePath: string): boolean {
   const baseName = path.basename(filePath);
   const isMarkdown = baseName.endsWith(".md");
-  const isPaperclipYaml = baseName === ".paperclip.yaml" || baseName === ".paperclip.yml";
+  const isPaperclipYaml = baseName === ".cyberpunk-company.yaml" || baseName === ".cyberpunk-company.yml";
   const contentType = binaryContentTypeByExtension[path.extname(baseName).toLowerCase()];
   return isMarkdown || isPaperclipYaml || Boolean(contentType);
 }
 
 function findPortableExtensionPath(files: Record<string, CompanyPortabilityFileEntry>): string | null {
-  if (files[".paperclip.yaml"] !== undefined) return ".paperclip.yaml";
-  if (files[".paperclip.yml"] !== undefined) return ".paperclip.yml";
-  return Object.keys(files).find((entry) => entry.endsWith("/.paperclip.yaml") || entry.endsWith("/.paperclip.yml")) ?? null;
+  if (files[".cyberpunk-company.yaml"] !== undefined) return ".cyberpunk-company.yaml";
+  if (files[".cyberpunk-company.yml"] !== undefined) return ".cyberpunk-company.yml";
+  return Object.keys(files).find((entry) => entry.endsWith("/.cyberpunk-company.yaml") || entry.endsWith("/.cyberpunk-company.yml")) ?? null;
 }
 
 function collectFilesUnderDirectory(
@@ -385,7 +385,7 @@ async function promptForImportSelection(preview: CompanyPortabilityPreviewResult
 
   while (true) {
     const choice = await p.select<ImportSelectableGroup | "company" | "confirm">({
-      message: "Select what Paperclip should import",
+      message: "Select what Cyberpunk Company should import",
       options: [
         {
           value: "company",
@@ -1159,7 +1159,7 @@ export function registerCompanyCommands(program: Command): void {
       .option("--agents <list>", "Comma-separated agent slugs to import, or all", "all")
       .option("--collision <mode>", "Collision strategy: rename | skip | replace", "rename")
       .option("--ref <value>", "Git ref to use for GitHub imports (branch, tag, or commit)")
-      .option("--paperclip-url <url>", "Alias for --api-base on this command")
+      .option("--cyberpunk-company-url <url>", "Alias for --api-base on this command")
       .option("--yes", "Accept default selection and skip the pre-import confirmation prompt", false)
       .option("--dry-run", "Run preview only without applying", false)
       .action(async (fromPathOrUrl: string, opts: CompanyImportOptions) => {

@@ -1,5 +1,5 @@
 /**
- * `@cyberpunk-company/plugin-sdk` — Paperclip plugin worker-side SDK.
+ * `@cyberpunk-company/plugin-sdk` — Cyberpunk Company plugin worker-side SDK.
  *
  * This is the main entrypoint for plugin worker code.  For plugin UI bundles,
  * import from `@cyberpunk-company/plugin-sdk/ui` instead.
@@ -91,7 +91,7 @@ export {
 // Plugin definition and lifecycle types
 export type {
   PluginDefinition,
-  PaperclipPlugin,
+  CyberpunkPlugin,
   PluginHealthDiagnostics,
   PluginConfigValidationResult,
   PluginWebhookInput,
@@ -210,7 +210,7 @@ export type {
 // Plugin authors import manifest types from here so they have a single
 // dependency (@cyberpunk-company/plugin-sdk) for all plugin authoring needs.
 export type {
-  PaperclipPluginManifestV1,
+  CyberpunkPluginManifestV1,
   PluginJobDeclaration,
   PluginWebhookDeclaration,
   PluginToolDeclaration,

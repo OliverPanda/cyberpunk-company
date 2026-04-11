@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import { paperclipConfigSchema, type PaperclipConfig } from "@cyberpunk-company/shared";
-import { resolvePaperclipConfigPath } from "./paths.js";
+import { resolveCyberpunkConfigPath } from "./paths.js";
 
 export function readConfigFile(): PaperclipConfig | null {
-  const configPath = resolvePaperclipConfigPath();
+  const configPath = resolveCyberpunkConfigPath();
 
   if (!fs.existsSync(configPath)) return null;
 

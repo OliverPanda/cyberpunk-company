@@ -1,5 +1,5 @@
 /**
- * `@cyberpunk-company/plugin-sdk/ui` — Paperclip plugin UI SDK.
+ * `@cyberpunk-company/plugin-sdk/ui` — Cyberpunk Company plugin UI SDK.
  *
  * Import this subpath from plugin UI bundles (React components that run in
  * the host frontend).  Do **not** import this from plugin worker code.

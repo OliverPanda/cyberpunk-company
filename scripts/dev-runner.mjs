@@ -14,7 +14,7 @@ const autoRestartPollIntervalMs = 2500;
 const gracefulShutdownTimeoutMs = 10_000;
 const changedPathSampleLimit = 5;
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const devServerStatusFilePath = path.join(repoRoot, ".paperclip", "dev-server-status.json");
+const devServerStatusFilePath = path.join(repoRoot, ".cyberpunk-company", "dev-server-status.json");
 
 const watchedDirectories = [
   "cli",
@@ -92,9 +92,9 @@ if (tailscaleAuth) {
   env.CYBERPUNK_DEPLOYMENT_EXPOSURE = "private";
   env.CYBERPUNK_AUTH_BASE_URL_MODE = "auto";
   env.HOST = "0.0.0.0";
-  console.log("[paperclip] dev mode: authenticated/private (tailscale-friendly) on 0.0.0.0");
+  console.log("[cyberpunk-company] dev mode: authenticated/private (tailscale-friendly) on 0.0.0.0");
 } else {
-  console.log("[paperclip] dev mode: local_trusted (default)");
+  console.log("[cyberpunk-company] dev mode: local_trusted (default)");
 }
 
 const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
@@ -288,7 +288,7 @@ async function getMigrationStatusPayload() {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[paperclip] Command failed with code ${status.code}: pnpm --filter @cyberpunk-company/db exec tsx src/migration-status.ts --json\n`,
+        `[cyberpunk-company] Command failed with code ${status.code}: pnpm --filter @cyberpunk-company/db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -299,7 +299,7 @@ async function getMigrationStatusPayload() {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        "[paperclip] migration-status returned invalid JSON payload\n",
+        "[cyberpunk-company] migration-status returned invalid JSON payload\n",
     );
     throw toError(error, "Unable to parse migration-status JSON output");
   }
@@ -350,7 +350,7 @@ async function maybePreflightMigrations(options = {}) {
   if (!shouldApply) {
     if (exitOnDecline) {
       process.stderr.write(
-        `[paperclip] Pending migrations detected (${formatPendingMigrationSummary(pendingMigrations)}). ` +
+        `[cyberpunk-company] Pending migrations detected (${formatPendingMigrationSummary(pendingMigrations)}). ` +
           "Refusing to start watch mode against a stale schema.\n",
       );
       process.exit(1);
@@ -378,7 +378,7 @@ async function maybePreflightMigrations(options = {}) {
 }
 
 async function buildPluginSdk() {
-  console.log("[paperclip] building plugin sdk...");
+  console.log("[cyberpunk-company] building plugin sdk...");
   const result = await runPnpm(
     ["--filter", "@cyberpunk-company/plugin-sdk", "build"],
     { stdio: "inherit" },
@@ -388,7 +388,7 @@ async function buildPluginSdk() {
     return;
   }
   if (result.code !== 0) {
-    console.error("[paperclip] plugin sdk build failed");
+    console.error("[cyberpunk-company] plugin sdk build failed");
     process.exit(result.code);
   }
 }

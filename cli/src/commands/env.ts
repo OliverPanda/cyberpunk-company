@@ -10,7 +10,7 @@ import {
 import {
   resolveDefaultSecretsKeyFilePath,
   resolveDefaultStorageDir,
-  resolvePaperclipInstanceId,
+  resolveCyberpunkInstanceId,
 } from "../config/home.js";
 
 type EnvSource = "env" | "config" | "file" | "default" | "missing";
@@ -24,20 +24,20 @@ type EnvVarRow = {
 };
 
 const DEFAULT_AGENT_JWT_TTL_SECONDS = "172800";
-const DEFAULT_AGENT_JWT_ISSUER = "paperclip";
-const DEFAULT_AGENT_JWT_AUDIENCE = "paperclip-api";
+const DEFAULT_AGENT_JWT_ISSUER = "cyberpunk-company";
+const DEFAULT_AGENT_JWT_AUDIENCE = "cyberpunk-company-api";
 const DEFAULT_HEARTBEAT_SCHEDULER_INTERVAL_MS = "30000";
 const DEFAULT_SECRETS_PROVIDER = "local_encrypted";
 const DEFAULT_STORAGE_PROVIDER = "local_disk";
 function defaultSecretsKeyFilePath(): string {
-  return resolveDefaultSecretsKeyFilePath(resolvePaperclipInstanceId());
+  return resolveDefaultSecretsKeyFilePath(resolveCyberpunkInstanceId());
 }
 function defaultStorageBaseDir(): string {
-  return resolveDefaultStorageDir(resolvePaperclipInstanceId());
+  return resolveDefaultStorageDir(resolveCyberpunkInstanceId());
 }
 
 export async function envCommand(opts: { config?: string }): Promise<void> {
-  p.intro(pc.bgCyan(pc.black(" paperclip env ")));
+  p.intro(pc.bgCyan(pc.black(" cyberpunk-company env ")));
 
   const configPath = resolveConfigPath(opts.config);
   let config: PaperclipConfig | null = null;
@@ -166,7 +166,7 @@ function collectDeploymentEnvRows(config: PaperclipConfig | null, configPath: st
   const storageS3Bucket =
     process.env.CYBERPUNK_STORAGE_S3_BUCKET ??
     config?.storage?.s3?.bucket ??
-    "paperclip";
+    "cyberpunk-company";
   const storageS3Region =
     process.env.CYBERPUNK_STORAGE_S3_REGION ??
     config?.storage?.s3?.region ??

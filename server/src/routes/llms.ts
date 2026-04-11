@@ -29,7 +29,7 @@ export function llmRoutes(db: Db) {
     await assertCanRead(req);
     const adapters = listServerAdapters().sort((a, b) => a.type.localeCompare(b.type));
     const lines = [
-      "# Paperclip 智能体配置索引",
+      "# Cyberpunk Company 智能体配置索引",
       "",
       "已安装的适配器：",
       ...adapters.map((adapter) => `- ${adapter.type}: /llms/agent-configuration/${adapter.type}.txt`),
@@ -53,7 +53,7 @@ export function llmRoutes(db: Db) {
   router.get("/llms/agent-icons.txt", async (req, res) => {
     await assertCanRead(req);
     const lines = [
-      "# Paperclip 智能体图标名称",
+      "# Cyberpunk Company 智能体图标名称",
       "",
       "在 hire/create 请求体中，将 `icon` 字段设置为以下值之一：",
       ...AGENT_ICON_NAMES.map((name) => `- ${name}`),

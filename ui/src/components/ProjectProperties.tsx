@@ -688,7 +688,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                     {codebase.effectiveLocalFolder}
                   </div>
                   {codebase.origin === "managed_checkout" && (
-                    <div className="text-[11px] text-muted-foreground">由 Paperclip 管理的文件夹。</div>
+                    <div className="text-[11px] text-muted-foreground">由 Cyberpunk Company 管理的文件夹。</div>
                   )}
                 </div>
                 <div className="flex items-center gap-1">
@@ -720,7 +720,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
 
             {hasAdditionalLegacyWorkspaces && (
               <div className="text-[11px] text-muted-foreground">
-                该项目还存在额外的旧版工作区记录。Paperclip 当前使用主工作区作为代码库视图。
+                该项目还存在额外的旧版工作区记录。Cyberpunk Company 当前使用主工作区作为代码库视图。
               </div>
             )}
 
@@ -1041,7 +1041,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                               })}
                             immediate
                             className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
-                            placeholder=".paperclip/worktrees"
+                            placeholder=".cyberpunk-company/worktrees"
                           />
                         </div>
                         <div>

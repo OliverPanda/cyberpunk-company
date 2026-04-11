@@ -397,7 +397,7 @@ describe("inbox helpers", () => {
   });
 
   it("maps legacy new-tab storage to mine", () => {
-    localStorage.setItem("paperclip:inbox:last-tab", "new");
+    localStorage.setItem("cyberpunk:inbox:last-tab", "new");
     expect(loadLastInboxTab()).toBe("mine");
   });
 });

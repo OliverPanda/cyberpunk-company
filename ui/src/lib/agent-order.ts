@@ -1,7 +1,7 @@
 import type { Agent } from "@cyberpunk-company/shared";
 
-export const AGENT_ORDER_UPDATED_EVENT = "paperclip:agent-order-updated";
-const AGENT_ORDER_STORAGE_PREFIX = "paperclip.agentOrder";
+export const AGENT_ORDER_UPDATED_EVENT = "cyberpunk:agent-order-updated";
+const AGENT_ORDER_STORAGE_PREFIX = "cyberpunk-company.agentOrder";
 const ANONYMOUS_USER_ID = "anonymous";
 
 type AgentOrderUpdatedDetail = {

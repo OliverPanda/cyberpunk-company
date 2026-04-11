@@ -13,7 +13,7 @@ import {
   resolveDefaultBackupDir,
   resolveDefaultEmbeddedPostgresDir,
   resolveDefaultLogsDir,
-  resolvePaperclipInstanceId,
+  resolveCyberpunkInstanceId,
 } from "../config/home.js";
 import { printPaperclipCliBanner } from "../utils/banner.js";
 
@@ -29,7 +29,7 @@ const SECTION_LABELS: Record<Section, string> = {
 };
 
 function defaultConfig(): PaperclipConfig {
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveCyberpunkInstanceId();
   return {
     $meta: {
       version: 1,
@@ -73,11 +73,11 @@ export async function configure(opts: {
   section?: string;
 }): Promise<void> {
   printPaperclipCliBanner();
-  p.intro(pc.bgCyan(pc.black(" paperclip configure ")));
+  p.intro(pc.bgCyan(pc.black(" cyberpunk-company configure ")));
   const configPath = resolveConfigPath(opts.config);
 
   if (!configExists(opts.config)) {
-    p.log.error("No config file found. Run `paperclipai onboard` first.");
+    p.log.error("No config file found. Run `cyberpunk-company onboard` first.");
     p.outro("");
     return;
   }

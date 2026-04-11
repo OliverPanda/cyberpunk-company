@@ -23,8 +23,8 @@ import {
   updateAgentSchema,
 } from "@cyberpunk-company/shared";
 import {
-  readPaperclipSkillSyncPreference,
-  writePaperclipSkillSyncPreference,
+  readCyberpunkSkillSyncPreference,
+  writeCyberpunkSkillSyncPreference,
 } from "@cyberpunk-company/adapter-utils/server-utils";
 import { validate } from "../middleware/validate.js";
 import {
@@ -576,7 +576,7 @@ export function agentRoutes(db: Db) {
     const desiredSkills = Array.from(new Set([...requiredSkills, ...resolvedRequestedSkills]));
 
     return {
-      adapterConfig: writePaperclipSkillSyncPreference(adapterConfig, desiredSkills),
+      adapterConfig: writeCyberpunkSkillSyncPreference(adapterConfig, desiredSkills),
       desiredSkills,
       runtimeSkillEntries,
     };
@@ -727,7 +727,7 @@ export function agentRoutes(db: Db) {
 
     const adapter = findServerAdapter(agent.adapterType);
     if (!adapter?.listSkills) {
-      const preference = readPaperclipSkillSyncPreference(
+      const preference = readCyberpunkSkillSyncPreference(
         agent.adapterConfig as Record<string, unknown>,
       );
       const runtimeSkillEntries = await companySkills.listRuntimeSkillEntries(agent.companyId, {

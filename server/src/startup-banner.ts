@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolvePaperclipConfigPath, resolvePaperclipEnvPath } from "./paths.js";
+import { resolveCyberpunkConfigPath, resolveCyberpunkEnvPath } from "./paths.js";
 import type { DeploymentExposure, DeploymentMode } from "@cyberpunk-company/shared";
 
 import { parse as parseEnvFileContents } from "dotenv";
@@ -92,7 +92,7 @@ function resolveAgentJwtSecretStatus(
 
   return {
     status: "warn",
-    message: "missing (run `pnpm paperclipai onboard`)",
+    message: "missing (run `pnpm cyberpunk-company onboard`)",
   };
 }
 
@@ -101,8 +101,8 @@ export function printStartupBanner(opts: StartupBannerOptions): void {
   const baseUrl = `http://${baseHost}:${opts.listenPort}`;
   const apiUrl = `${baseUrl}/api`;
   const uiUrl = opts.uiMode === "none" ? "disabled" : baseUrl;
-  const configPath = resolvePaperclipConfigPath();
-  const envFilePath = resolvePaperclipEnvPath();
+  const configPath = resolveCyberpunkConfigPath();
+  const envFilePath = resolveCyberpunkEnvPath();
   const agentJwtSecret = resolveAgentJwtSecretStatus(envFilePath);
 
   const dbMode =

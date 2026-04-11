@@ -192,7 +192,7 @@ export function InviteLandingPage() {
           )}
           {(onboardingSkillUrl || onboardingSkillPath || onboardingInstallPath) && (
             <div className="mt-3 space-y-1 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">Paperclip 技能初始化</p>
+              <p className="font-medium text-foreground">Cyberpunk Company 技能初始化</p>
               {onboardingSkillUrl && <p className="font-mono break-all">GET {onboardingSkillUrl}</p>}
               {!onboardingSkillUrl && onboardingSkillPath && <p className="font-mono break-all">GET {onboardingSkillPath}</p>}
               {onboardingInstallPath && <p className="font-mono break-all">安装到 {onboardingInstallPath}</p>}
@@ -227,7 +227,7 @@ export function InviteLandingPage() {
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
         <h1 className="text-xl font-semibold">
-          {invite.inviteType === "bootstrap_ceo" ? "初始化你的 Paperclip 实例" : "加入这家 Paperclip 公司"}
+          {invite.inviteType === "bootstrap_ceo" ? "初始化你的 Cyberpunk Company 实例" : "加入这家 Cyberpunk Company 公司"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">邀请将在 {dateTime(invite.expiresAt)} 过期。</p>
 

@@ -301,7 +301,7 @@ export type {
   PluginLauncherDeclaration,
   PluginMinimumHostVersion,
   PluginUiDeclaration,
-  PaperclipPluginManifestV1,
+  CyberpunkPluginManifestV1,
   PluginRecord,
   PluginStateRecord,
   PluginConfig,

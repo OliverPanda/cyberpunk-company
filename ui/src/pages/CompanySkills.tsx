@@ -46,7 +46,7 @@ import {
   Github,
   Link2,
   ExternalLink,
-  Paperclip,
+  Cyberpunk Company,
   Pencil,
   Plus,
   RefreshCw,
@@ -158,8 +158,8 @@ function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | 
       return { icon: Link2, label: sourceLabel ?? "链接", managedLabel: "由链接管理" };
     case "local":
       return { icon: Folder, label: sourceLabel ?? "文件夹", managedLabel: "由文件夹管理" };
-    case "paperclip":
-      return { icon: Paperclip, label: sourceLabel ?? "Paperclip", managedLabel: "由 Paperclip 管理" };
+    case "cyberpunk-company":
+      return { icon: Cyberpunk Company, label: sourceLabel ?? "Cyberpunk Company", managedLabel: "由 Cyberpunk Company 管理" };
     default:
       return { icon: Boxes, label: sourceLabel ?? "目录", managedLabel: "由目录管理" };
   }
@@ -881,7 +881,7 @@ export function CompanySkills() {
       pushToast({
         tone: "success",
         title: "技能已创建",
-        body: `${skill.name} 现在可以在 Paperclip 工作区中编辑。`,
+        body: `${skill.name} 现在可以在 Cyberpunk Company 工作区中编辑。`,
       });
     },
     onError: (error) => {
