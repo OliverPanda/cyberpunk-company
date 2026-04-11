@@ -275,7 +275,7 @@ MIT &copy; 2026 Cyberpunk Company
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=cyberpunk-company/cyberpunk-company&type=date&legend=top-left)](https://www.star-history.com/?repos=cyberpunk-company%2Fpaperclip&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/image?repos=cyberpunk-company/cyberpunk-company&type=date&legend=top-left)](https://www.star-history.com/?repos=cyberpunk-company%2Fcyberpunk-company&type=date&legend=top-left)
 
 <br/>
 
