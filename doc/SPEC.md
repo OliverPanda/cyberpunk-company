@@ -2,6 +2,8 @@
 
 Target specification for the Paperclip control plane. Living document — updated incrementally during spec interviews.
 
+> **Note (2026-04-11):** This document reflects the original V1 product spec. The system has significantly evolved beyond V1 scope. See [`SPEC-v2.md`](./SPEC-v2.md) for the current system specification covering all implemented features including plugins, multi-adapter support, routines, company portability, and more.
+
 ---
 
 ## 1. Company Model [DRAFT]
