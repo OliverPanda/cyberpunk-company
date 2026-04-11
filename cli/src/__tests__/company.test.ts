@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompanyPortabilityPreviewResult } from "@paperclipai/shared";
+import type { CompanyPortabilityPreviewResult } from "@cyberpunk-company/shared";
 import {
   buildCompanyDashboardUrl,
   buildDefaultImportAdapterOverrides,

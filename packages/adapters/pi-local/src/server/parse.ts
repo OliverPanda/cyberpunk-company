@@ -1,4 +1,4 @@
-import { asNumber, asString, parseJson, parseObject } from "@paperclipai/adapter-utils/server-utils";
+import { asNumber, asString, parseJson, parseObject } from "@cyberpunk-company/adapter-utils/server-utils";
 
 interface ParsedPiOutput {
   sessionId: string | null;

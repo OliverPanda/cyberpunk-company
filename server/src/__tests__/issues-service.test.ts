@@ -8,7 +8,7 @@ import {
   issueComments,
   issueInboxArchives,
   issues,
-} from "@paperclipai/db";
+} from "@cyberpunk-company/db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
