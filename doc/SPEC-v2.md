@@ -923,3 +923,83 @@ V1 反需求仍然成立，新增以下约束：
 6. **WebSocket 实时推送**：从 SSE 升级到 WebSocket
 7. **插件市场**：插件的发现、安装与评价
 8. **跨公司协作**：公司间的任务委派与计费
+
+---
+
+## 29. 上下文管理与缓存优化
+
+基于 Claude Code v2.1.88 源码分析（详见 `CLAUDE_CODE_ARCHITECTURE_ANALYSIS.md`），本章节定义 Paperclip 的上下文管理架构方向。
+
+### 29.1 设计理念
+
+智能体每次 heartbeat 消耗的 token 是平台运营的核心成本驱动因素。上下文管理的目标是：**在不损失任务完成质量的前提下，最小化每次 heartbeat 的 token 消耗。**
+
+核心原则：
+- **稳定上下文应被缓存**：角色定义、行为准则、流程说明等不应每次重新处理
+- **增量优于全量**：heartbeat 应只消费自上次有效执行以来的变化
+- **渐进压缩优于硬截断**：上下文超限时应分级降级，而非直接丢弃
+- **缓存效率可度量**：平台应跟踪并优化 prompt cache hit rate
+
+### 29.2 上下文分层模型
+
+Paperclip 将智能体上下文分为四层，每层有不同的缓存特性：
+
+| 层级 | 内容 | 缓存特性 | 更新频率 |
+|------|------|----------|----------|
+| L0: 角色层 | 身份、职责、行为准则、核心规则 | 跨 heartbeat 可缓存（静态区） | 极低（仅指令文件变更时） |
+| L1: 技能层 | Paperclip Skill、API 文档、流程说明 | 跨 session 可缓存 | 低（技能更新时） |
+| L2: 任务层 | 当前任务状态、祖先链、项目目标 | 跨同任务 heartbeat 可缓存 | 中（任务状态变更时） |
+| L3: 运行层 | 唤醒原因、新评论、审批状态 | 不可缓存（每次 heartbeat 变化） | 高（每次 heartbeat） |
+
+### 29.3 适配器缓存接口（规划）
+
+```typescript
+interface ContextBudgeter {
+  /** 估算各层 token 数 */
+  estimateTokens(context: HeartbeatContext): LayerTokenEstimate;
+  
+  /** 当总 token 超出预算时，按层级降级 */
+  applyBudget(context: HeartbeatContext, budgetTokens: number): BudgetedContext;
+  
+  /** 报告缓存效率 */
+  reportCacheMetrics(runUsage: RunUsage): CacheMetrics;
+}
+
+interface CacheMetrics {
+  cacheHitRate: number;        // cachedInputTokens / totalInputTokens
+  staticZoneTokens: number;    // L0 + L1 估算
+  dynamicZoneTokens: number;   // L2 + L3 估算
+  volatilityScore: number;     // 动态区占比，越低越好
+}
+```
+
+### 29.4 Session Carry-Forward 摘要模板
+
+Session rotation 时生成的结构化摘要应包含以下段落（参考 Claude Code 的 9 段 compact 模板）：
+
+1. **Primary Objective**：当前任务的核心目标
+2. **Work Completed**：本 session 完成的工作项
+3. **Key Decisions**：做出的关键技术/产品决策
+4. **Files & Artifacts**：创建或修改的文件/产出物
+5. **Errors & Resolutions**：遇到的错误及修复方式
+6. **Pending Tasks**：未完成的子任务
+7. **Blockers**：当前阻塞项及需要谁解除
+8. **Recommended Next Action**：建议的下一步操作
+
+生成摘要时应使用 scratchpad 模式：先在 `<analysis>` 标签中推理分析，再在 `<summary>` 标签中输出结构化摘要。`<analysis>` 内容不进入最终 carry-forward context。
+
+### 29.5 缓存效率度量
+
+`costService` 应新增以下计算指标：
+
+- `cacheHitRate`：按 agent 维度的月度缓存命中率
+- `contextVolatility`：动态区 token 占总 token 的比例
+- `sessionReuseRate`：session 复用率（按唤醒源分类）
+
+Dashboard 应展示缓存效率趋势，并在 `cacheHitRate < 0.2` 时生成告警。
+
+### 29.6 与现有系统的关系
+
+- **Token Optimization Plan**（`doc/plans/2026-03-13-TOKEN-OPTIMIZATION-PLAN.md`）中的 Phase 1-6 是执行路径，本章节是架构约束
+- **Session Compaction**（`adapter-utils/session-compaction.ts`）中的 `evaluateSessionCompaction()` 应实现 §29.4 的摘要模板
+- **Heartbeat Context API**（`GET /api/issues/:id/heartbeat-context`）已实现 L2/L3 的紧凑获取，未来应支持 L0/L1 的缓存指示

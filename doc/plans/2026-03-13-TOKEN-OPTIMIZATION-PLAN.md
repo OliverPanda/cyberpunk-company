@@ -395,3 +395,81 @@ Treat this as a two-track effort:
 If we only do Track A, we will improve things, but agents will still re-read too much unchanged task context.
 
 If we only do Track B without fixing telemetry first, we will not be able to prove the gains cleanly.
+
+---
+
+## Addendum: Claude Code 源码分析补充策略（2026-04-11）
+
+基于对 Claude Code v2.1.88 源码的逆向分析（详见 `CLAUDE_CODE_ARCHITECTURE_ANALYSIS.md`），补充以下经过生产验证的优化模式：
+
+### A1: 工具结果预算机制（Tool Result Budget System）
+
+**Claude Code 实现**：
+- 单工具阈值：50K chars（超出部分持久化到磁盘，只传 preview + 文件路径）
+- 单消息聚合阈值：200K chars（防止 N 个并行工具结果集体溢出上下文窗口）
+
+**Paperclip 应用**：
+- 在 adapter-utils 中实现 `ContextBudgeter` 接口
+- 当 heartbeat context + 工具输出超过自适应阈值时，提前触发 session rotation
+- 启发式规则：若 `context + lastRunStdout > budgetTokens * 0.4`，标记需要 rotation
+
+### A2: 渐进式上下文压缩管线（Progressive Context Compression）
+
+**Claude Code 实现**（6 级压缩）：
+1. 工具结果预算 → 大结果立即持久化到磁盘
+2. Function Result Clearing → 旧工具结果替换为 `[Old tool result content cleared]`
+3. Tool Use Summarization → 后台生成工具调用的紧凑摘要
+4. Auto-Compact → 接近上下文窗口限制时全量摘要
+5. Partial Compact → 只摘要前缀消息，保留近期消息原文
+6. Transcript Reference → 压缩后仍可通过 Read 工具读取完整transcript
+
+**Paperclip 应用**：
+- Phase 5 session compaction 应参考此管线设计 carry-forward summary
+- 在 session handoff markdown 中采用结构化 9 段摘要模板（Primary Request、Key Concepts、Files Touched、Errors、Problem Solving、User Messages、Pending Tasks、Current Work、Next Step）
+- carry-forward summary 生成时使用 `<analysis>` scratchpad 模式：先让模型在 scratchpad 中推理，再提取结构化摘要，scratchpad 内容不进入最终上下文
+
+### A3: 静态工具描述 + 动态附件分离
+
+**Claude Code 实现**：
+- Agent 列表从工具描述（会破坏工具 schema 缓存）移到 `system-reminder` 附件消息
+- 工具描述变为静态（"Available agent types are listed in system-reminder messages"）
+- 动态内容通过消息附件自由更新，不影响缓存
+
+**Paperclip 应用**：
+- Skill 内容注入时，将稳定的 API 文档和流程说明作为 bootstrap（可缓存）
+- 将动态的 agent 列表、项目上下文等作为 per-heartbeat 注入
+- 这与 Phase 3 的 bootstrap/heartbeat 分离互补
+
+### A4: 缓存效率度量
+
+**Claude Code 实现**：
+- 跟踪 `cachedInputTokens` vs `inputTokens`
+- 用 `DANGEROUS_uncachedSystemPromptSection` 命名惯例防止意外破坏缓存
+
+**Paperclip 应用**：
+- 在 costService 中新增计算指标：`cacheHitRate = cachedInputTokens / (cachedInputTokens + inputTokens)`
+- 月度基线存储在 agent state JSON 中
+- 当 cache hit rate < 0.2 时报警（上下文太不稳定或 bootstrap 太小）
+- 当 cache hit rate > 0.7 时确认优化有效
+- Dashboard 增加缓存效率趋势图
+
+### A5: Post-Compact 文件恢复
+
+**Claude Code 实现**：
+- 压缩后自动重新注入最近读取的 5 个文件（50K token 预算，每文件 5K）
+- 同时恢复最近加载的 skill 指令（25K 预算）
+
+**Paperclip 应用**：
+- Session rotation 时，carry-forward summary 应包含"活跃文件列表"
+- 新 session 的 bootstrap 中可选择性注入关键文件内容的摘要
+- 在 `evaluateSessionCompaction()` 中跟踪最近读取的文件列表
+
+### 优先级建议
+
+| 策略 | 影响 | 复杂度 | 建议阶段 |
+|------|------|--------|----------|
+| A3: 静态/动态分离 | 高 | 低 | Phase 3 实施时一并完成 |
+| A4: 缓存效率度量 | 中 | 低 | Phase 1 实施时一并完成 |
+| A2: 渐进压缩管线 | 高 | 高 | Phase 5 实施时采用 |
+| A1: 工具结果预算 | 中 | 中 | Phase 5 之后单独实施 |
+| A5: Post-Compact 恢复 | 中 | 中 | Phase 5 实施时一并完成 |
