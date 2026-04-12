@@ -36,12 +36,12 @@
  * @see PLUGIN_SPEC.md §12.5 — Graceful Shutdown Policy
  */
 import { EventEmitter } from "node:events";
-import type { Db } from "@cyberpunk-company/db";
+import type { Db } from "@paperclipai/db";
 import type {
   PluginStatus,
   PluginRecord,
   CyberpunkPluginManifestV1,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import { pluginRegistryService } from "./plugin-registry.js";
 import { pluginLoader, type PluginLoader } from "./plugin-loader.js";
 import type { PluginWorkerManager, WorkerStartOptions } from "./plugin-worker-manager.js";

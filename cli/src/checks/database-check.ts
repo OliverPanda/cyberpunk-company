@@ -16,7 +16,7 @@ export async function databaseCheck(config: CyberpunkCompanyConfig, configPath?:
     }
 
     try {
-      const { createDb } = await import("@cyberpunk-company/db");
+      const { createDb } = await import("@paperclipai/db");
       const db = createDb(config.database.connectionString);
       await db.execute("SELECT 1");
       return {

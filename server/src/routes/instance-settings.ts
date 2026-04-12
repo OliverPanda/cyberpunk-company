@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@cyberpunk-company/db";
-import { patchInstanceExperimentalSettingsSchema, patchInstanceGeneralSettingsSchema } from "@cyberpunk-company/shared";
+import type { Db } from "@paperclipai/db";
+import { patchInstanceExperimentalSettingsSchema, patchInstanceGeneralSettingsSchema } from "@paperclipai/shared";
 import { forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { instanceSettingsService, logActivity } from "../services/index.js";

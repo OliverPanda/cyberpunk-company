@@ -22,8 +22,8 @@
 import type {
   CyberpunkPluginManifestV1,
   PluginToolDeclaration,
-} from "@cyberpunk-company/shared";
-import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@cyberpunk-company/plugin-sdk";
+} from "@paperclipai/shared";
+import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@paperclipai/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { logger } from "../middleware/logger.js";
 

@@ -1,4 +1,4 @@
-import type { SecretProvider, SecretProviderDescriptor } from "@cyberpunk-company/shared";
+import type { SecretProvider, SecretProviderDescriptor } from "@paperclipai/shared";
 
 export interface StoredSecretVersionMaterial {
   [key: string]: unknown;

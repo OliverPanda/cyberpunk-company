@@ -2,8 +2,8 @@ import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
   AdapterRuntimeServiceReport,
-} from "@cyberpunk-company/adapter-utils";
-import { asNumber, asString, buildCyberpunkCompanyEnv, parseObject } from "@cyberpunk-company/adapter-utils/server-utils";
+} from "@paperclipai/adapter-utils";
+import { asNumber, asString, buildCyberpunkCompanyEnv, parseObject } from "@paperclipai/adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 

@@ -4,7 +4,7 @@ import type {
   BudgetOverview,
   BudgetPolicySummary,
   BudgetPolicyUpsertInput,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import { api } from "./client";
 
 export const budgetsApi = {

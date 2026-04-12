@@ -281,14 +281,14 @@ async function runPnpm(args, options = {}) {
 
 async function getMigrationStatusPayload() {
   const status = await runPnpm(
-    ["--filter", "@cyberpunk-company/db", "exec", "tsx", "src/migration-status.ts", "--json"],
+    ["--filter", "@paperclipai/db", "exec", "tsx", "src/migration-status.ts", "--json"],
     { env },
   );
   if (status.code !== 0) {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[cyberpunk-company] Command failed with code ${status.code}: pnpm --filter @cyberpunk-company/db exec tsx src/migration-status.ts --json\n`,
+        `[cyberpunk-company] Command failed with code ${status.code}: pnpm --filter @paperclipai/db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -380,7 +380,7 @@ async function maybePreflightMigrations(options = {}) {
 async function buildPluginSdk() {
   console.log("[cyberpunk-company] building plugin sdk...");
   const result = await runPnpm(
-    ["--filter", "@cyberpunk-company/plugin-sdk", "build"],
+    ["--filter", "@paperclipai/plugin-sdk", "build"],
     { stdio: "inherit" },
   );
   if (result.signal) {
@@ -458,7 +458,7 @@ async function startServerChild() {
   const serverScript = mode === "watch" ? "dev:watch" : "dev";
   child = spawn(
     pnpmBin,
-    ["--filter", "@cyberpunk-company/server", serverScript, ...forwardedArgs],
+    ["--filter", "@paperclipai/server", serverScript, ...forwardedArgs],
     { stdio: "inherit", env, shell: process.platform === "win32" },
   );
 

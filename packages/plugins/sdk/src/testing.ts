@@ -9,7 +9,7 @@ import type {
   IssueComment,
   Agent,
   Goal,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import type {
   EventFilter,
   PluginContext,

@@ -26,4 +26,4 @@ export type {
   ResolvedSessionCompactionPolicy,
   SessionCompactionPolicy,
   ServerAdapterModule,
-} from "@cyberpunk-company/adapter-utils";
+} from "@paperclipai/adapter-utils";

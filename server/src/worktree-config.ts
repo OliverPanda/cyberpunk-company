@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { CyberpunkCompanyConfig } from "@cyberpunk-company/shared";
+import type { CyberpunkCompanyConfig } from "@paperclipai/shared";
 import { resolveCyberpunkConfigPath, resolveCyberpunkEnvPath } from "./paths.js";
 
 function nonEmpty(value: string | null | undefined): string | null {

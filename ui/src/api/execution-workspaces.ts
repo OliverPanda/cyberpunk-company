@@ -1,4 +1,4 @@
-import type { ExecutionWorkspace } from "@cyberpunk-company/shared";
+import type { ExecutionWorkspace } from "@paperclipai/shared";
 import { api } from "./client";
 
 export const executionWorkspacesApi = {

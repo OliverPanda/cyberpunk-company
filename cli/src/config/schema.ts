@@ -25,4 +25,4 @@ export {
   type SecretsConfig,
   type SecretsLocalEncryptedConfig,
   type ConfigMeta,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";

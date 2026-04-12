@@ -43,7 +43,7 @@ import {
   runDatabaseRestore,
   createEmbeddedPostgresLogBuffer,
   formatEmbeddedPostgresError,
-} from "@cyberpunk-company/db";
+} from "@paperclipai/db";
 import type { Command } from "commander";
 import { ensureAgentJwtSecret, loadCyberpunkCompanyEnvFile, mergeCyberpunkCompanyEnvEntries, readCyberpunkCompanyEnvEntries, resolveCyberpunkEnvFile } from "../config/env.js";
 import { expandHomePrefix } from "../config/home.js";

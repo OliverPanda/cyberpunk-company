@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { and, asc, desc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
-import type { Db } from "@cyberpunk-company/db";
+import type { Db } from "@paperclipai/db";
 import {
   agents,
   companySecrets,
@@ -11,7 +11,7 @@ import {
   routineRuns,
   routines,
   routineTriggers,
-} from "@cyberpunk-company/db";
+} from "@paperclipai/db";
 import type {
   CreateRoutine,
   CreateRoutineTrigger,
@@ -24,7 +24,7 @@ import type {
   RunRoutine,
   UpdateRoutine,
   UpdateRoutineTrigger,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import { conflict, forbidden, notFound, unauthorized, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { issueService } from "./issues.js";

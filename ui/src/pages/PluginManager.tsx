@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PluginRecord } from "@cyberpunk-company/shared";
+import type { PluginRecord } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
 import { AlertTriangle, FlaskConical, Plus, Power, Puzzle, Settings, Trash } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
@@ -185,7 +185,7 @@ export function PluginManager() {
                 <Label htmlFor="packageName">npm 包名</Label>
                 <Input
                   id="packageName"
-                  placeholder="@cyberpunk-company/plugin-example"
+                  placeholder="@paperclipai/plugin-example"
                   value={installPackage}
                   onChange={(e) => setInstallPackage(e.target.value)}
                 />

@@ -24,7 +24,7 @@ import type {
   CyberpunkPluginManifestV1,
   PluginUiSlotType,
   PluginLauncherPlacementZone,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import { forbidden } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 

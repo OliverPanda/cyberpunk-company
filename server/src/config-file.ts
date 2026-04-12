@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { cyberpunkCompanyConfigSchema, type CyberpunkCompanyConfig } from "@cyberpunk-company/shared";
+import { cyberpunkCompanyConfigSchema, type CyberpunkCompanyConfig } from "@paperclipai/shared";
 import { resolveCyberpunkConfigPath } from "./paths.js";
 
 export function readConfigFile(): CyberpunkCompanyConfig | null {

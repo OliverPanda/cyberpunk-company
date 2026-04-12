@@ -1,12 +1,12 @@
 import { Router, type Request } from "express";
-import type { Db } from "@cyberpunk-company/db";
+import type { Db } from "@paperclipai/db";
 import {
   createProjectSchema,
   createProjectWorkspaceSchema,
   isUuidLike,
   updateProjectSchema,
   updateProjectWorkspaceSchema,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import { validate } from "../middleware/validate.js";
 import { projectService, logActivity } from "../services/index.js";
 import { conflict } from "../errors.js";

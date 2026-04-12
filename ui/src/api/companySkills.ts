@@ -8,7 +8,7 @@ import type {
   CompanySkillProjectScanRequest,
   CompanySkillProjectScanResult,
   CompanySkillUpdateStatus,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import { api } from "./client";
 
 export const companySkillsApi = {

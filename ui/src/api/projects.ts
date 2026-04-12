@@ -1,4 +1,4 @@
-import type { Project, ProjectWorkspace } from "@cyberpunk-company/shared";
+import type { Project, ProjectWorkspace } from "@paperclipai/shared";
 import { api } from "./client";
 
 function withCompanyScope(path: string, companyId?: string) {

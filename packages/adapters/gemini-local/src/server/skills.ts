@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@cyberpunk-company/adapter-utils";
+} from "@paperclipai/adapter-utils";
 import {
   buildPersistentSkillSnapshot,
   ensureCyberpunkSkillSymlink,
   readCyberpunkCompanyRuntimeSkillEntries,
   readInstalledSkillTargets,
   resolveCyberpunkDesiredSkillNames,
-} from "@cyberpunk-company/adapter-utils/server-utils";
+} from "@paperclipai/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 

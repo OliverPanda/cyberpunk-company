@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listCyberpunkSkillEntries,
   removeMaintainerOnlySkillSymlinks,
-} from "@cyberpunk-company/adapter-utils/server-utils";
+} from "@paperclipai/adapter-utils/server-utils";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));

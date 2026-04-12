@@ -1,4 +1,4 @@
-import type { Agent } from "@cyberpunk-company/shared";
+import type { Agent } from "@paperclipai/shared";
 
 export const AGENT_ORDER_UPDATED_EVENT = "cyberpunk:agent-order-updated";
 const AGENT_ORDER_STORAGE_PREFIX = "cyberpunk-company.agentOrder";

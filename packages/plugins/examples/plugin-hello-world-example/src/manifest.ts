@@ -1,4 +1,4 @@
-import type { CyberpunkPluginManifestV1 } from "@cyberpunk-company/plugin-sdk";
+import type { CyberpunkPluginManifestV1 } from "@paperclipai/plugin-sdk";
 
 /**
  * Stable plugin ID used by host registration and namespacing.

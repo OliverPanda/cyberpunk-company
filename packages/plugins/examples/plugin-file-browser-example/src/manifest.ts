@@ -1,4 +1,4 @@
-import type { CyberpunkPluginManifestV1 } from "@cyberpunk-company/plugin-sdk";
+import type { CyberpunkPluginManifestV1 } from "@paperclipai/plugin-sdk";
 
 const PLUGIN_ID = "cyberpunk-company-file-browser-example";
 const FILES_SIDEBAR_SLOT_ID = "files-link";

@@ -3,4 +3,4 @@ export {
   startEmbeddedPostgresTestDatabase,
   type EmbeddedPostgresTestDatabase,
   type EmbeddedPostgresTestSupport,
-} from "@cyberpunk-company/db";
+} from "@paperclipai/db";

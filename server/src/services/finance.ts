@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
-import type { Db } from "@cyberpunk-company/db";
-import { agents, costEvents, financeEvents, goals, heartbeatRuns, issues, projects } from "@cyberpunk-company/db";
+import type { Db } from "@paperclipai/db";
+import { agents, costEvents, financeEvents, goals, heartbeatRuns, issues, projects } from "@paperclipai/db";
 import { notFound, unprocessable } from "../errors.js";
 
 export interface FinanceDateRange {

@@ -20,8 +20,8 @@
  * @see PLUGIN_SPEC.md §16.2 — Plugin-to-Plugin Events
  */
 
-import type { PluginEventType } from "@cyberpunk-company/shared";
-import type { PluginEvent, EventFilter } from "@cyberpunk-company/plugin-sdk";
+import type { PluginEventType } from "@paperclipai/shared";
+import type { PluginEvent, EventFilter } from "@paperclipai/plugin-sdk";
 
 // ---------------------------------------------------------------------------
 // Internal types

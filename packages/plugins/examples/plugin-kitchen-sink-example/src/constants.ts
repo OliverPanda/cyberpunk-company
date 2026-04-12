@@ -1,4 +1,4 @@
-import type { PluginLauncherRegistration } from "@cyberpunk-company/plugin-sdk";
+import type { PluginLauncherRegistration } from "@paperclipai/plugin-sdk";
 
 export const PLUGIN_ID = "cyberpunk-company-kitchen-sink-example";
 export const PLUGIN_VERSION = "0.1.0";

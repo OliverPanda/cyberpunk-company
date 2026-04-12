@@ -109,12 +109,12 @@ async function ensureEmbeddedPostgresConnection(
       if (!matchesDataDir) {
         throw new Error("reachable postgres does not use the expected embedded data directory");
       }
-      await ensurePostgresDatabase(preferredAdminConnectionString, "cyberpunk-company");
+      await ensurePostgresDatabase(preferredAdminConnectionString, "cyberpunk_company");
       process.emitWarning(
         `Adopting an existing PostgreSQL instance on port ${preferredPort} for embedded data dir ${dataDir} because postmaster.pid is missing.`,
       );
       return {
-        connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${preferredPort}/cyberpunk-company`,
+        connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${preferredPort}/cyberpunk_company`,
         source: `embedded-postgres@${preferredPort}`,
         stop: async () => {},
       };
@@ -126,9 +126,9 @@ async function ensureEmbeddedPostgresConnection(
   if (runningPid) {
     const port = runningPort ?? preferredPort;
     const adminConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "cyberpunk-company");
+    await ensurePostgresDatabase(adminConnectionString, "cyberpunk_company");
     return {
-      connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/cyberpunk-company`,
+      connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/cyberpunk_company`,
       source: `embedded-postgres@${port}`,
       stop: async () => {},
     };
@@ -169,10 +169,10 @@ async function ensureEmbeddedPostgresConnection(
   }
 
   const adminConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${selectedPort}/postgres`;
-  await ensurePostgresDatabase(adminConnectionString, "cyberpunk-company");
+  await ensurePostgresDatabase(adminConnectionString, "cyberpunk_company");
 
   return {
-    connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${selectedPort}/cyberpunk-company`,
+    connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${selectedPort}/cyberpunk_company`,
     source: `embedded-postgres@${selectedPort}`,
     stop: async () => {
       await instance.stop();

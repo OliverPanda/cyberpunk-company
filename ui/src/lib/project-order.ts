@@ -1,4 +1,4 @@
-import type { Project } from "@cyberpunk-company/shared";
+import type { Project } from "@paperclipai/shared";
 
 export const PROJECT_ORDER_UPDATED_EVENT = "cyberpunk:project-order-updated";
 const PROJECT_ORDER_STORAGE_PREFIX = "cyberpunk-company.projectOrder";

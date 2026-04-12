@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@cyberpunk-company/adapter-utils";
+import type { CreateConfigValues } from "@paperclipai/adapter-utils";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,

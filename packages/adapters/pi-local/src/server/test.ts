@@ -2,7 +2,7 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@cyberpunk-company/adapter-utils";
+} from "@paperclipai/adapter-utils";
 import {
   asString,
   parseObject,
@@ -10,10 +10,10 @@ import {
   ensureCommandResolvable,
   ensurePathInEnv,
   runChildProcess,
-} from "@cyberpunk-company/adapter-utils/server-utils";
+} from "@paperclipai/adapter-utils/server-utils";
 import {
   asStringArray,
-} from "@cyberpunk-company/adapter-utils/server-utils";
+} from "@paperclipai/adapter-utils/server-utils";
 import { discoverPiModelsCached } from "./models.js";
 import { parsePiJsonl } from "./parse.js";
 

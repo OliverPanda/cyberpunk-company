@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import type { Db } from "@cyberpunk-company/db";
+import type { Db } from "@paperclipai/db";
 import {
   companyPortabilityExportSchema,
   companyPortabilityImportSchema,
@@ -7,7 +7,7 @@ import {
   createCompanySchema,
   updateCompanyBrandingSchema,
   updateCompanySchema,
-} from "@cyberpunk-company/shared";
+} from "@paperclipai/shared";
 import { forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import {

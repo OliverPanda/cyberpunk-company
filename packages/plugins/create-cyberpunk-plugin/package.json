@@ -1,5 +1,5 @@
 {
-  "name": "@cyberpunk-company/create-cyberpunk-plugin",
+  "name": "@paperclipai/create-cyberpunk-plugin",
   "version": "0.1.0",
   "license": "MIT",
   "homepage": "https://github.com/cyberpunk-company/cyberpunk-company",
@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cyberpunk-company/plugin-sdk": "workspace:*"
+    "@paperclipai/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",

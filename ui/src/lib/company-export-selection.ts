@@ -1,4 +1,4 @@
-import type { CompanyPortabilityIssueManifestEntry } from "@cyberpunk-company/shared";
+import type { CompanyPortabilityIssueManifestEntry } from "@paperclipai/shared";
 
 function isTaskPath(filePath: string): boolean {
   return /(?:^|\/)tasks\//.test(filePath);

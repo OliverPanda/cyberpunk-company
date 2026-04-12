@@ -1,6 +1,6 @@
 import { inflateRawSync } from "node:zlib";
 import path from "node:path";
-import type { CompanyPortabilityFileEntry } from "@cyberpunk-company/shared";
+import type { CompanyPortabilityFileEntry } from "@paperclipai/shared";
 
 const textDecoder = new TextDecoder();
 

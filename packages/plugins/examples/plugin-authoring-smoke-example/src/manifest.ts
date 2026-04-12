@@ -1,4 +1,4 @@
-import type { CyberpunkPluginManifestV1 } from "@cyberpunk-company/plugin-sdk";
+import type { CyberpunkPluginManifestV1 } from "@paperclipai/plugin-sdk";
 
 const manifest: CyberpunkPluginManifestV1 = {
   id: "cyberpunk-company.plugin-authoring-smoke-example",

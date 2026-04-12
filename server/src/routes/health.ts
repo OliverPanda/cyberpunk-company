@@ -1,8 +1,8 @@
 import { Router } from "express";
-import type { Db } from "@cyberpunk-company/db";
+import type { Db } from "@paperclipai/db";
 import { and, count, eq, gt, inArray, isNull, sql } from "drizzle-orm";
-import { heartbeatRuns, instanceUserRoles, invites } from "@cyberpunk-company/db";
-import type { DeploymentExposure, DeploymentMode } from "@cyberpunk-company/shared";
+import { heartbeatRuns, instanceUserRoles, invites } from "@paperclipai/db";
+import type { DeploymentExposure, DeploymentMode } from "@paperclipai/shared";
 import { readPersistedDevServerStatus, toDevServerHealthStatus } from "../dev-server-status.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { serverVersion } from "../version.js";

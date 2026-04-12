@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolveCyberpunkConfigPath, resolveCyberpunkEnvPath } from "./paths.js";
-import type { DeploymentExposure, DeploymentMode } from "@cyberpunk-company/shared";
+import type { DeploymentExposure, DeploymentMode } from "@paperclipai/shared";
 
 import { parse as parseEnvFileContents } from "dotenv";
 

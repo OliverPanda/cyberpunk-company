@@ -22,12 +22,12 @@
  * @see PLUGIN_SPEC.md §13.10 — `executeTool`
  */
 
-import type { Db } from "@cyberpunk-company/db";
+import type { Db } from "@paperclipai/db";
 import type {
   CyberpunkPluginManifestV1,
   PluginRecord,
-} from "@cyberpunk-company/shared";
-import type { ToolRunContext, ToolResult } from "@cyberpunk-company/plugin-sdk";
+} from "@paperclipai/shared";
+import type { ToolRunContext, ToolResult } from "@paperclipai/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import {

@@ -8,7 +8,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { plugins } from "./plugins.js";
-import type { PluginStateScopeKind } from "@cyberpunk-company/shared";
+import type { PluginStateScopeKind } from "@paperclipai/shared";
 
 /**
  * `plugin_entities` table — persistent high-level mapping between Cyberpunk Company

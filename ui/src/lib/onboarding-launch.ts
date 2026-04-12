@@ -1,4 +1,4 @@
-import type { Goal } from "@cyberpunk-company/shared";
+import type { Goal } from "@paperclipai/shared";
 
 export const ONBOARDING_PROJECT_NAME = "Onboarding";
 
