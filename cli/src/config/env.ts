@@ -5,6 +5,7 @@ import { config as loadDotenv, parse as parseEnvFileContents } from "dotenv";
 import { resolveConfigPath } from "./store.js";
 
 const JWT_SECRET_ENV_KEY = "CYBERPUNK_AGENT_JWT_SECRET";
+const LEGACY_JWT_SECRET_ENV_KEY = "PAPERCLIP_AGENT_JWT_SECRET";
 function resolveEnvFilePath(configPath?: string) {
   return path.resolve(path.dirname(resolveConfigPath(configPath)), ".env");
 }
@@ -62,7 +63,10 @@ export function loadAgentJwtEnvFile(filePath = resolveEnvFilePath()): void {
 export function readAgentJwtSecretFromEnv(configPath?: string): string | null {
   loadAgentJwtEnvFile(resolveEnvFilePath(configPath));
   const raw = process.env[JWT_SECRET_ENV_KEY];
-  return isNonEmpty(raw) ? raw!.trim() : null;
+  if (isNonEmpty(raw)) return raw!.trim();
+
+  const legacyRaw = process.env[LEGACY_JWT_SECRET_ENV_KEY];
+  return isNonEmpty(legacyRaw) ? legacyRaw!.trim() : null;
 }
 
 export function readAgentJwtSecretFromEnvFile(filePath = resolveEnvFilePath()): string | null {
@@ -71,7 +75,10 @@ export function readAgentJwtSecretFromEnvFile(filePath = resolveEnvFilePath()): 
   const raw = fs.readFileSync(filePath, "utf-8");
   const values = parseEnvFile(raw);
   const value = values[JWT_SECRET_ENV_KEY];
-  return isNonEmpty(value) ? value!.trim() : null;
+  if (isNonEmpty(value)) return value!.trim();
+
+  const legacyValue = values[LEGACY_JWT_SECRET_ENV_KEY];
+  return isNonEmpty(legacyValue) ? legacyValue!.trim() : null;
 }
 
 export function ensureAgentJwtSecret(configPath?: string): { secret: string; created: boolean } {

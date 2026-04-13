@@ -25,8 +25,16 @@ function parseNumber(value: string | undefined, fallback: number) {
   return Math.floor(parsed);
 }
 
+function resolveJwtSecret() {
+  const secret = process.env.CYBERPUNK_AGENT_JWT_SECRET?.trim();
+  if (secret) return secret;
+
+  const legacySecret = process.env.PAPERCLIP_AGENT_JWT_SECRET?.trim();
+  return legacySecret || null;
+}
+
 function jwtConfig() {
-  const secret = process.env.CYBERPUNK_AGENT_JWT_SECRET;
+  const secret = resolveJwtSecret();
   if (!secret) return null;
 
   return {

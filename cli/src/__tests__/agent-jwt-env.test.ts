@@ -24,6 +24,7 @@ describe("agent jwt env helpers", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
     delete process.env.CYBERPUNK_AGENT_JWT_SECRET;
+    delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
   });
 
   afterEach(() => {
@@ -56,6 +57,25 @@ describe("agent jwt env helpers", () => {
     const configPath = tempConfigPath();
     const envPath = resolveAgentJwtEnvFile(configPath);
     fs.writeFileSync(envPath, "CYBERPUNK_AGENT_JWT_SECRET=check-secret\n", { mode: 0o600 });
+
+    const result = agentJwtSecretCheck(configPath);
+    expect(result.status).toBe("pass");
+  });
+
+  it("loads legacy PAPERCLIP_AGENT_JWT_SECRET from adjacent .env", () => {
+    const configPath = tempConfigPath();
+    const envPath = resolveAgentJwtEnvFile(configPath);
+    fs.writeFileSync(envPath, "PAPERCLIP_AGENT_JWT_SECRET=legacy-secret\n", { mode: 0o600 });
+
+    const loaded = readAgentJwtSecretFromEnv(configPath);
+    expect(loaded).toBe("legacy-secret");
+    expect(process.env.PAPERCLIP_AGENT_JWT_SECRET).toBe("legacy-secret");
+  });
+
+  it("doctor check passes when only legacy secret exists in adjacent .env", () => {
+    const configPath = tempConfigPath();
+    const envPath = resolveAgentJwtEnvFile(configPath);
+    fs.writeFileSync(envPath, "PAPERCLIP_AGENT_JWT_SECRET=legacy-check-secret\n", { mode: 0o600 });
 
     const result = agentJwtSecretCheck(configPath);
     expect(result.status).toBe("pass");

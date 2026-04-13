@@ -3,12 +3,14 @@ import { createLocalAgentJwt, verifyLocalAgentJwt } from "../agent-auth-jwt.js";
 
 describe("agent local JWT", () => {
   const secretEnv = "CYBERPUNK_AGENT_JWT_SECRET";
+  const legacySecretEnv = "PAPERCLIP_AGENT_JWT_SECRET";
   const ttlEnv = "CYBERPUNK_AGENT_JWT_TTL_SECONDS";
   const issuerEnv = "CYBERPUNK_AGENT_JWT_ISSUER";
   const audienceEnv = "CYBERPUNK_AGENT_JWT_AUDIENCE";
 
   const originalEnv = {
     secret: process.env[secretEnv],
+    legacySecret: process.env[legacySecretEnv],
     ttl: process.env[ttlEnv],
     issuer: process.env[issuerEnv],
     audience: process.env[audienceEnv],
@@ -16,6 +18,7 @@ describe("agent local JWT", () => {
 
   beforeEach(() => {
     process.env[secretEnv] = "test-secret";
+    delete process.env[legacySecretEnv];
     process.env[ttlEnv] = "3600";
     delete process.env[issuerEnv];
     delete process.env[audienceEnv];
@@ -26,6 +29,8 @@ describe("agent local JWT", () => {
     vi.useRealTimers();
     if (originalEnv.secret === undefined) delete process.env[secretEnv];
     else process.env[secretEnv] = originalEnv.secret;
+    if (originalEnv.legacySecret === undefined) delete process.env[legacySecretEnv];
+    else process.env[legacySecretEnv] = originalEnv.legacySecret;
     if (originalEnv.ttl === undefined) delete process.env[ttlEnv];
     else process.env[ttlEnv] = originalEnv.ttl;
     if (originalEnv.issuer === undefined) delete process.env[issuerEnv];
@@ -55,6 +60,22 @@ describe("agent local JWT", () => {
     const token = createLocalAgentJwt("agent-1", "company-1", "claude_local", "run-1");
     expect(token).toBeNull();
     expect(verifyLocalAgentJwt("abc.def.ghi")).toBeNull();
+  });
+
+  it("falls back to PAPERCLIP_AGENT_JWT_SECRET for legacy environments", () => {
+    vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
+    delete process.env[secretEnv];
+    process.env[legacySecretEnv] = "legacy-secret";
+
+    const token = createLocalAgentJwt("agent-1", "company-1", "codex_local", "run-1");
+
+    expect(typeof token).toBe("string");
+    expect(verifyLocalAgentJwt(token!)).toMatchObject({
+      sub: "agent-1",
+      company_id: "company-1",
+      adapter_type: "codex_local",
+      run_id: "run-1",
+    });
   });
 
   it("rejects expired tokens", () => {
