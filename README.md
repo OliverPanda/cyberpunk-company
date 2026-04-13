@@ -1,28 +1,3 @@
-<p align="center">
-  <img src="doc/assets/header.png" alt="cyberpunk-company — 让你的公司运行起来" width="720" />
-</p>
-
-<p align="center">
-  <a href="#quickstart"><strong>快速开始</strong></a> &middot;
-  <a href="https://cyberpunk-company.ing/docs"><strong>文档</strong></a> &middot;
-  <a href="https://github.com/cyberpunk-company/cyberpunk-company"><strong>GitHub</strong></a> &middot;
-  <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/cyberpunk-company/cyberpunk-company/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/cyberpunk-company/cyberpunk-company/stargazers"><img src="https://img.shields.io/github/stars/cyberpunk-company/cyberpunk-company?style=flat" alt="Stars" /></a>
-  <a href="https://discord.gg/m4HZY7xNG3"><img src="https://img.shields.io/discord/000000000?label=discord" alt="Discord" /></a>
-</p>
-
-<br/>
-
-<div align="center">
-  <video src="https://github.com/user-attachments/assets/773bdfb2-6d1e-4e30-8c5f-3487d5b70c8f" width="600" controls></video>
-</div>
-
-<br/>
-
 ## cyberpunk-company 是什么？
 
 # 面向零人类公司的开源编排系统
