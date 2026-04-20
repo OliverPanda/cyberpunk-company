@@ -41,6 +41,18 @@ pnpm dev
 
 `pnpm dev:once` 现在会追踪后端相关文件变化与待执行迁移。当当前启动结果已过期时，board UI 会显示 `Restart required` 横幅。你也可以在 `Instance Settings > Experimental` 中启用带保护的自动重启，它会等待排队中或运行中的本地 agent run 完成后再重启开发服务。
 
+如果你在 Windows 上遇到残留的 `pnpm dev` / `tsx` / embedded PostgreSQL 进程占用端口，可以先清理再重启：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\kill-dev.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\scripts\kill-dev.ps1
+```
+
+这个脚本会：
+
+- 清理当前仓库相关的本地开发进程
+- 清理监听默认 embedded PostgreSQL 端口范围（`54329-54349`）的残留进程
+
 Tailscale/private-auth 开发模式：
 
 ```sh
