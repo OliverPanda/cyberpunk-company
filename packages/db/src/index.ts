@@ -11,6 +11,7 @@ export {
   type MigrationBootstrapResult,
   type Db,
 } from "./client.js";
+export { EMBEDDED_POSTGRES_DATABASE_NAME } from "./constants.js";
 export {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

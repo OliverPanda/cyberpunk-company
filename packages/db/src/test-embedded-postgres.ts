@@ -3,6 +3,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { applyPendingMigrations, ensurePostgresDatabase } from "./client.js";
+import { EMBEDDED_POSTGRES_DATABASE_NAME } from "./constants.js";
 
 type EmbeddedPostgresInstance = {
   initialise(): Promise<void>;
@@ -123,8 +124,8 @@ export async function startEmbeddedPostgresTestDatabase(
     await instance.start();
 
     const adminConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "cyberpunk-company");
-    const connectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/cyberpunk-company`;
+    await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE_NAME);
+    const connectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/${EMBEDDED_POSTGRES_DATABASE_NAME}`;
     await applyPendingMigrations(connectionString);
 
     return {

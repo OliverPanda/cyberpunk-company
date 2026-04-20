@@ -4,11 +4,13 @@ import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
+import { setTimeout as sleep } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 import type { Request as ExpressRequest, RequestHandler } from "express";
 import { and, eq } from "drizzle-orm";
 import {
   createDb,
+  EMBEDDED_POSTGRES_DATABASE_NAME,
   ensurePostgresDatabase,
   formatEmbeddedPostgresError,
   getPostgresDataDirectory,
@@ -61,6 +63,30 @@ type EmbeddedPostgresCtor = new (opts: {
   onLog?: (message: unknown) => void;
   onError?: (message: unknown) => void;
 }) => EmbeddedPostgresInstance;
+
+async function tryAdoptEmbeddedPostgres(input: {
+  adminConnectionString: string;
+  expectedDataDir: string;
+  timeoutMs?: number;
+}): Promise<boolean> {
+  const deadline = Date.now() + (input.timeoutMs ?? 10_000);
+  while (Date.now() < deadline) {
+    try {
+      const actualDataDir = await getPostgresDataDirectory(input.adminConnectionString);
+      if (
+        typeof actualDataDir === "string" &&
+        resolve(actualDataDir) === resolve(input.expectedDataDir)
+      ) {
+        await ensurePostgresDatabase(input.adminConnectionString, EMBEDDED_POSTGRES_DATABASE_NAME);
+        return true;
+      }
+    } catch {
+      // The existing cluster may still be starting up; retry briefly before deciding it's unusable.
+    }
+    await sleep(200);
+  }
+  return false;
+}
 
 
 export interface StartedServer {
@@ -317,7 +343,15 @@ export async function startServer(): Promise<StartedServer> {
       try {
         process.kill(pid, 0);
         return true;
-      } catch {
+      } catch (error) {
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          (error as { code?: unknown }).code === "EPERM"
+        ) {
+          return true;
+        }
         return false;
       }
     };
@@ -340,19 +374,16 @@ export async function startServer(): Promise<StartedServer> {
       logger.warn(`Embedded PostgreSQL already running; reusing existing process (pid=${runningPid}, port=${port})`);
     } else {
       const configuredAdminConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${configuredPort}/postgres`;
-      try {
-        const actualDataDir = await getPostgresDataDirectory(configuredAdminConnectionString);
-        if (
-          typeof actualDataDir !== "string" ||
-          resolve(actualDataDir) !== resolve(dataDir)
-        ) {
-          throw new Error("reachable postgres does not use the expected embedded data directory");
-        }
-        await ensurePostgresDatabase(configuredAdminConnectionString, "cyberpunk");
+      if (
+        await tryAdoptEmbeddedPostgres({
+          adminConnectionString: configuredAdminConnectionString,
+          expectedDataDir: dataDir,
+        })
+      ) {
         logger.warn(
           `Embedded PostgreSQL appears to already be reachable without a pid file; reusing existing server on configured port ${configuredPort}`,
         );
-      } catch {
+      } else {
         const detectedPort = await detectPort(configuredPort);
         if (detectedPort !== configuredPort) {
           logger.warn(`Embedded PostgreSQL port is in use; using next free port (requestedPort=${configuredPort}, selectedPort=${detectedPort})`);
@@ -402,12 +433,13 @@ export async function startServer(): Promise<StartedServer> {
     }
   
     const embeddedAdminConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/postgres`;
-    const dbStatus = await ensurePostgresDatabase(embeddedAdminConnectionString, "cyberpunk");
+    const dbStatus = await ensurePostgresDatabase(embeddedAdminConnectionString, EMBEDDED_POSTGRES_DATABASE_NAME);
     if (dbStatus === "created") {
-      logger.info("Created embedded PostgreSQL database: cyberpunk");
+      logger.info(`Created embedded PostgreSQL database: ${EMBEDDED_POSTGRES_DATABASE_NAME}`);
     }
   
-    const embeddedConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/cyberpunk-company`;
+    const embeddedConnectionString =
+      `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/${EMBEDDED_POSTGRES_DATABASE_NAME}`;
     const shouldAutoApplyFirstRunMigrations = !clusterAlreadyInitialized || dbStatus === "created";
     if (shouldAutoApplyFirstRunMigrations) {
       logger.info("Detected first-run embedded PostgreSQL setup; applying pending migrations automatically");

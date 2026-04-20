@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { formatDatabaseBackupResult, runDatabaseBackup } from "./backup-lib.js";
+import { EMBEDDED_POSTGRES_DATABASE_NAME } from "./constants.js";
 
 type PartialConfig = {
   database?: {
@@ -69,7 +70,7 @@ function resolveConnectionString(config: PartialConfig | null): string {
   }
 
   const port = resolveEmbeddedPort(config);
-  return `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/cyberpunk-company`;
+  return `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/${EMBEDDED_POSTGRES_DATABASE_NAME}`;
 }
 
 function resolveDefaultBackupDir(): string {

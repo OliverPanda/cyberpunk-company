@@ -77,6 +77,7 @@ const env = {
   ...process.env,
   CYBERPUNK_UI_DEV_MIDDLEWARE: "true",
 };
+const skipMigrationPreflight = !(process.env.DATABASE_URL ?? "").trim();
 
 if (mode === "dev") {
   env.CYBERPUNK_DEV_SERVER_STATUS_FILE = devServerStatusFilePath;
@@ -280,6 +281,15 @@ async function runPnpm(args, options = {}) {
 }
 
 async function getMigrationStatusPayload() {
+  if (skipMigrationPreflight) {
+    return {
+      source: "server-managed-embedded-postgres",
+      status: "upToDate",
+      tableCount: 0,
+      pendingMigrations: [],
+    };
+  }
+
   const status = await runPnpm(
     ["--filter", "@paperclipai/db", "exec", "tsx", "src/migration-status.ts", "--json"],
     { env },

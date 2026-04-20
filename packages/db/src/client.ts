@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
 import { migrate as migratePg } from "drizzle-orm/postgres-js/migrator";
 import { readFile, readdir } from "node:fs/promises";
+import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 import * as schema from "./schema/index.js";
@@ -12,6 +13,18 @@ const MIGRATIONS_JOURNAL_JSON = fileURLToPath(new URL("./migrations/meta/_journa
 
 function createUtilitySql(url: string) {
   return postgres(url, { max: 1, onnotice: () => {} });
+}
+
+function isRetryablePostgresStartupError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const maybeCode = "code" in error ? (error as { code?: unknown }).code : undefined;
+  return maybeCode === "57P03" || maybeCode === "ECONNREFUSED";
+}
+
+function isDuplicateDatabaseError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const maybeCode = "code" in error ? (error as { code?: unknown }).code : undefined;
+  return maybeCode === "42P04" || maybeCode === "23505";
 }
 
 function isSafeIdentifier(value: string): boolean {
@@ -762,17 +775,32 @@ export async function ensurePostgresDatabase(
     throw new Error(`Unsafe database name: ${databaseName}`);
   }
 
-  const sql = createUtilitySql(url);
-  try {
-    const existing = await sql<{ one: number }[]>`
-      select 1 as one from pg_database where datname = ${databaseName} limit 1
-    `;
-    if (existing.length > 0) return "exists";
+  const deadline = Date.now() + 10_000;
+  while (true) {
+    const sql = createUtilitySql(url);
+    try {
+      const existing = await sql<{ one: number }[]>`
+        select 1 as one from pg_database where datname = ${databaseName} limit 1
+      `;
+      if (existing.length > 0) return "exists";
 
-    await sql.unsafe(`create database "${databaseName}" encoding 'UTF8' lc_collate 'C' lc_ctype 'C' template template0`);
-    return "created";
-  } finally {
-    await sql.end();
+      try {
+        await sql.unsafe(`create database "${databaseName}" encoding 'UTF8' lc_collate 'C' lc_ctype 'C' template template0`);
+        return "created";
+      } catch (error) {
+        if (isDuplicateDatabaseError(error)) {
+          return "exists";
+        }
+        throw error;
+      }
+    } catch (error) {
+      if (!isRetryablePostgresStartupError(error) || Date.now() >= deadline) {
+        throw error;
+      }
+      await sleep(200);
+    } finally {
+      await sql.end();
+    }
   }
 }
 

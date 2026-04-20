@@ -1,7 +1,9 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import path from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 import { ensurePostgresDatabase, getPostgresDataDirectory } from "./client.js";
+import { EMBEDDED_POSTGRES_DATABASE_NAME } from "./constants.js";
 import { createEmbeddedPostgresLogBuffer, formatEmbeddedPostgresError } from "./embedded-postgres-error.js";
 import { resolveDatabaseTarget } from "./runtime-config.js";
 
@@ -30,12 +32,22 @@ export type MigrationConnection = {
 
 function readRunningPostmasterPid(postmasterPidFile: string): number | null {
   if (!existsSync(postmasterPidFile)) return null;
+  let pid: number | null = null;
   try {
-    const pid = Number(readFileSync(postmasterPidFile, "utf8").split("\n")[0]?.trim());
+    pid = Number(readFileSync(postmasterPidFile, "utf8").split("\n")[0]?.trim());
     if (!Number.isInteger(pid) || pid <= 0) return null;
     process.kill(pid, 0);
     return pid;
-  } catch {
+  } catch (error) {
+    if (
+      pid !== null &&
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: unknown }).code === "EPERM"
+    ) {
+      return pid;
+    }
     return null;
   }
 }
@@ -76,6 +88,22 @@ async function findAvailablePort(startPort: number): Promise<number> {
   );
 }
 
+async function waitForEmbeddedPostgresShutdown(input: {
+  port: number;
+  postmasterPidFile: string;
+  timeoutMs?: number;
+}): Promise<void> {
+  const deadline = Date.now() + (input.timeoutMs ?? 10_000);
+  while (Date.now() < deadline) {
+    const pid = readRunningPostmasterPid(input.postmasterPidFile);
+    const portBusy = await isPortInUse(input.port);
+    if (!pid && !portBusy) {
+      return;
+    }
+    await sleep(200);
+  }
+}
+
 async function loadEmbeddedPostgresCtor(): Promise<EmbeddedPostgresCtor> {
   try {
     const mod = await import("embedded-postgres");
@@ -109,12 +137,12 @@ async function ensureEmbeddedPostgresConnection(
       if (!matchesDataDir) {
         throw new Error("reachable postgres does not use the expected embedded data directory");
       }
-      await ensurePostgresDatabase(preferredAdminConnectionString, "cyberpunk_company");
+      await ensurePostgresDatabase(preferredAdminConnectionString, EMBEDDED_POSTGRES_DATABASE_NAME);
       process.emitWarning(
         `Adopting an existing PostgreSQL instance on port ${preferredPort} for embedded data dir ${dataDir} because postmaster.pid is missing.`,
       );
       return {
-        connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${preferredPort}/cyberpunk_company`,
+        connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${preferredPort}/${EMBEDDED_POSTGRES_DATABASE_NAME}`,
         source: `embedded-postgres@${preferredPort}`,
         stop: async () => {},
       };
@@ -126,9 +154,9 @@ async function ensureEmbeddedPostgresConnection(
   if (runningPid) {
     const port = runningPort ?? preferredPort;
     const adminConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "cyberpunk_company");
+    await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE_NAME);
     return {
-      connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/cyberpunk_company`,
+      connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${port}/${EMBEDDED_POSTGRES_DATABASE_NAME}`,
       source: `embedded-postgres@${port}`,
       stop: async () => {},
     };
@@ -169,13 +197,17 @@ async function ensureEmbeddedPostgresConnection(
   }
 
   const adminConnectionString = `postgres://cyberpunk:cyberpunk@127.0.0.1:${selectedPort}/postgres`;
-  await ensurePostgresDatabase(adminConnectionString, "cyberpunk_company");
+  await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE_NAME);
 
   return {
-    connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${selectedPort}/cyberpunk_company`,
+    connectionString: `postgres://cyberpunk:cyberpunk@127.0.0.1:${selectedPort}/${EMBEDDED_POSTGRES_DATABASE_NAME}`,
     source: `embedded-postgres@${selectedPort}`,
     stop: async () => {
       await instance.stop();
+      await waitForEmbeddedPostgresShutdown({
+        port: selectedPort,
+        postmasterPidFile,
+      });
     },
   };
 }
