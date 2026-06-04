@@ -149,7 +149,16 @@
 开源，自托管，不需要 `cyberpunk-company` 账号。
 
 ```bash
+git clone https://github.com/OliverPanda/cyberpunk-company.git
+cd cyberpunk-company
+pnpm install
 npx cyberpunk-company onboard --yes
+```
+
+如果你是从 GitHub 克隆源码仓库运行，请不要用 `npx github:OliverPanda/cyberpunk-company`。当前支持的源码路径是 repo clone + `pnpm install`，然后再执行本地 CLI。
+
+```bash
+npx cyberpunk-company run
 ```
 
 或者手动运行：

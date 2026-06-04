@@ -8,6 +8,9 @@ Get Cyberpunk Company running locally in under 5 minutes.
 ## Quick Start (Recommended)
 
 ```sh
+git clone https://github.com/OliverPanda/cyberpunk-company.git
+cd cyberpunk-company
+pnpm install
 npx cyberpunk-company onboard --yes
 ```
 
@@ -20,6 +23,8 @@ npx cyberpunk-company run
 ```
 
 > **Note:** If you used `npx` for setup, always use `npx cyberpunk-company` to run commands. The `pnpm cyberpunk-company` form only works inside a cloned copy of the Cyberpunk Company repository (see Local Development below).
+>
+> GitHub source checkouts are different from the published CLI package. Do not use `npx github:OliverPanda/cyberpunk-company`. Clone the repo, run `pnpm install`, then use `npx cyberpunk-company` or `pnpm cyberpunk-company` from that checkout.
 
 ## Local Development
 
